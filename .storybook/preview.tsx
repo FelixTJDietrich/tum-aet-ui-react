@@ -20,7 +20,15 @@ const preview: Preview = {
   globalTypes: {
     theme: {
       description: 'Theme',
-      toolbar: { title: 'Theme', icon: 'circlehollow', items: [{ value: 'light', title: 'Light' }, { value: 'dark', title: 'Dark' }], dynamicTitle: true },
+      toolbar: {
+        title: 'Theme',
+        icon: 'circlehollow',
+        items: [
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+        ],
+        dynamicTitle: true,
+      },
     },
   },
   initialGlobals: { theme: 'light' },
