@@ -16,6 +16,7 @@ import { CheckIcon, ChevronDownIcon } from '../../internal/icons';
 import { useControllable } from '../../internal/use-controllable';
 import { Listbox, optionId, type ListboxItem } from '../select/listbox';
 import { navigate, optionLabelOf, optionValueOf } from '../select/use-listbox';
+import { useFormFieldContext, useFormFieldControl } from '../form-field/form-field';
 
 export type MultiSelectSize = 'small' | 'default' | 'large';
 /** `outlined` matches an outlined primary button, for toolbars. */
@@ -90,19 +91,23 @@ export function MultiSelect({
   emptyMessage,
   renderOption,
   renderSelectedItems,
-  id,
+  id: ownId,
   name,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
-  'aria-describedby': ariaDescribedBy,
-  'aria-invalid': ariaInvalid,
+  'aria-describedby': ownDescribedBy,
+  'aria-invalid': ownInvalid,
   className,
   ref,
   ...rest
 }: MultiSelectProps) {
   const t = useTranslate();
   const generatedId = useId();
-  const triggerId = id ?? `${generatedId}-trigger`;
+  const formCtx = useFormFieldContext();
+  const field = useFormFieldControl({ id: ownId, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
+  const ariaDescribedBy = field['aria-describedby'];
+  const ariaInvalid = field['aria-invalid'];
+  const triggerId = ownId ?? field.id;
   const listboxId = `${generatedId}-listbox`;
   const root = useRef<HTMLDivElement | null>(null);
   const trigger = useRef<HTMLDivElement | null>(null);
@@ -251,7 +256,7 @@ export function MultiSelect({
         aria-controls={open ? listboxId : undefined}
         aria-activedescendant={open && activeIndex >= 0 ? optionId(listboxId, activeIndex) : undefined}
         aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
+        aria-labelledby={ariaLabelledBy ?? (ariaLabel ? undefined : formCtx?.labelId)}
         aria-describedby={ariaDescribedBy}
         aria-invalid={ariaInvalid}
         aria-required={required || undefined}

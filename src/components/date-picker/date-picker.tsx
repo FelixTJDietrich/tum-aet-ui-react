@@ -30,6 +30,7 @@ import {
 } from './date-picker-utils';
 import { ClockIcon, GlobeIcon } from './icons';
 import { TimeControls } from './time-controls';
+import { useFormFieldControl } from '../form-field/form-field';
 
 export interface DatePickerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -86,8 +87,8 @@ export function DatePicker({
   id: idProp,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
-  'aria-describedby': ariaDescribedBy,
-  'aria-invalid': ariaInvalid,
+  'aria-describedby': ownDescribedBy,
+  'aria-invalid': ownInvalid,
   'aria-required': ariaRequired,
   disabled = false,
   timeOnly = false,
@@ -111,7 +112,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const translate = useTranslate();
   const autoId = useId();
-  const id = idProp ?? autoId;
+  const formField = useFormFieldControl({ id: idProp, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
+  const ariaDescribedBy = formField['aria-describedby'];
+  const ariaInvalid = formField['aria-invalid'];
+  const id = idProp ?? formField.id ?? autoId;
   const panelId = `${id}-dialog`;
   const errorId = `${id}-error`;
   const [value, setValue] = useControllable<Date | null>(valueProp, defaultValue, onChange);

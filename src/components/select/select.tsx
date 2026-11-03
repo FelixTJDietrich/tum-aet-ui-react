@@ -14,6 +14,7 @@ import {
   useTypeahead,
   valuesMatch,
 } from './use-listbox';
+import { useFormFieldControl } from '../form-field/form-field';
 
 export type SelectSize = 'small' | 'default' | 'large';
 
@@ -87,19 +88,22 @@ export function Select({
   clearAriaLabel,
   emptyMessage,
   size = 'default',
-  id,
+  id: ownId,
   name,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
-  'aria-describedby': ariaDescribedBy,
-  'aria-invalid': ariaInvalid,
+  'aria-describedby': ownDescribedBy,
+  'aria-invalid': ownInvalid,
   className,
   ref,
   ...rest
 }: SelectProps) {
   const t = useTranslate();
   const generatedId = useId();
-  const triggerId = id ?? `${generatedId}-trigger`;
+  const field = useFormFieldControl({ id: ownId, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
+  const ariaDescribedBy = field['aria-describedby'];
+  const ariaInvalid = field['aria-invalid'];
+  const triggerId = ownId ?? field.id;
   const listboxId = `${generatedId}-listbox`;
   const root = useRef<HTMLDivElement | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);

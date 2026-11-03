@@ -17,6 +17,7 @@ import { XIcon } from '../../internal/icons';
 import { useControllable } from '../../internal/use-controllable';
 import { Listbox, optionId, type ListboxItem } from '../select/listbox';
 import { optionLabelOf, valuesMatch } from '../select/use-listbox';
+import { useFormFieldControl } from '../form-field/form-field';
 
 export interface AutocompleteSearchEvent {
   query: string;
@@ -110,19 +111,22 @@ export function Autocomplete({
   onOptionRemove,
   removeAriaLabel,
   emptyMessage,
-  id,
+  id: ownId,
   name,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
-  'aria-describedby': ariaDescribedBy,
-  'aria-invalid': ariaInvalid,
+  'aria-describedby': ownDescribedBy,
+  'aria-invalid': ownInvalid,
   className,
   ref,
   ...rest
 }: AutocompleteProps) {
   const t = useTranslate();
   const generatedId = useId();
-  const inputId = id ?? `${generatedId}-input`;
+  const field = useFormFieldControl({ id: ownId, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
+  const ariaDescribedBy = field['aria-describedby'];
+  const ariaInvalid = field['aria-invalid'];
+  const inputId = ownId ?? field.id;
   const listboxId = `${generatedId}-listbox`;
   const root = useRef<HTMLDivElement | null>(null);
   const container = useRef<HTMLDivElement | null>(null);

@@ -4,6 +4,10 @@ import { expectNoA11yViolations } from '../../test-utils';
 import { Checkbox } from '../checkbox/checkbox';
 import { Input } from '../input/input';
 import { InputNumber } from '../input-number/input-number';
+import { Select } from '../select/select';
+import { MultiSelect } from '../multi-select/multi-select';
+import { Autocomplete } from '../autocomplete/autocomplete';
+import { DatePicker } from '../date-picker/date-picker';
 import { FormField, useFormFieldContext } from './form-field';
 
 describe('FormField', () => {
@@ -178,5 +182,30 @@ describe('FormField', () => {
     );
     await userEvent.click(screen.getByText('Pick'));
     expect(screen.getByRole('combobox')).toHaveFocus();
+  });
+
+  it('names Select, MultiSelect, Autocomplete and DatePicker through the label and describes them with the error', () => {
+    render(
+      <>
+        <FormField label="Language" error="Pick one" invalid>
+          <Select options={[{ value: 'de', label: 'German' }]} />
+        </FormField>
+        <FormField label="Tags">
+          <MultiSelect options={[{ value: 'a', label: 'A' }]} />
+        </FormField>
+        <FormField label="Course">
+          <Autocomplete suggestions={[]} />
+        </FormField>
+        <FormField label="Deadline">
+          <DatePicker />
+        </FormField>
+      </>,
+    );
+    const language = screen.getByRole('combobox', { name: 'Language' });
+    expect(language).toHaveAttribute('aria-invalid', 'true');
+    expect(language).toHaveAccessibleDescription('Pick one');
+    expect(screen.getByRole('combobox', { name: 'Tags' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Course' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Deadline' })).toBeInTheDocument();
   });
 });
