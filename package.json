@@ -46,5 +46,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write ."
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ls1intum/tum-aet-ui-react.git"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "design-system",
+    "tumaet"
+  ],
+  "packageManager": "pnpm@12.15.0"
 }

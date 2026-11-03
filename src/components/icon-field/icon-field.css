@@ -1,0 +1,29 @@
+.tumaet-ui-icon-field {
+  position: relative;
+  display: block;
+}
+.tumaet-ui-input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  line-height: 1;
+  z-index: 1;
+  color: var(--tumaet-ui-muted-color);
+  pointer-events: none;
+}
+.tumaet-ui-icon-field[data-position='right'] .tumaet-ui-input-icon {
+  inset-inline-end: calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-icon-field:not([data-position='right']) .tumaet-ui-input-icon {
+  inset-inline-start: calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-icon-field > .tumaet-ui-input {
+  width: 100%;
+}
+.tumaet-ui-icon-field[data-has-icon][data-position='left'] > .tumaet-ui-input {
+  padding-inline-start: calc(var(--tumaet-ui-spacing) * 10);
+}
+.tumaet-ui-icon-field[data-has-icon][data-position='right'] > .tumaet-ui-input {
+  padding-inline-end: calc(var(--tumaet-ui-spacing) * 10);
+}

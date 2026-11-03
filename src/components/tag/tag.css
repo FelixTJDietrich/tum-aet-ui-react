@@ -1,0 +1,42 @@
+.tumaet-ui-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--tumaet-ui-spacing) * 1);
+  padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 2);
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+  font-weight: 700;
+  border-radius: var(--tumaet-ui-radius-md);
+  background: var(--tumaet-ui-hover-background);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-tag[data-size='sm'] {
+  padding: calc(var(--tumaet-ui-spacing) * 0.5) calc(var(--tumaet-ui-spacing) * 2);
+  font-size: var(--tumaet-ui-font-size-xs);
+  line-height: var(--tumaet-ui-line-height-xs);
+  font-weight: 600;
+}
+.tumaet-ui-tag-rounded {
+  border-radius: 9999px;
+}
+.tumaet-ui-tag[data-severity='contrast'] {
+  background: var(--tumaet-ui-contrast-background);
+  color: var(--tumaet-ui-contrast-color);
+}
+.tumaet-ui-tag[data-severity='success'] {
+  background: color-mix(in srgb, var(--tumaet-ui-state-success) 20%, var(--tumaet-ui-content-background));
+  color: var(--tumaet-ui-state-success-foreground);
+}
+.tumaet-ui-tag[data-severity='info'] {
+  background: color-mix(in srgb, var(--tumaet-ui-state-info) 20%, var(--tumaet-ui-content-background));
+  color: var(--tumaet-ui-state-info-foreground);
+}
+.tumaet-ui-tag[data-severity='warn'] {
+  background: color-mix(in srgb, var(--tumaet-ui-state-warning) 20%, var(--tumaet-ui-content-background));
+  color: var(--tumaet-ui-state-warning-foreground);
+}
+.tumaet-ui-tag[data-severity='danger'] {
+  background: color-mix(in srgb, var(--tumaet-ui-state-danger) 20%, var(--tumaet-ui-content-background));
+  color: var(--tumaet-ui-state-danger-foreground);
+}

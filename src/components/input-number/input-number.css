@@ -1,0 +1,58 @@
+.tumaet-ui-input-number {
+  position: relative;
+  display: inline-flex;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+.tumaet-ui-input-number[data-fluid] {
+  display: flex;
+  width: 100%;
+}
+.tumaet-ui-input-number-input {
+  flex: 1 1 auto;
+}
+.tumaet-ui-input-number[data-fluid] .tumaet-ui-input-number-input {
+  width: 1%;
+}
+.tumaet-ui-input-number[data-buttons] .tumaet-ui-input-number-input {
+  padding-inline-end: calc(var(--tumaet-ui-spacing) * 13);
+}
+.tumaet-ui-input-number-button-group {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-end: 1px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 2px);
+}
+.tumaet-ui-input-number-button {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--tumaet-ui-spacing) * 10);
+  padding: 0;
+  font: inherit;
+  color: var(--tumaet-ui-muted-color);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.tumaet-ui-input-number-button:hover:not(:disabled) {
+  background-color: var(--tumaet-ui-hover-background);
+  color: var(--tumaet-ui-text-hover-color);
+}
+.tumaet-ui-input-number-button:disabled {
+  cursor: auto;
+}
+.tumaet-ui-input-number-increment {
+  border-start-end-radius: calc(var(--tumaet-ui-radius-md) - 1px);
+}
+.tumaet-ui-input-number-decrement {
+  border-end-end-radius: calc(var(--tumaet-ui-radius-md) - 1px);
+}

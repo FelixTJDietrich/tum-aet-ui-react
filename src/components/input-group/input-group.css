@@ -1,0 +1,72 @@
+.tumaet-ui-input-group {
+  --_tumaet-ui-input-group-border-color: var(--tumaet-ui-control-border-color);
+  display: flex;
+  align-items: stretch;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+.tumaet-ui-input-group:has(:is(input, select, textarea):enabled:hover) {
+  --_tumaet-ui-input-group-border-color: var(--tumaet-ui-control-border-hover-color);
+}
+.tumaet-ui-input-group:has(:is(input, select, textarea):enabled:focus) {
+  --_tumaet-ui-input-group-border-color: var(--tumaet-ui-focus-color);
+}
+
+.tumaet-ui-input-group-addon {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--tumaet-ui-spacing) * 2);
+  min-width: calc(var(--tumaet-ui-spacing) * 10);
+  white-space: nowrap;
+  color: var(--tumaet-ui-muted-color);
+  background-color: var(--tumaet-ui-control-background);
+  border: 0 solid var(--_tumaet-ui-input-group-border-color, var(--tumaet-ui-control-border-color));
+  border-block-width: 1px;
+  transition: border-color 200ms;
+}
+.tumaet-ui-input-group-addon:first-child {
+  border-inline-start-width: 1px;
+  border-start-start-radius: var(--tumaet-ui-radius-md);
+  border-end-start-radius: var(--tumaet-ui-radius-md);
+}
+.tumaet-ui-input-group-addon:last-child {
+  border-inline-end-width: 1px;
+  border-start-end-radius: var(--tumaet-ui-radius-md);
+  border-end-end-radius: var(--tumaet-ui-radius-md);
+}
+
+.tumaet-ui-input-group > .tumaet-ui-input:not(:first-child) {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.tumaet-ui-input-group > .tumaet-ui-input:not(:last-child) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+.tumaet-ui-input-group > :is(.tumaet-ui-input, .tumaet-ui-input-number) {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.tumaet-ui-input-group > .tumaet-ui-input-number:not(:first-child) > .tumaet-ui-input-number-input {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.tumaet-ui-input-group > .tumaet-ui-input-number:not(:last-child) > .tumaet-ui-input-number-input {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+.tumaet-ui-input-group
+  > .tumaet-ui-input-number:not(:last-child)
+  > .tumaet-ui-input-number-button-group
+  > .tumaet-ui-input-number-increment {
+  border-start-end-radius: 0;
+}
+.tumaet-ui-input-group
+  > .tumaet-ui-input-number:not(:last-child)
+  > .tumaet-ui-input-number-button-group
+  > .tumaet-ui-input-number-decrement {
+  border-end-end-radius: 0;
+}

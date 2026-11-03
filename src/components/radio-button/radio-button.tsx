@@ -1,0 +1,141 @@
+import {
+  createContext,
+  useContext,
+  useId,
+  type ChangeEvent,
+  type CSSProperties,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type Ref,
+} from 'react';
+import { cx } from '../../internal/cx';
+import { useControllable } from '../../internal/use-controllable';
+import { useFormFieldControl } from '../form-field/form-field';
+
+type RadioValue = string | number;
+
+interface RadioGroupContextValue {
+  name: string;
+  value: RadioValue | null;
+  disabled: boolean;
+  onSelect: (value: RadioValue) => void;
+}
+
+const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
+
+export interface RadioGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+  /** Selected value; `null` is none. Omit for an uncontrolled group. */
+  value?: RadioValue | null;
+  defaultValue?: RadioValue | null;
+  onChange?: (value: RadioValue) => void;
+  /** Shared native `name`. Generated when omitted. */
+  name?: string;
+  disabled?: boolean;
+  ref?: Ref<HTMLDivElement>;
+}
+
+/**
+ * `role="radiogroup"` around `RadioButton`s. The radios are native inputs sharing a `name`, so the browser
+ * provides the WAI-ARIA keyboard model: one tab stop, arrow keys move and select, wrapping, skipping disabled.
+ * Give the group an accessible name with `aria-label` or `aria-labelledby`.
+ */
+export function RadioGroup({
+  value,
+  defaultValue = null,
+  onChange,
+  name,
+  disabled = false,
+  className,
+  ...rest
+}: RadioGroupProps) {
+  const generated = useId();
+  const [current, setCurrent] = useControllable<RadioValue | null>(
+    value,
+    defaultValue,
+    (next) => next !== null && onChange?.(next),
+  );
+  const ctx: RadioGroupContextValue = { name: name ?? generated, value: current, disabled, onSelect: setCurrent };
+  return (
+    <RadioGroupContext value={ctx}>
+      <div
+        role="radiogroup"
+        aria-disabled={disabled || undefined}
+        {...rest}
+        className={cx('tumaet-ui-radio-group', className)}
+      />
+    </RadioGroupContext>
+  );
+}
+
+export interface RadioButtonProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'size' | 'value' | 'checked' | 'defaultChecked' | 'onChange' | 'className' | 'style'
+> {
+  /** Value of this option. */
+  value?: RadioValue;
+  /** Only without a RadioGroup. */
+  checked?: boolean;
+  defaultChecked?: boolean;
+  /** Called when this radio becomes selected. */
+  onChange?: (value: RadioValue | undefined, event: ChangeEvent<HTMLInputElement>) => void;
+  invalid?: boolean;
+  className?: string;
+  style?: CSSProperties;
+  ref?: Ref<HTMLInputElement>;
+}
+
+/** Native radio with the TUM AET UI look. Inside a `RadioGroup` selection comes from the group. */
+export function RadioButton({
+  value,
+  checked,
+  defaultChecked = false,
+  onChange,
+  invalid,
+  disabled,
+  name,
+  className,
+  style,
+  ref,
+  id,
+  'aria-describedby': describedBy,
+  'aria-invalid': ariaInvalid,
+  ...rest
+}: RadioButtonProps) {
+  const group = useContext(RadioGroupContext);
+  const control = useFormFieldControl({ id, invalid, 'aria-describedby': describedBy, 'aria-invalid': ariaInvalid });
+  const [ownChecked, setOwnChecked] = useControllable<boolean>(checked, defaultChecked);
+  const isChecked = group ? value !== undefined && group.value === value : ownChecked;
+  const isDisabled = Boolean(disabled || group?.disabled);
+
+  return (
+    <span
+      className={cx('tumaet-ui-radio-button', className)}
+      style={style}
+      data-checked={isChecked || undefined}
+      data-disabled={isDisabled || undefined}
+      data-invalid={control.invalid || undefined}
+    >
+      <input
+        {...rest}
+        ref={ref}
+        type="radio"
+        id={control.id}
+        aria-describedby={control['aria-describedby']}
+        aria-invalid={control['aria-invalid']}
+        className="tumaet-ui-radio-button-input"
+        name={group?.name ?? name}
+        value={value === undefined ? undefined : String(value)}
+        checked={isChecked}
+        disabled={isDisabled}
+        onChange={(event) => {
+          if (group && value !== undefined) group.onSelect(value);
+          else setOwnChecked(event.target.checked);
+          onChange?.(value, event);
+        }}
+      />
+      <span className="tumaet-ui-radio-button-box" aria-hidden="true">
+        <span className="tumaet-ui-radio-button-icon" />
+      </span>
+    </span>
+  );
+}

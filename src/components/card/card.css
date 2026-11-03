@@ -1,0 +1,30 @@
+.tumaet-ui-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--tumaet-ui-radius-xl);
+  box-shadow: var(--tumaet-ui-shadow-sm);
+  background: var(--tumaet-ui-overlay-background);
+  color: var(--tumaet-ui-text-color);
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+.tumaet-ui-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+  padding: calc(var(--tumaet-ui-spacing) * 5);
+}
+.tumaet-ui-card-caption {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+}
+.tumaet-ui-card-title {
+  font-size: var(--tumaet-ui-font-size-xl);
+  line-height: var(--tumaet-ui-line-height-xl);
+  font-weight: 500;
+}
+.tumaet-ui-card-subtitle {
+  color: var(--tumaet-ui-muted-color);
+}

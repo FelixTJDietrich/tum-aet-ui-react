@@ -11,7 +11,9 @@ export default function ButtonDemo() {
       {variants.map((variant) => (
         <div key={variant} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
           {severities.map((severity) => (
-            <Button key={severity} severity={severity} variant={variant}>{severity}</Button>
+            <Button key={severity} severity={severity} variant={variant}>
+              {severity}
+            </Button>
           ))}
         </div>
       ))}
@@ -24,7 +26,11 @@ export default function ButtonDemo() {
         <Button disabled>Disabled</Button>
         <Button rounded aria-label="Done" icon={<CheckIcon />} />
       </div>
-      <ButtonGroup><Button variant="outlined">One</Button><Button variant="outlined">Two</Button><Button variant="outlined">Three</Button></ButtonGroup>
+      <ButtonGroup>
+        <Button variant="outlined">One</Button>
+        <Button variant="outlined">Two</Button>
+        <Button variant="outlined">Three</Button>
+      </ButtonGroup>
     </>
   );
 }

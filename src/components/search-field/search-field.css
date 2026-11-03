@@ -1,0 +1,50 @@
+.tumaet-ui-search-field {
+  position: relative;
+  display: block;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+.tumaet-ui-search-field-icon,
+.tumaet-ui-search-field-clear {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: inline-flex;
+  line-height: 1;
+}
+/* Decorative, and it covers part of the field: let clicks through so tapping it focuses the input. */
+.tumaet-ui-search-field-icon {
+  inset-inline-start: calc(var(--tumaet-ui-spacing) * 3);
+  color: var(--tumaet-ui-muted-color);
+  pointer-events: none;
+}
+.tumaet-ui-search-field-clear {
+  inset-inline-end: calc(var(--tumaet-ui-spacing) * 2.5);
+  padding: 0;
+  font: inherit;
+  color: var(--tumaet-ui-muted-color);
+  background: transparent;
+  border: 0;
+  border-radius: var(--tumaet-ui-radius-sm);
+  cursor: pointer;
+  appearance: none;
+}
+.tumaet-ui-search-field-clear:hover:not(:disabled) {
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-search-field-clear:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+/* Both paddings are constant so the term does not shift when the clear control appears. */
+.tumaet-ui-search-field > .tumaet-ui-input {
+  width: 100%;
+  padding-inline-start: calc(var(--tumaet-ui-spacing) * 10);
+  padding-inline-end: calc(var(--tumaet-ui-spacing) * 8);
+}
+/* WebKit renders its own clear control for type="search"; ours is themed and labelled. */
+.tumaet-ui-search-field > .tumaet-ui-input::-webkit-search-cancel-button {
+  display: none;
+}

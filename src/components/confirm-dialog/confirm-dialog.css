@@ -1,0 +1,18 @@
+.tumaet-ui-confirm-dialog-body {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--tumaet-ui-spacing) * 4);
+}
+.tumaet-ui-confirm-dialog-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--tumaet-ui-spacing) * 8);
+  height: calc(var(--tumaet-ui-spacing) * 8);
+  font-size: 1.5rem;
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-confirm-dialog-message {
+  white-space: pre-line;
+}

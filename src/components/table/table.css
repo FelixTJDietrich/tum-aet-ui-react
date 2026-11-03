@@ -1,0 +1,294 @@
+/* ---------- Native table (`Table`, `SortableColumnHeader`) ---------- */
+.tumaet-ui-table {
+  --_px: calc(var(--tumaet-ui-spacing) * 4);
+  --_py: calc(var(--tumaet-ui-spacing) * 3);
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+}
+.tumaet-ui-table[data-size='small'] {
+  --_px: calc(var(--tumaet-ui-spacing) * 2);
+  --_py: calc(var(--tumaet-ui-spacing) * 1.5);
+}
+.tumaet-ui-table[data-size='large'] {
+  --_px: calc(var(--tumaet-ui-spacing) * 5);
+  --_py: calc(var(--tumaet-ui-spacing) * 4);
+}
+.tumaet-ui-table thead th {
+  padding: var(--_py) var(--_px);
+  border-bottom: 1px solid var(--tumaet-ui-border-color);
+  background: var(--tumaet-ui-content-background);
+  color: var(--tumaet-ui-text-color);
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+}
+.tumaet-ui-table tbody td {
+  padding: var(--_py) var(--_px);
+  border-bottom: 1px solid var(--tumaet-ui-border-color);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-table[data-striped] tbody tr:nth-child(odd) {
+  background: var(--tumaet-ui-table-striped-background);
+}
+.tumaet-ui-table[data-row-hover] tbody tr:hover {
+  background: var(--tumaet-ui-hover-background);
+}
+.tumaet-ui-table[data-scrollable] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tumaet-ui-sortable-column {
+  white-space: nowrap;
+}
+.tumaet-ui-sortable-column[data-sortable]:hover {
+  background: var(--tumaet-ui-hover-background);
+}
+.tumaet-ui-sort-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.tumaet-ui-sort-button:disabled {
+  cursor: default;
+}
+.tumaet-ui-sort-button:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+.tumaet-ui-sort-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: calc(var(--tumaet-ui-spacing) * 3.5);
+  height: calc(var(--tumaet-ui-spacing) * 3.5);
+  margin-inline-start: calc(var(--tumaet-ui-spacing) * 2);
+  color: var(--tumaet-ui-muted-color);
+}
+
+/* ---------- Data-driven table (`DataTable`) ---------- */
+.tumaet-ui-data-table {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+.tumaet-ui-data-table-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tumaet-ui-data-table-search {
+  position: relative;
+  margin-bottom: calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-data-table-search-icon {
+  position: absolute;
+  inset-inline-start: calc(var(--tumaet-ui-spacing) * 3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tumaet-ui-muted-color);
+  pointer-events: none;
+}
+.tumaet-ui-data-table-search input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: calc(var(--tumaet-ui-spacing) * 1.5) calc(var(--tumaet-ui-spacing) * 3) calc(var(--tumaet-ui-spacing) * 1.5)
+    calc(var(--tumaet-ui-spacing) * 10);
+  border: 1px solid var(--tumaet-ui-control-border-color);
+  border-radius: var(--tumaet-ui-radius-md);
+  background: var(--tumaet-ui-control-background);
+  color: var(--tumaet-ui-text-color);
+  font: inherit;
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+}
+.tumaet-ui-data-table-search input:dir(rtl) {
+  padding: calc(var(--tumaet-ui-spacing) * 1.5) calc(var(--tumaet-ui-spacing) * 10) calc(var(--tumaet-ui-spacing) * 1.5)
+    calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-data-table-search input:hover {
+  border-color: var(--tumaet-ui-control-border-hover-color);
+}
+.tumaet-ui-data-table-search input:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+
+.tumaet-ui-data-table-scroll {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tumaet-ui-data-table-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+}
+.tumaet-ui-data-table-table th,
+.tumaet-ui-data-table-table td {
+  padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 4);
+  border-bottom: 1px solid var(--tumaet-ui-border-color);
+}
+.tumaet-ui-data-table-table th {
+  background: var(--tumaet-ui-content-background);
+  color: var(--tumaet-ui-text-color);
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+}
+.tumaet-ui-data-table-table th[data-wrap] {
+  white-space: normal;
+}
+.tumaet-ui-data-table-table td {
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-data-table-table tbody tr:last-child td {
+  border-bottom-width: 0;
+}
+.tumaet-ui-data-table-table[data-sticky] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.tumaet-ui-data-table-table[data-striped] tbody tr:nth-child(odd) {
+  background: var(--tumaet-ui-table-striped-background);
+}
+.tumaet-ui-data-table-table tbody tr[data-highlighted],
+.tumaet-ui-data-table-table[data-striped] tbody tr[data-highlighted] {
+  background: var(--tumaet-ui-highlight-background);
+  color: var(--tumaet-ui-highlight-color);
+  /* Not colour alone, so the row still reads as singled out without relying on hue. */
+  font-weight: 500;
+}
+.tumaet-ui-data-table-table tbody tr[data-highlighted] td {
+  color: inherit;
+}
+.tumaet-ui-data-table-actions {
+  text-align: end;
+  white-space: nowrap;
+}
+.tumaet-ui-data-table-table td.tumaet-ui-data-table-empty {
+  padding-block: calc(var(--tumaet-ui-spacing) * 6);
+  background: var(--tumaet-ui-content-background);
+  color: var(--tumaet-ui-muted-color);
+  text-align: center;
+}
+
+.tumaet-ui-data-table-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tumaet-ui-spacing);
+}
+.tumaet-ui-data-table-sort,
+.tumaet-ui-data-table-help {
+  display: inline-flex;
+  appearance: none;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
+.tumaet-ui-data-table-sort {
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+  color: var(--tumaet-ui-text-color);
+  font-weight: 600;
+  cursor: pointer;
+}
+.tumaet-ui-data-table-sort:hover {
+  color: var(--tumaet-ui-accent-color);
+}
+.tumaet-ui-data-table-sort-icon {
+  flex-shrink: 0;
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-data-table-help {
+  color: var(--tumaet-ui-muted-color);
+  cursor: help;
+}
+.tumaet-ui-data-table-sort:focus-visible,
+.tumaet-ui-data-table-help:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+
+.tumaet-ui-data-table-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--tumaet-ui-content-background) 60%, transparent);
+}
+.tumaet-ui-data-table-spinner {
+  width: calc(var(--tumaet-ui-spacing) * 6);
+  height: calc(var(--tumaet-ui-spacing) * 6);
+  border: 2px solid var(--tumaet-ui-border-color);
+  border-top-color: var(--tumaet-ui-primary-color);
+  border-radius: 9999px;
+  animation: tumaet-ui-data-table-spin 1s linear infinite;
+}
+@keyframes tumaet-ui-data-table-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tumaet-ui-data-table-spinner {
+    animation: none;
+  }
+}
+
+/* hideBelow: Tailwind breakpoints */
+.tumaet-ui-data-table-table [data-hide-below] {
+  display: none;
+}
+@media (min-width: 40rem) {
+  .tumaet-ui-data-table-table [data-hide-below='sm'] {
+    display: table-cell;
+  }
+}
+@media (min-width: 48rem) {
+  .tumaet-ui-data-table-table [data-hide-below='md'] {
+    display: table-cell;
+  }
+}
+@media (min-width: 64rem) {
+  .tumaet-ui-data-table-table [data-hide-below='lg'] {
+    display: table-cell;
+  }
+}
+@media (min-width: 80rem) {
+  .tumaet-ui-data-table-table [data-hide-below='xl'] {
+    display: table-cell;
+  }
+}
+@media (min-width: 96rem) {
+  .tumaet-ui-data-table-table [data-hide-below='2xl'] {
+    display: table-cell;
+  }
+}

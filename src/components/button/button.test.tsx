@@ -20,7 +20,13 @@ describe('Button', () => {
   });
 
   it('exposes severity, variant and size as data attributes', () => {
-    render(<Button severity="danger" variant="outlined" size="small">Delete</Button>);
-    expect(screen.getByRole('button')).toMatchObject({ dataset: { severity: 'danger', variant: 'outlined', size: 'small' } });
+    render(
+      <Button severity="danger" variant="outlined" size="small">
+        Delete
+      </Button>,
+    );
+    expect(screen.getByRole('button')).toMatchObject({
+      dataset: { severity: 'danger', variant: 'outlined', size: 'small' },
+    });
   });
 });

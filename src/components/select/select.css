@@ -1,0 +1,143 @@
+.tumaet-ui-select {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-select-trigger {
+  box-sizing: border-box;
+  display: flex;
+  appearance: none;
+  align-items: center;
+  width: 100%;
+  min-height: calc(var(--tumaet-ui-spacing) * 10);
+  padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 10) calc(var(--tumaet-ui-spacing) * 2)
+    calc(var(--tumaet-ui-spacing) * 3);
+  font: inherit;
+  text-align: start;
+  color: var(--tumaet-ui-text-color);
+  background: var(--tumaet-ui-control-background);
+  border: 1px solid var(--tumaet-ui-control-border-color);
+  border-radius: var(--tumaet-ui-radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.tumaet-ui-select[data-size='small'] .tumaet-ui-select-trigger {
+  min-height: calc(var(--tumaet-ui-spacing) * 8);
+  padding-block: calc(var(--tumaet-ui-spacing) * 1.5);
+  padding-inline-start: calc(var(--tumaet-ui-spacing) * 2.5);
+  font-size: var(--tumaet-ui-font-size-sm);
+}
+.tumaet-ui-select[data-size='large'] .tumaet-ui-select-trigger {
+  min-height: calc(var(--tumaet-ui-spacing) * 12);
+  padding-block: calc(var(--tumaet-ui-spacing) * 2.5);
+  padding-inline-start: calc(var(--tumaet-ui-spacing) * 3.5);
+  font-size: var(--tumaet-ui-font-size-lg);
+}
+.tumaet-ui-select-trigger[data-clearable] {
+  padding-inline-end: calc(var(--tumaet-ui-spacing) * 17);
+}
+.tumaet-ui-select-trigger:hover:not(:disabled) {
+  border-color: var(--tumaet-ui-control-border-hover-color);
+}
+.tumaet-ui-select[data-open] .tumaet-ui-select-trigger {
+  border-color: var(--tumaet-ui-primary-color);
+}
+.tumaet-ui-select-trigger[data-invalid] {
+  border-color: var(--tumaet-ui-state-danger);
+}
+.tumaet-ui-select-trigger:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+.tumaet-ui-select-trigger:disabled {
+  cursor: default;
+  opacity: 1;
+  color: var(--tumaet-ui-disabled-color);
+  background: var(--tumaet-ui-disabled-background);
+  border-color: var(--tumaet-ui-control-border-color);
+}
+.tumaet-ui-select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tumaet-ui-select-value[data-placeholder] {
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-select-chevron {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--tumaet-ui-spacing) * 10);
+  color: var(--tumaet-ui-muted-color);
+  pointer-events: none;
+}
+.tumaet-ui-select-clear {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: calc(var(--tumaet-ui-spacing) * 10);
+  display: flex;
+  appearance: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--tumaet-ui-spacing) * 6);
+  padding: 0;
+  color: var(--tumaet-ui-muted-color);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.tumaet-ui-select-clear:hover {
+  color: var(--tumaet-ui-text-hover-color);
+}
+.tumaet-ui-select-clear:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: -2px;
+  border-radius: var(--tumaet-ui-radius-sm);
+}
+.tumaet-ui-select-check {
+  flex: none;
+  margin-inline-start: calc(var(--tumaet-ui-spacing) * 2);
+}
+
+.tumaet-ui-select-panel {
+  box-sizing: border-box;
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-select-filter-wrapper {
+  padding: calc(var(--tumaet-ui-spacing) * 1);
+  border-bottom: 1px solid var(--tumaet-ui-border-color);
+}
+.tumaet-ui-select-filter {
+  box-sizing: border-box;
+  width: 100%;
+  appearance: none;
+  padding: calc(var(--tumaet-ui-spacing) * 1.5) calc(var(--tumaet-ui-spacing) * 2);
+  font: inherit;
+  font-size: var(--tumaet-ui-font-size-sm);
+  color: var(--tumaet-ui-text-color);
+  background: var(--tumaet-ui-control-background);
+  border: 1px solid var(--tumaet-ui-control-border-color);
+  border-radius: var(--tumaet-ui-radius-sm);
+}
+.tumaet-ui-select-filter::placeholder {
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-select-filter:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tumaet-ui-select-trigger {
+    transition: none;
+  }
+}

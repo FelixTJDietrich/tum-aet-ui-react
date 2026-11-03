@@ -1,0 +1,40 @@
+.tumaet-ui-popover-panel {
+  box-sizing: border-box;
+  color: var(--tumaet-ui-text-color);
+  border-radius: var(--tumaet-ui-radius-md);
+  box-shadow: var(--tumaet-ui-shadow-lg);
+  transform-origin: top center;
+  animation: tumaet-ui-popover-in 160ms ease-out;
+}
+.tumaet-ui-popover-panel[data-padding='default'] {
+  padding: calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-popover-panel:focus-visible {
+  outline: none;
+}
+/* The panel grows from the edge nearest its trigger: `data-side` is the side it sits on. */
+.tumaet-ui-popover-panel[data-side='top'] {
+  transform-origin: bottom center;
+}
+.tumaet-ui-popover-panel[data-side='left'] {
+  transform-origin: center right;
+}
+.tumaet-ui-popover-panel[data-side='right'] {
+  transform-origin: center left;
+}
+
+@keyframes tumaet-ui-popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tumaet-ui-popover-panel {
+    animation: none;
+  }
+}

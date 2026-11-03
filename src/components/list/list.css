@@ -1,0 +1,64 @@
+.tumaet-ui-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--tumaet-ui-border-color);
+  border-radius: var(--tumaet-ui-radius-md);
+  /* Clip the first and last rows so their backgrounds follow the container's corners. */
+  overflow: hidden;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+}
+
+.tumaet-ui-list-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-top: 1px solid var(--tumaet-ui-border-color);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-list-item:first-child {
+  border-top-width: 0;
+}
+.tumaet-ui-list-item[data-inline] {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--tumaet-ui-spacing) * 3);
+}
+/* Interactive children own the padding so the entire row is clickable. */
+.tumaet-ui-list-item:not(:has(> .tumaet-ui-list-item-action)) {
+  padding: calc(var(--tumaet-ui-spacing) * 3) calc(var(--tumaet-ui-spacing) * 4);
+}
+
+.tumaet-ui-list-item-action {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+  width: 100%;
+  padding: calc(var(--tumaet-ui-spacing) * 3) calc(var(--tumaet-ui-spacing) * 4);
+  border: 0;
+  background: transparent;
+  color: var(--tumaet-ui-text-color);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.tumaet-ui-list-item-action:hover {
+  background: var(--tumaet-ui-hover-background);
+  color: var(--tumaet-ui-text-hover-color);
+}
+.tumaet-ui-list-item-action[data-active] {
+  background: var(--tumaet-ui-highlight-background);
+  color: var(--tumaet-ui-highlight-color);
+  font-weight: 500;
+}
+.tumaet-ui-list-item-action:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: -2px;
+}

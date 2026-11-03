@@ -18,7 +18,19 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   ref?: Ref<HTMLButtonElement>;
 }
 
-export function Button({ severity = 'primary', size = 'default', variant = 'solid', rounded, loading, icon, type = 'button', disabled, className, children, ...rest }: ButtonProps) {
+export function Button({
+  severity = 'primary',
+  size = 'default',
+  variant = 'solid',
+  rounded,
+  loading,
+  icon,
+  type = 'button',
+  disabled,
+  className,
+  children,
+  ...rest
+}: ButtonProps) {
   return (
     <button
       {...rest}

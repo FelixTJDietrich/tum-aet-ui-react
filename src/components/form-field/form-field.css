@@ -1,0 +1,41 @@
+.tumaet-ui-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tumaet-ui-spacing) * 1.5);
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-form-field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--tumaet-ui-spacing);
+  min-width: 0;
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+  font-weight: 500;
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-form-field-required {
+  color: var(--tumaet-ui-state-danger);
+}
+.tumaet-ui-form-field-control {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tumaet-ui-form-field-hint {
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-form-field-error {
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+  color: var(--tumaet-ui-state-danger);
+}
+/* The error region stays in the DOM so role="alert" announces when it appears. */
+.tumaet-ui-form-field [hidden] {
+  display: none;
+}

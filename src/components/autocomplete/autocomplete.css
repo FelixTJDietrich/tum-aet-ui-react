@@ -1,0 +1,113 @@
+.tumaet-ui-autocomplete {
+  display: block;
+  max-width: 100%;
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-autocomplete-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--tumaet-ui-spacing) * 1);
+  width: 100%;
+  padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 3);
+  color: var(--tumaet-ui-text-color);
+  background: var(--tumaet-ui-control-background);
+  border: 1px solid var(--tumaet-ui-control-border-color);
+  border-radius: var(--tumaet-ui-radius-md);
+  cursor: text;
+  transition: border-color 0.15s ease;
+}
+/* The multi-value field keeps tighter padding that leaves room for its chips. */
+.tumaet-ui-autocomplete-container[data-multiple] {
+  padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 3);
+}
+.tumaet-ui-autocomplete-container[data-multiple][data-has-values] {
+  padding: calc(var(--tumaet-ui-spacing) * 1);
+}
+.tumaet-ui-autocomplete-container:hover {
+  border-color: var(--tumaet-ui-control-border-hover-color);
+}
+.tumaet-ui-autocomplete-container[data-focused] {
+  border-color: var(--tumaet-ui-focus-color);
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+.tumaet-ui-autocomplete-container[data-invalid] {
+  border-color: var(--tumaet-ui-state-danger);
+}
+.tumaet-ui-autocomplete-container[data-disabled] {
+  color: var(--tumaet-ui-disabled-color);
+  background: var(--tumaet-ui-disabled-background);
+  border-color: var(--tumaet-ui-control-border-color);
+  cursor: default;
+}
+.tumaet-ui-autocomplete-input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: calc(var(--tumaet-ui-spacing) * 16);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+.tumaet-ui-autocomplete-input::placeholder {
+  color: var(--tumaet-ui-muted-color);
+}
+.tumaet-ui-autocomplete-input:disabled {
+  cursor: default;
+}
+
+/* Chips (own markup, the Chip component is not a dependency). */
+.tumaet-ui-autocomplete-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--tumaet-ui-spacing) * 1);
+  max-width: 100%;
+  padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 2);
+  font-size: var(--tumaet-ui-font-size-sm);
+  color: var(--tumaet-ui-text-color);
+  background: var(--tumaet-ui-hover-background);
+  border-radius: var(--tumaet-ui-radius-2xl);
+}
+.tumaet-ui-autocomplete-chip[data-removable] {
+  padding-inline-end: calc(var(--tumaet-ui-spacing) * 1);
+}
+.tumaet-ui-autocomplete-chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tumaet-ui-autocomplete-chip-remove {
+  display: inline-flex;
+  flex: none;
+  appearance: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+.tumaet-ui-autocomplete-chip-remove:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 2px;
+}
+.tumaet-ui-autocomplete-panel {
+  box-sizing: border-box;
+  color: var(--tumaet-ui-text-color);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tumaet-ui-autocomplete-container {
+    transition: none;
+  }
+}

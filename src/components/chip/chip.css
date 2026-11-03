@@ -1,0 +1,49 @@
+.tumaet-ui-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+  padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 3);
+  font-family: var(--tumaet-ui-font-family);
+  font-size: var(--tumaet-ui-font-size-base);
+  line-height: var(--tumaet-ui-line-height-base);
+  border-radius: var(--tumaet-ui-radius-2xl);
+  background: var(--tumaet-ui-hover-background);
+  color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-chip[data-removable] {
+  padding-inline: calc(var(--tumaet-ui-spacing) * 3) calc(var(--tumaet-ui-spacing) * 2);
+}
+.tumaet-ui-chip[data-size='small'] {
+  gap: calc(var(--tumaet-ui-spacing) * 1);
+  padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 2);
+  font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
+}
+.tumaet-ui-chip[data-size='small'][data-removable] {
+  padding-inline: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 1);
+}
+.tumaet-ui-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tumaet-ui-chip-remove {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+.tumaet-ui-chip-remove:focus-visible {
+  outline: 2px solid var(--tumaet-ui-focus-color);
+  outline-offset: 1px;
+}
