@@ -208,4 +208,13 @@ describe('FormField', () => {
     expect(screen.getByRole('combobox', { name: 'Course' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Deadline' })).toBeInTheDocument();
   });
+
+  it('renders no empty label element when there is no label', () => {
+    const { container } = render(
+      <FormField>
+        <Checkbox aria-label="Agree" />
+      </FormField>,
+    );
+    expect(container.querySelector('label.tumaet-ui-form-field-label')).toBeNull();
+  });
 });
