@@ -41,3 +41,7 @@ The Angular source to port is in the scratchpad snapshot (path given in your tas
 ## Working in parallel
 
 Other components are being written at the same time, so `pnpm typecheck` may report errors in folders that are not yours: ignore those, and run tests only for your own folder. Do not run `pnpm build`, `git` commands or formatters over the whole repo.
+
+## Stories (Storybook)
+
+Every component folder has `<name>.stories.tsx` (CSF with `satisfies Meta<typeof X>`, `tags: ['autodocs']` is set globally). `pnpm storybook` runs it, the toolbar switches light and dark. Use the same `title` category and story names as the Angular stories (`Forms/Select`, `Actions/Button`, ...), cover every variant, size and state, add a short description to the meta (`parameters.docs.description.component`) and to non-obvious props as JSDoc in the props interface (Storybook builds the props table from the TypeScript types and JSDoc), and add `play` functions for keyboard behaviour where the Angular stories have them. Stories must pass the a11y addon (`a11y.test` is `error`). Build check without clobbering others: `STORYBOOK_DISABLE_TELEMETRY=1 pnpm exec storybook build -o storybook-static-<yourname>`.
