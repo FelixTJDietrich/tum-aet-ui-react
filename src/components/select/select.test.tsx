@@ -12,6 +12,7 @@ const people = [
 ];
 
 const trigger = () => screen.getByRole('combobox');
+const activeText = () => document.getElementById(trigger().getAttribute('aria-activedescendant')!)?.textContent;
 const optionNames = () => screen.queryAllByRole('option').map((o) => o.textContent);
 
 describe('Select', () => {
@@ -234,6 +235,32 @@ describe('Select', () => {
     await userEvent.click(trigger());
     await userEvent.click(screen.getByText('outside'));
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('activates the first option when an open, empty select receives options', async () => {
+    const { rerender } = render(<Select aria-label="Fruit" options={[]} />);
+    await userEvent.click(trigger());
+    expect(trigger()).not.toHaveAttribute('aria-activedescendant');
+    rerender(<Select aria-label="Fruit" options={fruits} />);
+    expect(activeText()).toBe('Apple');
+  });
+
+  it('keeps aria-activedescendant valid when the options shrink', async () => {
+    const { rerender } = render(<Select aria-label="Fruit" options={fruits} />);
+    trigger().focus();
+    await userEvent.keyboard('{ArrowDown}{End}');
+    rerender(<Select aria-label="Fruit" options={fruits.slice(0, 2)} />);
+    expect(activeText()).toBe('Apricot');
+  });
+
+  it('closes when disabled while open and stays closed when enabled again', async () => {
+    const { rerender } = render(<Select aria-label="Fruit" options={fruits} />);
+    await userEvent.click(trigger());
+    rerender(<Select aria-label="Fruit" options={fruits} disabled />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    rerender(<Select aria-label="Fruit" options={fruits} />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(trigger()).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('has no accessibility violations closed and open', async () => {

@@ -44,7 +44,7 @@ export function ListItemAction(props: ListItemActionProps) {
   const { active = false, className, ...rest } = props;
   const common = {
     'data-active': active || undefined,
-    'aria-current': active ? ('page' as const) : undefined,
+    ...(active ? { 'aria-current': 'page' as const } : {}),
     className: cx('tumaet-ui-list-item-action', className),
   };
   if (props.href !== undefined) {

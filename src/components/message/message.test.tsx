@@ -36,4 +36,21 @@ describe('Message', () => {
     );
     await expectNoA11yViolations();
   });
+
+  it('renders the icon only when provided, as decorative content', () => {
+    const { container, rerender } = render(<Message>Text</Message>);
+    expect(container.querySelector('.tumaet-ui-message-icon')).toBeNull();
+    rerender(<Message icon={<svg />}>Text</Message>);
+    expect(container.querySelector('.tumaet-ui-message-icon')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('defaults to info and uses a given dismiss label', () => {
+    render(
+      <Message dismissible dismissLabel="Hide confirmation">
+        Text
+      </Message>,
+    );
+    expect(screen.getByRole('status')).toHaveAttribute('data-severity', 'info');
+    expect(screen.getByRole('button', { name: 'Hide confirmation' })).toHaveAttribute('type', 'button');
+  });
 });

@@ -165,7 +165,8 @@ export function Floating({
     top: pos?.top ?? 0,
     left: pos?.left ?? 0,
     minWidth,
-    visibility: pos ? undefined : 'hidden',
+    // Invisible but focusable until positioned: `visibility: hidden` would make `autoFocus` inside the panel fail in browsers.
+    ...(pos ? null : { opacity: 0, pointerEvents: 'none' as const }),
     ...style,
   };
   return createPortal(

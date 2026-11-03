@@ -11,8 +11,11 @@ export interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   indeterminate?: boolean;
   /** Shows the value inside the bar (never in the `small` size). */
   showValue?: boolean;
+  /** `small` is a slim rail for dense contexts such as table cells; it has no room for the inline label. */
   size?: ProgressBarSize;
+  /** Semantic colour of the filled track. */
   severity?: ProgressBarSeverity;
+  /** Text appended to the value label. */
   unit?: string;
   ref?: Ref<HTMLDivElement>;
   /** Replaces the value label. */

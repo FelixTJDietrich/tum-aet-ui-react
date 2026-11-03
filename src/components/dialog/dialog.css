@@ -30,7 +30,6 @@
   border: 1px solid var(--tumaet-ui-border-color);
   border-radius: var(--tumaet-ui-radius-xl);
   box-shadow: var(--tumaet-ui-shadow-xl);
-  animation: tumaet-ui-dialog-in 150ms ease-out;
 }
 .tumaet-ui-dialog[data-size='small'] {
   width: min(32rem, 90dvw);
@@ -96,20 +95,4 @@
   justify-content: flex-end;
   gap: calc(var(--tumaet-ui-spacing) * 2);
   padding: 0 calc(var(--tumaet-ui-spacing) * 4) calc(var(--tumaet-ui-spacing) * 4);
-}
-
-@keyframes tumaet-ui-dialog-in {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tumaet-ui-dialog {
-    animation: none;
-  }
 }

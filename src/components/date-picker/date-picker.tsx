@@ -15,6 +15,7 @@ import { CalendarIcon, XIcon } from '../../internal/icons';
 import { mergeRefs } from '../../internal/merge-refs';
 import { useControllable } from '../../internal/use-controllable';
 import { Button } from '../button/button';
+import { Tooltip } from '../tooltip/tooltip';
 import { Calendar } from './calendar';
 import {
   combineDateAndTime,
@@ -36,6 +37,7 @@ export interface DatePickerProps extends Omit<
 > {
   /** The committed value. Text that is not a valid date never changes it. `null` is empty. */
   value?: Date | null;
+  /** The initial value of an uncontrolled picker. */
   defaultValue?: Date | null;
   /** Called with the new value, or `null` when the field is emptied. */
   onChange?: (value: Date | null) => void;
@@ -43,6 +45,7 @@ export interface DatePickerProps extends Omit<
   id?: string;
   /** Marks the field invalid for an error the consumer explains, such as an end before the start. */
   'aria-invalid'?: HTMLAttributes<HTMLDivElement>['aria-invalid'];
+  /** Disables the field, the calendar button and the time steppers, and closes the calendar if it is open. */
   disabled?: boolean;
   /** Edit `HH:mm` without a calendar. The date of the value is kept, or today is used when empty. */
   timeOnly?: boolean;
@@ -68,6 +71,7 @@ export interface DatePickerProps extends Omit<
   onInputValidityChange?: (valid: boolean) => void;
   /** Called when the text field loses focus. */
   onBlur?: FocusEventHandler<HTMLInputElement>;
+  /** Replaces the format hint (`DD.MM.YYYY HH:mm`, `DD.MM.YYYY` or `HH:mm`) shown in an empty field. */
   placeholder?: string;
   /** Ref of the text field, for `focus()`. `ref` points at the root element. */
   inputRef?: Ref<HTMLInputElement>;
@@ -131,6 +135,8 @@ export function DatePicker({
   }
 
   const [isOpenState, setOpen] = useState(false);
+  // A picker that is disabled while open closes for good: it must not pop open again when it is enabled later.
+  if (isOpenState && (disabled || inline)) setOpen(false);
   const isOpen = isOpenState && !disabled && !inline;
   const field = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement | null>(null);
@@ -320,15 +326,12 @@ export function DatePicker({
   return (
     <div {...rootProps}>
       {showTimeZoneWarning && (
-        <span
-          className="tumaet-ui-date-picker-timezone"
-          tabIndex={0}
-          role="img"
-          aria-label={timeZoneText}
-          title={timeZoneText}
-        >
-          <GlobeIcon />
-        </span>
+        <Tooltip content={timeZoneText} describesHost={false}>
+          <span className="tumaet-ui-date-picker-timezone" tabIndex={0} role="img" aria-label={timeZoneText}>
+            <GlobeIcon />
+            <ClockIcon className="tumaet-ui-date-picker-timezone-clock" />
+          </span>
+        </Tooltip>
       )}
       <div ref={field} className="tumaet-ui-date-picker-field">
         <input
@@ -336,7 +339,7 @@ export function DatePicker({
           id={id}
           type="text"
           role="combobox"
-          className="tumaet-ui-input tumaet-ui-date-picker-input"
+          className="tumaet-ui-date-picker-input"
           value={inputText}
           disabled={disabled}
           placeholder={placeholder ?? translate(placeholderKey)}

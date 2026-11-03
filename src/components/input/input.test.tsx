@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
+import { FormField } from '../form-field/form-field';
 import { Input, Textarea } from './input';
 
 describe('Input', () => {
@@ -47,5 +48,47 @@ describe('Input', () => {
       </>,
     );
     await expectNoA11yViolations(container);
+  });
+
+  it('defaults to the normal size and supports small and large', () => {
+    const { rerender } = render(<Input aria-label="x" />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('data-size', 'default');
+    rerender(<Input aria-label="x" size="large" />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('data-size', 'large');
+  });
+
+  it('is disabled and forwards a ref', () => {
+    const ref = vi.fn();
+    render(<Input aria-label="x" disabled ref={ref} />);
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(ref).toHaveBeenCalledWith(screen.getByRole('textbox'));
+  });
+
+  it('merges its own aria-describedby with the one of the FormField', () => {
+    render(
+      <FormField label="Name" hint="Hint">
+        <Input aria-describedby="extra" />
+      </FormField>,
+    );
+    expect(screen.getByLabelText('Name')).toHaveAccessibleDescription(/Hint/);
+    expect(screen.getByLabelText('Name').getAttribute('aria-describedby')).toMatch(/^extra /);
+  });
+
+  it('marks a textarea invalid, takes the field id and sizes', () => {
+    render(
+      <FormField label="Notes" invalid error="Too short">
+        <Textarea size="small" rows={4} />
+      </FormField>,
+    );
+    const area = screen.getByRole('textbox', { name: 'Notes' });
+    expect(area.tagName).toBe('TEXTAREA');
+    expect(area).toHaveAttribute('aria-invalid', 'true');
+    expect(area).toHaveAttribute('data-size', 'small');
+    expect(area).toHaveAccessibleDescription('Too short');
+  });
+
+  it('lets an explicit aria-invalid="false" win over the invalid prop', () => {
+    render(<Input aria-label="x" invalid aria-invalid="false" />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'false');
   });
 });

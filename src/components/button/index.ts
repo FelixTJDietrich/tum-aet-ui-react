@@ -1,5 +1,6 @@
 export {
   Button,
+  buttonAttributes,
   buttonClassName,
   type ButtonProps,
   type ButtonSeverity,

@@ -19,7 +19,10 @@
   border: 1px solid var(--tumaet-ui-control-border-color);
   border-radius: var(--tumaet-ui-radius-md);
   cursor: text;
-  transition: border-color 0.15s ease;
+  /* Tailwind's transition-colors. */
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 0.15s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* The multi-value field keeps tighter padding that leaves room for its chips. */
 .tumaet-ui-autocomplete-container[data-multiple] {
@@ -33,6 +36,9 @@
 }
 .tumaet-ui-autocomplete-container[data-focused] {
   border-color: var(--tumaet-ui-focus-color);
+}
+/* Also while a chip's remove button has focus. */
+.tumaet-ui-autocomplete-container:focus-within {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
 }
@@ -71,6 +77,7 @@
   max-width: 100%;
   padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 2);
   font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
   color: var(--tumaet-ui-text-color);
   background: var(--tumaet-ui-hover-background);
   border-radius: var(--tumaet-ui-radius-2xl);
@@ -95,12 +102,12 @@
   color: inherit;
   background: transparent;
   border: 0;
-  border-radius: 9999px;
+  border-radius: 50%;
   cursor: pointer;
 }
 .tumaet-ui-autocomplete-chip-remove:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 .tumaet-ui-autocomplete-panel {
   box-sizing: border-box;

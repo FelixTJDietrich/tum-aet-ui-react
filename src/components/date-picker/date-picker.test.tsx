@@ -48,7 +48,7 @@ describe('DatePicker text field', () => {
     expect(input).toHaveAttribute('aria-describedby', 'hint');
     expect(input).toHaveAttribute('aria-required', 'true');
     expect(input).toHaveAttribute('aria-invalid', 'false');
-    expect(input).toHaveClass('tumaet-ui-input');
+    expect(input).toHaveClass('tumaet-ui-date-picker-input');
   });
 
   it('uses aria-labelledby instead of aria-label when both are missing a name', () => {
@@ -200,14 +200,18 @@ describe('DatePicker text field', () => {
     expect(field()).toHaveAttribute('aria-invalid', 'false');
   });
 
-  it('shows the time zone indicator on request', () => {
+  it('shows the time zone indicator on request', async () => {
     const { rerender } = render(<DatePicker aria-label="Deadline" />);
     expect(screen.queryByRole('img')).toBeNull();
     rerender(<DatePicker aria-label="Deadline" showTimeZoneWarning />);
     const icon = screen.getByRole('img');
     expect(icon).toHaveAttribute('tabindex', '0');
     expect(icon).toHaveAccessibleName(/time zone\./);
-    expect(icon).toHaveAttribute('title', icon.getAttribute('aria-label'));
+    // Like the Angular version the text is also a tooltip, which shows for a keyboard user who focuses the icon.
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    await userEvent.tab();
+    expect(icon).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/time zone\./);
   });
 
   it('uses the mode specific placeholder, message and dialog name', async () => {
@@ -318,6 +322,15 @@ describe('DatePicker dialog', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     rerender(<DatePicker aria-label="Deadline" disabled />);
     expect(screen.queryByRole('dialog')).toBeNull();
+    // Enabling it again must not bring the closed calendar back.
+    rerender(<DatePicker aria-label="Deadline" />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open calendar' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('draws the field like the Angular one, without the shared input look', () => {
+    render(<DatePicker aria-label="Deadline" />);
+    expect(field()).not.toHaveClass('tumaet-ui-input');
   });
 
   it('selects a day and keeps the time of the value', async () => {

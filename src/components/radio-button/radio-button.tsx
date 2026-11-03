@@ -26,10 +26,13 @@ const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
 export interface RadioGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
   /** Selected value; `null` is none. Omit for an uncontrolled group. */
   value?: RadioValue | null;
+  /** Initially selected value of an uncontrolled group. */
   defaultValue?: RadioValue | null;
+  /** Called with the value of the newly selected radio. */
   onChange?: (value: RadioValue) => void;
   /** Shared native `name`. Generated when omitted. */
   name?: string;
+  /** Disables every radio of the group. */
   disabled?: boolean;
   ref?: Ref<HTMLDivElement>;
 }
@@ -73,13 +76,17 @@ export interface RadioButtonProps extends Omit<
 > {
   /** Value of this option. */
   value?: RadioValue;
-  /** Only without a RadioGroup. */
+  /** Only without a RadioGroup. Omit it for an uncontrolled radio, which the browser keeps exclusive within its `name`. */
   checked?: boolean;
+  /** Only without a RadioGroup. */
   defaultChecked?: boolean;
   /** Called when this radio becomes selected. */
   onChange?: (value: RadioValue | undefined, event: ChangeEvent<HTMLInputElement>) => void;
+  /** Marks the radio invalid (also set by an enclosing invalid FormField). */
   invalid?: boolean;
+  /** Class of the wrapper element. */
   className?: string;
+  /** Style of the wrapper element. */
   style?: CSSProperties;
   ref?: Ref<HTMLInputElement>;
 }
@@ -88,7 +95,7 @@ export interface RadioButtonProps extends Omit<
 export function RadioButton({
   value,
   checked,
-  defaultChecked = false,
+  defaultChecked,
   onChange,
   invalid,
   disabled,
@@ -103,8 +110,7 @@ export function RadioButton({
 }: RadioButtonProps) {
   const group = useContext(RadioGroupContext);
   const control = useFormFieldControl({ id, invalid, 'aria-describedby': describedBy, 'aria-invalid': ariaInvalid });
-  const [ownChecked, setOwnChecked] = useControllable<boolean>(checked, defaultChecked);
-  const isChecked = group ? value !== undefined && group.value === value : ownChecked;
+  const isChecked = group ? value !== undefined && group.value === value : checked;
   const isDisabled = Boolean(disabled || group?.disabled);
 
   return (
@@ -125,11 +131,11 @@ export function RadioButton({
         className="tumaet-ui-radio-button-input"
         name={group?.name ?? name}
         value={value === undefined ? undefined : String(value)}
-        checked={isChecked}
+        // Uncontrolled standalone radios stay native, so same-named radios uncheck each other without React state.
+        {...(isChecked === undefined ? { defaultChecked } : { checked: isChecked })}
         disabled={isDisabled}
         onChange={(event) => {
           if (group && value !== undefined) group.onSelect(value);
-          else setOwnChecked(event.target.checked);
           onChange?.(value, event);
         }}
       />

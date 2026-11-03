@@ -62,11 +62,13 @@
   background-color: var(--tumaet-ui-primary-contrast-color);
   visibility: hidden;
 }
-.tumaet-ui-radio-button[data-checked] .tumaet-ui-radio-button-box {
+/* :checked rather than state, so uncontrolled radios that the browser keeps exclusive are styled too. :where keeps the
+   specificity low enough for the invalid and disabled rules below. */
+.tumaet-ui-radio-button:where(:has(> .tumaet-ui-radio-button-input:checked)) .tumaet-ui-radio-button-box {
   background-color: var(--tumaet-ui-primary-color);
   border-color: var(--tumaet-ui-primary-color);
 }
-.tumaet-ui-radio-button[data-checked] .tumaet-ui-radio-button-icon {
+.tumaet-ui-radio-button:where(:has(> .tumaet-ui-radio-button-input:checked)) .tumaet-ui-radio-button-icon {
   visibility: visible;
 }
 .tumaet-ui-radio-button[data-invalid] .tumaet-ui-radio-button-box {

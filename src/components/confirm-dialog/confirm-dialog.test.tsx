@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { expectNoA11yViolations } from '../../test-utils';
 import { ConfirmDialog, ConfirmProvider, useConfirm, type ConfirmationRequest } from './confirm-dialog';
 
@@ -98,6 +99,52 @@ describe('ConfirmDialog', () => {
     await expect(first).resolves.toBe(false);
     expect(await screen.findByRole('alertdialog', { name: 'Second' })).toBeInTheDocument();
     void second;
+  });
+
+  it('keeps keyed requests independent: opening one neither dismisses nor rejects another', async () => {
+    const rejectA = vi.fn();
+    let confirm!: ReturnType<typeof useConfirm>;
+    function Grab() {
+      confirm = useConfirm();
+      return null;
+    }
+    render(
+      <ConfirmProvider>
+        <Grab />
+        <ConfirmDialog confirmKey="a" />
+        <ConfirmDialog confirmKey="b" />
+      </ConfirmProvider>,
+    );
+    act(() => void confirm({ ...base, header: 'A', message: 'request-a', key: 'a', reject: rejectA }));
+    act(() => void confirm({ ...base, header: 'B', message: 'request-b', key: 'b' }));
+    expect(screen.getByRole('alertdialog', { name: 'A', hidden: true })).toBeInTheDocument();
+    expect(screen.getByRole('alertdialog', { name: 'B' })).toBeInTheDocument();
+    expect(rejectA).not.toHaveBeenCalled();
+  });
+
+  it('renders the message as a single span that keeps line breaks and a custom accept label and severity', async () => {
+    renderHost({ ...base, message: 'First line\nSecond line', acceptLabel: 'Yes', rejectSeverity: 'danger' });
+    await ask();
+    const message = document.querySelector('.tumaet-ui-confirm-dialog-message')!;
+    expect(message.textContent).toBe('First line\nSecond line');
+    expect(screen.getByRole('button', { name: 'Yes' })).toHaveAttribute('data-severity', 'primary');
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveAttribute('data-severity', 'danger');
+  });
+
+  it('survives StrictMode: the dialog is not rejected right after opening', async () => {
+    const results: boolean[] = [];
+    render(
+      <StrictMode>
+        <ConfirmProvider>
+          <Host results={results} />
+          <ConfirmDialog />
+        </ConfirmProvider>
+      </StrictMode>,
+    );
+    await ask();
+    await flush();
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(results).toEqual([]);
   });
 
   it('throws outside a provider', () => {

@@ -6,6 +6,7 @@ import { XIcon } from '../../internal/icons';
 export type MessageSeverity = 'info' | 'success' | 'warn' | 'error' | 'secondary' | 'contrast';
 
 export interface MessageProps extends HTMLAttributes<HTMLDivElement> {
+  /** Colour role. `error` is announced as an alert (`role="alert"`), all others as a status. */
   severity?: MessageSeverity;
   /** Decorative leading icon. */
   icon?: ReactNode;
@@ -13,6 +14,7 @@ export interface MessageProps extends HTMLAttributes<HTMLDivElement> {
   dismissible?: boolean;
   /** Accessible name of the dismiss button; defaults to the translated "Dismiss". */
   dismissLabel?: string;
+  /** Fires when the dismiss button is activated. */
   onDismiss?: () => void;
   ref?: Ref<HTMLDivElement>;
 }

@@ -11,9 +11,13 @@ export interface PanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
   toggleable?: boolean;
   /** Accessible name of the toggle; defaults to the header or the translated "Collapse"/"Expand". */
   toggleLabel?: string;
+  /** Controlled collapsed state, applied only when `toggleable`. */
   collapsed?: boolean;
+  /** Initial collapsed state when uncontrolled. */
   defaultCollapsed?: boolean;
+  /** Fires with the new collapsed state when the toggle is used. */
   onCollapsedChange?: (collapsed: boolean) => void;
+  /** Content below the main content, inside the collapsible region. */
   footer?: ReactNode;
   ref?: Ref<HTMLDivElement>;
 }
@@ -36,7 +40,8 @@ export function Panel({
   const contentId = `${id}-content`;
   const [isCollapsedState, setCollapsed] = useControllable(collapsed, defaultCollapsed, onCollapsedChange);
   const isCollapsed = !!toggleable && isCollapsedState;
-  const hasHeader = header !== undefined && header !== null && header !== false && header !== '';
+  const hasHeader =
+    header !== undefined && header !== null && header !== false && !(typeof header === 'string' && !header.trim());
   const customLabel = toggleLabel?.trim();
   const ToggleIcon = isCollapsedState ? ChevronDownIcon : ChevronUpIcon;
   return (

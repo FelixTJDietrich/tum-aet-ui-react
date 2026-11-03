@@ -91,3 +91,55 @@ describe('Paginator', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('Paginator edge cases', () => {
+  it('clamps a page past the end for display, like the Angular paginator', () => {
+    render(<Paginator totalRecords={30} page={5} pageSize={50} />);
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Last page' })).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: /^\d+$/ })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('shows an empty result as 0 to 0 of 0 with every navigation button disabled', () => {
+    render(<Paginator totalRecords={0} page={0} pageSize={20} />);
+    expect(screen.getByText('Showing 0 to 0 of 0')).toBeInTheDocument();
+    for (const name of ['First page', 'Previous page', 'Next page', 'Last page']) {
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    }
+  });
+
+  it('shows at most five page links and 128 records at 20 per page report the last range', () => {
+    render(<Paginator totalRecords={128} page={2} pageSize={20} />);
+    expect(screen.getAllByRole('button', { name: /^\d+$/ }).map((b) => b.textContent)).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+    ]);
+    expect(screen.getByText('Showing 41 to 60 of 128')).toBeInTheDocument();
+  });
+
+  it('uses a custom aria-label and does not request anything when disabled', async () => {
+    const onPageChange = vi.fn();
+    render(
+      <Paginator aria-label="Results" totalRecords={100} page={1} pageSize={10} disabled onPageChange={onPageChange} />,
+    );
+    expect(screen.getByRole('navigation', { name: 'Results' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '3' }));
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
+  it('does not request the page that is already shown', async () => {
+    const onPageChange = vi.fn();
+    render(<Paginator totalRecords={100} page={1} pageSize={10} onPageChange={onPageChange} />);
+    await userEvent.click(screen.getByRole('button', { name: '2' }));
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps a page size that is not among the options selectable', () => {
+    render(<Paginator totalRecords={100} pageSize={15} pageSizeOptions={[10, 20]} />);
+    expect(screen.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('15');
+  });
+});

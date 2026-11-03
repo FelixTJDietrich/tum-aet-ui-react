@@ -17,4 +17,12 @@ describe('ProgressSpinner', () => {
     );
     await expectNoA11yViolations();
   });
+
+  it('renders the animated circle and hides the svg from assistive technology', () => {
+    const { container } = render(<ProgressSpinner />);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    const circle = container.querySelector('.tumaet-ui-progress-spinner-circle');
+    expect(circle).toHaveAttribute('fill', 'none');
+    expect(circle).toHaveAttribute('stroke-width', '2');
+  });
 });

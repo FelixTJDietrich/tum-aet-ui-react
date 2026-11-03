@@ -20,10 +20,13 @@ const TableContext = createContext<TableContextValue | null>(null);
 export type TableSize = 'small' | 'normal' | 'large';
 
 export interface TableProps extends HTMLAttributes<HTMLTableElement> {
+  /** Cell padding. */
   size?: TableSize;
+  /** Alternating row background. */
   striped?: boolean;
   /** Makes header cells sticky; give the scrolling parent a height. */
   scrollable?: boolean;
+  /** Highlights the row under the pointer. */
   rowHover?: boolean;
   /** Field of the column currently sorted, read by `SortableColumnHeader`s. */
   sortField?: string;
@@ -31,6 +34,7 @@ export interface TableProps extends HTMLAttributes<HTMLTableElement> {
   sortOrder?: number;
   /** Order requested when a column that is not sorted is activated. */
   defaultSortOrder?: number;
+  /** Called when a `SortableColumnHeader` is activated, with the field and the requested order. */
   onSortChange?: (event: TableSortEvent) => void;
   ref?: Ref<HTMLTableElement>;
 }
@@ -68,6 +72,7 @@ export function Table({
 export interface SortableColumnHeaderProps extends ThHTMLAttributes<HTMLTableCellElement> {
   /** Field passed to `onSortChange` of the surrounding `Table`. */
   field: string;
+  /** Disables the sort button; the header stays `aria-sort="none"`. */
   disabled?: boolean;
   ref?: Ref<HTMLTableCellElement>;
 }

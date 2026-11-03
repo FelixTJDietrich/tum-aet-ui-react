@@ -46,4 +46,29 @@ describe('IconField', () => {
     );
     await expectNoA11yViolations(container);
   });
+
+  it('defaults to the leading position and passes props to the root', () => {
+    const { container } = render(
+      <IconField icon={<SearchIcon />} data-testid="root" className="x">
+        <Input aria-label="Find" />
+      </IconField>,
+    );
+    expect(container.firstElementChild).toHaveAttribute('data-position', 'left');
+    expect(container.firstElementChild).toHaveClass('tumaet-ui-icon-field', 'x');
+  });
+
+  it('adds and removes the icon when the prop changes', () => {
+    const { container, rerender } = render(
+      <IconField icon={<SearchIcon />}>
+        <Input aria-label="Find" />
+      </IconField>,
+    );
+    expect(container.querySelector('.tumaet-ui-input-icon')).not.toBeNull();
+    rerender(
+      <IconField>
+        <Input aria-label="Find" />
+      </IconField>,
+    );
+    expect(container.querySelector('.tumaet-ui-input-icon')).toBeNull();
+  });
 });

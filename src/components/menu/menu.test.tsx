@@ -175,4 +175,107 @@ describe('Menu', () => {
     });
     expect(results.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
   });
+
+  it('sits flush against the trigger, as the Angular dropdown positions do', async () => {
+    render(<Host />);
+    await userEvent.click(trigger());
+    expect(screen.getByRole('menu')).toHaveStyle({ top: '0px' });
+  });
+
+  it('extends a type-ahead search across a space instead of choosing the focused entry', async () => {
+    const onPick = vi.fn();
+    render(
+      <Menu trigger={<Button>Actions</Button>}>
+        <MenuItem onClick={onPick}>Add students</MenuItem>
+        <MenuItem onClick={onPick}>Add tutors</MenuItem>
+        <MenuItem onClick={onPick}>Add editors</MenuItem>
+      </Menu>,
+    );
+    await userEvent.click(trigger());
+    await userEvent.keyboard('add e');
+    expect(screen.getByRole('menuitem', { name: 'Add editors' })).toHaveFocus();
+    expect(onPick).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('chooses a button entry with Space, and a link entry too, without scrolling the page', async () => {
+    const onRename = vi.fn();
+    const onDocs = vi.fn((e: React.MouseEvent) => e.preventDefault());
+    render(
+      <Menu trigger={<Button>Actions</Button>}>
+        <MenuItem onClick={onRename}>Rename</MenuItem>
+        <MenuItem href="https://example.com" onClick={onDocs}>
+          Docs
+        </MenuItem>
+      </Menu>,
+    );
+    await userEvent.click(trigger());
+    await userEvent.keyboard(' ');
+    expect(onRename).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menu')).toBeNull();
+
+    await userEvent.click(trigger());
+    await userEvent.keyboard('{ArrowDown}');
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    act(() => {
+      screen.getByRole('menuitem', { name: 'Docs' }).dispatchEvent(space);
+    });
+    expect(space.defaultPrevented).toBe(true);
+    expect(onDocs).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('does not run a later Space activation because an earlier one was cancelled', async () => {
+    const onRename = vi.fn();
+    render(
+      <Menu trigger={<Button>Actions</Button>}>
+        <MenuItem href="https://example.com" onClick={(e) => e.preventDefault()}>
+          Docs
+        </MenuItem>
+        <MenuItem onClick={onRename}>Rename</MenuItem>
+      </Menu>,
+    );
+    await userEvent.click(trigger());
+    await userEvent.keyboard(' ');
+    await userEvent.click(trigger());
+    await userEvent.keyboard('{ArrowDown} ');
+    expect(onRename).toHaveBeenCalledOnce();
+  });
+
+  it('closes on Escape while focus is on the trigger of an open menu', async () => {
+    render(<Host />);
+    await userEvent.click(trigger());
+    act(() => trigger().focus());
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('does not open from a disabled trigger and renders a fresh menu per opening', async () => {
+    const { unmount } = render(
+      <Menu trigger={<Button disabled>Actions</Button>}>
+        <MenuItem>One</MenuItem>
+      </Menu>,
+    );
+    await userEvent.click(trigger());
+    trigger().focus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    unmount();
+
+    render(<Host />);
+    await userEvent.click(trigger());
+    await userEvent.keyboard('{End}{Escape}');
+    await userEvent.click(trigger());
+    expect(items()[0]).toHaveFocus();
+  });
+
+  it('follows a link with Enter without a menu-level preventDefault', async () => {
+    render(<Host />);
+    await userEvent.click(trigger());
+    await userEvent.keyboard('{ArrowDown}');
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    items()[1]!.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+  });
 });

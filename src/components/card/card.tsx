@@ -2,7 +2,9 @@ import type { HTMLAttributes, ReactNode, Ref } from 'react';
 import { cx } from '../../internal/cx';
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Title of the card. */
   header?: ReactNode;
+  /** Muted line below the title. */
   subheader?: ReactNode;
   /** Full-width content above the body (for example an image). */
   media?: ReactNode;

@@ -5,6 +5,7 @@ import { useFormFieldControl } from '../form-field/form-field';
 export type InputSize = 'small' | 'default' | 'large';
 
 interface InputCommon {
+  /** Size variant: `small` (text-sm), `default` (text-base) or `large` (text-lg). */
   size?: InputSize;
   /** Marks the control invalid (also set by an enclosing invalid FormField). */
   invalid?: boolean;

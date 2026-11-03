@@ -39,9 +39,13 @@ export interface InputNumberProps extends Omit<
 > {
   /** Current value; `null` is empty. Omit for an uncontrolled field. */
   value?: number | null;
+  /** Initial value of an uncontrolled field. */
   defaultValue?: number | null;
+  /** Called with the new number, or `null` when the field is emptied, on every keystroke, step and clamp. */
   onChange?: (value: number | null) => void;
+  /** Lower bound, applied on blur and when stepping. */
   min?: number;
+  /** Upper bound, applied on blur and when stepping. */
   max?: number;
   /** Increment of the stepper buttons and ArrowUp / ArrowDown. */
   step?: number;
@@ -53,8 +57,11 @@ export interface InputNumberProps extends Omit<
   prefix?: string;
   /** Text after the number. */
   suffix?: string;
+  /** Marks the field invalid (also set by an enclosing invalid FormField). */
   invalid?: boolean;
+  /** Expands the field to the available width. */
   fluid?: boolean;
+  /** Locale-specific digit grouping, for example `1,234`. */
   useGrouping?: boolean;
   /** `0` keeps the field integer-only; fractions are truncated (not rounded) to this many digits. */
   maxFractionDigits?: number;
@@ -142,6 +149,7 @@ export function InputNumber({
   style,
   inputClassName,
   disabled,
+  readOnly,
   ref,
   onBlur,
   onKeyDown,
@@ -272,7 +280,7 @@ export function InputNumber({
   };
 
   const stepBy = (delta: number) => {
-    if (disabled) return;
+    if (disabled || readOnly) return;
     const next = clamp(Number(steppedValue(current ?? 0, delta).toFixed(maxFractionDigits)));
     setDraft(null);
     setCurrent(next);
@@ -324,7 +332,7 @@ export function InputNumber({
     type: 'button' as const,
     tabIndex: -1,
     'aria-hidden': true as const,
-    disabled,
+    disabled: disabled || readOnly,
     onMouseDown: (e: React.MouseEvent) => e.preventDefault(),
     onClick: () => stepBy(delta),
   });
@@ -345,6 +353,7 @@ export function InputNumber({
         className={cx('tumaet-ui-input-number-input', inputClassName)}
         value={displayText}
         disabled={disabled}
+        readOnly={readOnly}
         invalid={invalid}
         aria-valuenow={current ?? undefined}
         aria-valuemin={min}

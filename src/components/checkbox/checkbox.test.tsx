@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
+import { FormField } from '../form-field/form-field';
 import { Checkbox } from './checkbox';
 
 describe('Checkbox', () => {
@@ -44,5 +45,53 @@ describe('Checkbox', () => {
       </>,
     );
     await expectNoA11yViolations(container);
+  });
+
+  it('keeps the native indeterminate state after a click, as the parent owns it', async () => {
+    const onChange = vi.fn();
+    render(<Checkbox aria-label="All" indeterminate checked={false} onChange={onChange} />);
+    const box = screen.getByRole('checkbox') as HTMLInputElement;
+    await userEvent.click(box);
+    expect(onChange).toHaveBeenCalledWith(true, expect.anything());
+    expect(box.indeterminate).toBe(true);
+  });
+
+  it('forwards id, name and aria attributes, and keeps the description while disabled', () => {
+    render(<Checkbox id="accept" name="terms" aria-label="Accept terms" aria-describedby="hint" disabled />);
+    const box = screen.getByRole('checkbox', { name: 'Accept terms' });
+    expect(box).toHaveAttribute('id', 'accept');
+    expect(box).toHaveAttribute('name', 'terms');
+    expect(box).toHaveAttribute('aria-describedby', 'hint');
+    expect(box).toBeDisabled();
+  });
+
+  it('shows the tick when checked and the dash when indeterminate, the dash winning', () => {
+    const { container, rerender } = render(<Checkbox aria-label="x" />);
+    expect(container.querySelector('.tumaet-ui-checkbox-icon')).toBeNull();
+    rerender(<Checkbox aria-label="x" checked onChange={() => {}} />);
+    expect(container.querySelectorAll('.tumaet-ui-checkbox-icon')).toHaveLength(1);
+    const tick = container.querySelector('.tumaet-ui-checkbox-icon')!.innerHTML;
+    rerender(<Checkbox aria-label="x" checked indeterminate onChange={() => {}} />);
+    expect(container.querySelectorAll('.tumaet-ui-checkbox-icon')).toHaveLength(1);
+    expect(container.querySelector('.tumaet-ui-checkbox-icon')!.innerHTML).not.toBe(tick);
+  });
+
+  it('does not call onChange for a disabled toggle attempt', async () => {
+    const onChange = vi.fn();
+    render(<Checkbox aria-label="x" checked disabled onChange={onChange} />);
+    await userEvent.click(screen.getByRole('checkbox'));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('checkbox')).toBeChecked();
+  });
+
+  it('takes id, description and invalid state from a FormField', () => {
+    render(
+      <FormField label="Agree" hint="Required to continue" invalid error="Accept the terms">
+        <Checkbox />
+      </FormField>,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Agree' });
+    expect(box).toHaveAttribute('aria-invalid', 'true');
+    expect(box).toHaveAccessibleDescription('Accept the terms');
   });
 });

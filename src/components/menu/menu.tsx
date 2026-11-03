@@ -52,6 +52,7 @@ export function Menu({
   children,
   ref,
   onKeyDown,
+  onKeyUp,
   onBlur,
   ...rest
 }: MenuProps) {
@@ -64,6 +65,7 @@ export function Menu({
   const mergedTriggerRef = useMemo(() => mergeRefs<HTMLElement>(triggerRef, anchor), [triggerRef]);
   const initialFocus = useRef<'first' | 'last'>('first');
   const focusedPanel = useRef<HTMLDivElement | null>(null);
+  const spaceHandled = useRef(false);
   const typed = useRef({ text: '', timer: undefined as ReturnType<typeof setTimeout> | undefined });
 
   const closeAndFocus = () => {
@@ -85,8 +87,25 @@ export function Menu({
     setOpen(true);
   };
 
+  /** Moves focus to the entry whose label starts with what was typed. Returns whether one matched. */
+  const typeahead = (char: string, items: HTMLElement[], current: number): boolean => {
+    const state = typed.current;
+    clearTimeout(state.timer);
+    state.text += char.toLowerCase();
+    state.timer = setTimeout(() => (state.text = ''), TYPEAHEAD_RESET_MS);
+    // A repeated single letter cycles through the entries that start with it.
+    const cycling = state.text.length > 1 && [...state.text].every((c) => c === state.text[0]);
+    const term = cycling ? state.text[0]! : state.text;
+    const from = current + (cycling || state.text.length === 1 ? 1 : 0);
+    const ordered = [...items.slice(from), ...items.slice(0, from)];
+    const match = ordered.find((item) => item.textContent?.trim().toLowerCase().startsWith(term));
+    match?.focus();
+    return match !== undefined;
+  };
+
   const handleMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
+    spaceHandled.current = false;
     if (event.defaultPrevented) return;
     const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(ITEMS));
     const current = items.indexOf(document.activeElement as HTMLElement);
@@ -108,23 +127,30 @@ export function Menu({
         if (!event.altKey && !event.ctrlKey && !event.metaKey) closeAndFocus();
         return;
     }
-    if (event.key.length === 1 && event.key !== ' ' && !event.altKey && !event.ctrlKey && !event.metaKey) {
-      const state = typed.current;
-      clearTimeout(state.timer);
-      state.text += event.key.toLowerCase();
-      state.timer = setTimeout(() => (state.text = ''), TYPEAHEAD_RESET_MS);
-      // A repeated single letter cycles through the entries that start with it.
-      const cycling = state.text.length > 1 && [...state.text].every((c) => c === state.text[0]);
-      const term = cycling ? state.text[0]! : state.text;
-      const ordered = [
-        ...items.slice(current + (cycling || state.text.length === 1 ? 1 : 0)),
-        ...items.slice(0, current + (cycling || state.text.length === 1 ? 1 : 0)),
-      ];
-      const match = ordered.find((item) => item.textContent?.trim().toLowerCase().startsWith(term));
-      if (match) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === ' ') {
+      // A space inside a search ("add e") extends it instead of choosing the entry.
+      if (typed.current.text !== '') {
+        typeahead(' ', items, current);
         event.preventDefault();
-        match.focus();
+        spaceHandled.current = true;
+      } else if (items[current]?.tagName === 'A') {
+        // A button is chosen natively; on a link the browser would scroll the page instead.
+        event.preventDefault();
+        spaceHandled.current = true;
+        items[current].click();
       }
+    } else if (event.key.length === 1 && typeahead(event.key, items, current)) {
+      event.preventDefault();
+    }
+  };
+
+  // Firefox decides on a button click from keyup, so a cancelled Space keydown has to be cancelled on keyup too.
+  const handleMenuKeyUp = (event: KeyboardEvent<HTMLDivElement>) => {
+    onKeyUp?.(event);
+    if (event.key === ' ' && spaceHandled.current) {
+      spaceHandled.current = false;
+      event.preventDefault();
     }
   };
 
@@ -168,6 +194,8 @@ export function Menu({
         anchor={anchor}
         open={isOpen}
         placement={placement}
+        // Angular's dropdown positions sit flush against the trigger.
+        offset={0}
         onDismiss={closeAndFocus}
         id={menuId}
         role="menu"
@@ -176,6 +204,7 @@ export function Menu({
         style={{ visibility: 'visible', ...rest.style }}
         className={cx('tumaet-ui-menu', className)}
         onKeyDown={handleMenuKeyDown}
+        onKeyUp={handleMenuKeyUp}
         onBlur={handleBlur}
         // Choosing an entry closes the menu and hands focus back to the trigger.
         onClick={(event) => {

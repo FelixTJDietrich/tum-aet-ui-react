@@ -11,13 +11,19 @@ export interface PaginatorProps extends Omit<HTMLAttributes<HTMLElement>, 'onCha
   totalRecords?: number;
   /** Zero-based active page (controlled). */
   page?: number;
+  /** Initial page when uncontrolled. */
   defaultPage?: number;
   /** Records per page (controlled). */
   pageSize?: number;
+  /** Initial page size when uncontrolled. */
   defaultPageSize?: number;
+  /** Choices of the rows-per-page select. A current size that is not listed is added. */
   pageSizeOptions?: number[];
+  /** Disables every button and the select. */
   disabled?: boolean;
+  /** Shows the "Showing x to y of z" text (a polite live region). */
   showCurrentPageReport?: boolean;
+  /** Shows the rows-per-page select. */
   showRowsPerPage?: boolean;
   /** Called with the requested zero-based page. */
   onPageChange?: (page: number) => void;

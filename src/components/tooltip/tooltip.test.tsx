@@ -119,6 +119,64 @@ describe('Tooltip', () => {
     expect(host()).not.toHaveAttribute('aria-describedby');
   });
 
+  it('stays open while the pointer travels onto the bubble and closes when the pointer leaves the page from there', async () => {
+    render(<Host />);
+    await userEvent.hover(host());
+    await advance(150);
+    const bubble = screen.getByRole('tooltip');
+    vi.spyOn(bubble, 'getBoundingClientRect').mockReturnValue(new DOMRect(10, 10, 100, 40));
+    await userEvent.unhover(host());
+    act(() => {
+      document.dispatchEvent(new MouseEvent('pointermove', { clientX: 40, clientY: 30 }));
+    });
+    await advance(300);
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    act(() => {
+      document.documentElement.dispatchEvent(new Event('pointerleave'));
+    });
+    await advance(100);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('hides when the window loses focus', async () => {
+    render(<Host />);
+    await userEvent.tab();
+    await advance(150);
+    act(() => {
+      window.dispatchEvent(new Event('blur'));
+    });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('dismisses on a press outside the host and keeps the host handlers of the child', async () => {
+    const onFocus = vi.fn();
+    render(
+      <>
+        <Tooltip content="Hint">
+          <button onFocus={onFocus}>Host</button>
+        </Tooltip>
+        <button>Elsewhere</button>
+      </>,
+    );
+    await userEvent.tab();
+    expect(onFocus).toHaveBeenCalled();
+    await advance(150);
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }));
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('updates the text of a visible tooltip and removes its id from the host when the content becomes empty', async () => {
+    const { rerender } = render(<Host />);
+    await userEvent.tab();
+    await advance(150);
+    rerender(<Host content="Changed" />);
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Changed');
+    rerender(<Host content="" />);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(host()).not.toHaveAttribute('aria-describedby');
+  });
+
   it('has no accessibility violations', async () => {
     render(<Host />);
     await userEvent.tab();

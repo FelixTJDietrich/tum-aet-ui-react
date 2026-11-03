@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
 import { Input } from '../input/input';
+import { InputNumber } from '../input-number/input-number';
 import { InputGroup, InputGroupAddon } from './input-group';
 
 describe('InputGroup', () => {
@@ -42,5 +43,33 @@ describe('InputGroup', () => {
       </InputGroup>,
     );
     await expectNoA11yViolations(container);
+  });
+
+  it('groups an InputNumber with addons', () => {
+    const { container } = render(
+      <InputGroup>
+        <InputGroupAddon>#</InputGroupAddon>
+        <InputNumber aria-label="Capacity" showButtons />
+        <InputGroupAddon>places</InputGroupAddon>
+      </InputGroup>,
+    );
+    expect([...container.firstElementChild!.children].map((c) => c.className.split(' ')[0])).toEqual([
+      'tumaet-ui-input-group-addon',
+      'tumaet-ui-input-number',
+      'tumaet-ui-input-group-addon',
+    ]);
+    expect(screen.getByRole('spinbutton', { name: 'Capacity' })).toBeInTheDocument();
+  });
+
+  it('passes props and a ref to group and addon', () => {
+    const { container } = render(
+      <InputGroup data-testid="g" className="mine">
+        <InputGroupAddon id="a" className="mine-a">
+          x
+        </InputGroupAddon>
+      </InputGroup>,
+    );
+    expect(container.firstElementChild).toHaveClass('tumaet-ui-input-group', 'mine');
+    expect(container.querySelector('#a')).toHaveClass('tumaet-ui-input-group-addon', 'mine-a');
   });
 });

@@ -11,28 +11,36 @@ interface SelectButtonBase extends Omit<HTMLAttributes<HTMLDivElement>, 'onChang
   optionLabel?: string;
   /** Object property used as the value; without it the option itself is the value. */
   optionValue?: string;
+  /** Size variant: `small` (text-sm), `default` (text-base) or `large` (text-lg). */
   size?: SelectButtonSize;
   /** Single mode only: allows clicking the selected option to clear the selection. Default true. */
   allowEmpty?: boolean;
+  /** Disables every option and marks the group `aria-disabled`. */
   disabled?: boolean;
-  /** Custom option content; the option is the argument. */
+  /** Custom option content; the option is the argument. Give icon-only content an accessible name. */
   itemTemplate?: (option: unknown) => ReactNode;
   ref?: Ref<HTMLDivElement>;
 }
 
 export interface SelectButtonSingleProps extends SelectButtonBase {
+  /** Single selection (the default). */
   multiple?: false;
   /** Selected value; `null` is none. Omit for an uncontrolled field. */
   value?: unknown;
+  /** Initially selected value of an uncontrolled field. */
   defaultValue?: unknown;
   /** Receives the new value, or `null` when cleared. */
   onChange?: (value: unknown) => void;
 }
 
 export interface SelectButtonMultipleProps extends SelectButtonBase {
+  /** Allows several options to be on at once; the value is then an array. */
   multiple: true;
+  /** Selected values. Omit for an uncontrolled field. */
   value?: readonly unknown[];
+  /** Initially selected values of an uncontrolled field. */
   defaultValue?: readonly unknown[];
+  /** Receives the new array of selected values. */
   onChange?: (value: unknown[]) => void;
 }
 

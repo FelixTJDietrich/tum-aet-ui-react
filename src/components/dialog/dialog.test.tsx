@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { expectNoA11yViolations } from '../../test-utils';
 import { Button } from '../button';
+import { Popover } from '../popover';
 import { Dialog, type DialogProps } from './dialog';
 
 function Host(props: Partial<DialogProps>) {
@@ -149,5 +150,143 @@ describe('Dialog', () => {
     render(<Host />);
     await openDialog();
     await expectNoA11yViolations();
+  });
+
+  it('does not close itself when a queued close event of its own close() arrives after a StrictMode re-open', async () => {
+    // Browsers fire `close` in a later task; the jsdom stand-in fires it at once, which hides the problem.
+    const original = HTMLDialogElement.prototype.close;
+    HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+      if (!this.hasAttribute('open')) return;
+      this.removeAttribute('open');
+      setTimeout(() => this.dispatchEvent(new Event('close')));
+    };
+    try {
+      const onOpenChange = vi.fn();
+      render(
+        <StrictMode>
+          <Dialog open header="T" onOpenChange={onOpenChange}>
+            x
+          </Dialog>
+        </StrictMode>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(onOpenChange).not.toHaveBeenCalled();
+      expect(document.querySelector('dialog')).toHaveAttribute('open');
+    } finally {
+      HTMLDialogElement.prototype.close = original;
+    }
+  });
+
+  it('still reports a native close (for example from a method=dialog form)', async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog open header="T" onOpenChange={onOpenChange}>
+        x
+      </Dialog>,
+    );
+    document.querySelector('dialog')!.close();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('lets an open popup take Escape first, then closes on Escape, and never closes on Escape when closeOnEscape is off', async () => {
+    const { unmount } = render(
+      <Dialog defaultOpen header="T">
+        <Popover defaultOpen aria-label="Inner" trigger={<button>Inner trigger</button>}>
+          <button>In popover</button>
+        </Popover>
+      </Dialog>,
+    );
+    const keydown = (target: Element) => {
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      target.dispatchEvent(event);
+      return event;
+    };
+    expect(screen.getByRole('dialog', { name: 'Inner' })).toBeInTheDocument();
+    // The popup is open: this Escape closes it and leaves the dialog alone.
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Inner' })).toBeNull();
+    // Popup gone: Escape is the dialog's again.
+    expect(screen.getByRole('dialog', { name: 'T' })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(document.querySelector('dialog')).toBeNull();
+    unmount();
+
+    render(
+      <Dialog open header="T" closeOnEscape={false}>
+        x
+      </Dialog>,
+    );
+    expect(keydown(screen.getByRole('button', { name: 'Close' })).defaultPrevented).toBe(true);
+    expect(screen.getByRole('dialog', { name: 'T' })).toBeInTheDocument();
+  });
+
+  it('is uncontrolled with defaultOpen and releases the scroll lock when unmounted while open', async () => {
+    const { unmount } = render(
+      <Dialog defaultOpen header="T">
+        x
+      </Dialog>,
+    );
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(document.querySelector('dialog')).toBeNull();
+    expect(document.documentElement.style.overflow).toBe('');
+
+    const second = render(
+      <Dialog open header="T">
+        x
+      </Dialog>,
+    );
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    second.unmount();
+    expect(document.documentElement.style.overflow).toBe('');
+    unmount();
+  });
+
+  it('omits the footer without footer content, and the header with showHeader false', () => {
+    const first = render(
+      <Dialog open header="T" aria-label="Named">
+        x
+      </Dialog>,
+    );
+    expect(document.querySelector('.tumaet-ui-dialog-footer')).toBeNull();
+    expect(document.querySelector('.tumaet-ui-dialog')).not.toHaveAttribute('data-size');
+    first.unmount();
+    render(
+      <Dialog open showHeader={false} aria-label="Plain" footer={<button>OK</button>}>
+        x
+      </Dialog>,
+    );
+    expect(document.querySelector('.tumaet-ui-dialog-header')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+    expect(document.querySelector('.tumaet-ui-dialog-footer')).not.toBeNull();
+  });
+
+  it('accepts a node as header, a custom close label and aria-describedby', () => {
+    render(
+      <>
+        <p id="desc">Why</p>
+        <Dialog open header={<h3>Node title</h3>} closeButtonAriaLabel="Dismiss" aria-describedby="desc">
+          x
+        </Dialog>
+      </>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Node title' });
+    expect(dialog).toHaveAccessibleDescription('Why');
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
+  });
+
+  it('does not count a drag that started inside the panel and ended on the backdrop as a mask click', async () => {
+    render(
+      <Dialog defaultOpen header="T" dismissableMask>
+        <p>Body text</p>
+      </Dialog>,
+    );
+    const dialog = document.querySelector('dialog')!;
+    fireEvent.pointerDown(screen.getByText('Body text'));
+    fireEvent.click(dialog);
+    expect(document.querySelector('dialog')).not.toBeNull();
+    fireEvent.pointerDown(dialog);
+    fireEvent.click(dialog);
+    expect(document.querySelector('dialog')).toBeNull();
   });
 });

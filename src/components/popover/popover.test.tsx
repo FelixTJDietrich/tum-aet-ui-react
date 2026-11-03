@@ -102,4 +102,42 @@ describe('Popover', () => {
     render(<Host defaultOpen />);
     await expectNoA11yViolations();
   });
+
+  it('keeps the 8px gap to the trigger of the Angular overlay service', async () => {
+    render(<Host />);
+    await userEvent.click(trigger());
+    // jsdom lays nothing out, so a panel below a zero-sized trigger sits exactly one offset down.
+    expect(screen.getByRole('dialog')).toHaveStyle({ top: '8px' });
+  });
+
+  it('gives focus back to the trigger when the parent closes it while focus was inside', async () => {
+    function Controlled() {
+      const [open, setOpen] = useState(false);
+      return (
+        <Popover aria-label="Details" open={open} onOpenChange={setOpen} trigger={<Button>Trigger</Button>}>
+          <button onClick={() => setOpen(false)}>Done</button>
+        </Popover>
+      );
+    }
+    render(<Controlled />);
+    await userEvent.click(trigger());
+    expect(screen.getByRole('button', { name: 'Done' })).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('does not take focus from an element the user moved to when it closes', async () => {
+    render(<Host />);
+    await userEvent.click(trigger());
+    await userEvent.click(screen.getByRole('button', { name: 'Outside' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Outside' })).toHaveFocus();
+  });
+
+  it('reflects the controlled open state in the trigger and keeps the panel named', () => {
+    render(<Host open aria-label="Named" />);
+    expect(trigger()).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('dialog', { name: 'Named' })).toHaveAttribute('aria-modal', 'true');
+  });
 });

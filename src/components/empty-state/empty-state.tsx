@@ -8,9 +8,11 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
   title: ReactNode;
   /** Heading level of the title. */
   headingLevel?: 2 | 3 | 4 | 5 | 6;
+  /** Optional explanation below the heading. */
   description?: ReactNode;
   /** Decorative icon above the content. */
   icon?: ReactNode;
+  /** Visual treatment of the icon container: `outlined` (bordered), `solid` (filled) or `plain` (no container). */
   variant?: EmptyStateVariant;
   /** Actions (buttons, links), rendered below the description. */
   actions?: ReactNode;

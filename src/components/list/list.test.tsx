@@ -75,3 +75,24 @@ describe('List', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('ListItemAction aria-current', () => {
+  it('keeps a caller supplied aria-current on an inactive action and sets page when active', () => {
+    render(
+      <List aria-label="x">
+        <ListItem>
+          <ListItemAction href="/a" aria-current="step">
+            A
+          </ListItemAction>
+        </ListItem>
+        <ListItem>
+          <ListItemAction href="/b" active>
+            B
+          </ListItemAction>
+        </ListItem>
+      </List>,
+    );
+    expect(screen.getByRole('link', { name: 'A' })).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByRole('link', { name: 'B' })).toHaveAttribute('aria-current', 'page');
+  });
+});

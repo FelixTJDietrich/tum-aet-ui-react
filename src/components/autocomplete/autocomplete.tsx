@@ -47,9 +47,13 @@ export interface AutocompleteProps extends Omit<
    * Multiple mode: the array of selected suggestions.
    */
   value?: unknown;
+  /** Initial value when the control is uncontrolled. */
   defaultValue?: unknown;
+  /** Called with the new value: a suggestion or the typed text (single mode), or the array of suggestions (`multiple`). */
   onChange?: (value: unknown) => void;
+  /** Placeholder of the text input; hidden once a chip is chosen. */
   placeholder?: string;
+  /** Disables the input and removes the chips' remove buttons. */
   disabled?: boolean;
   /** Reports the field as required to assistive technology. */
   required?: boolean;
@@ -61,17 +65,23 @@ export interface AutocompleteProps extends Omit<
   completeOnFocus?: boolean;
   /** Called to request suggestions for the current query. */
   onSearch?: (event: AutocompleteSearchEvent) => void;
+  /** Called when a suggestion is chosen. */
   onOptionSelect?: (event: AutocompleteOptionEvent) => void;
+  /** Called when a chip is removed. */
   onOptionRemove?: (event: AutocompleteOptionEvent) => void;
+  /** Accessible name of the chips' remove buttons; defaults to "Remove" plus the chip label. */
   removeAriaLabel?: string;
   /** Message shown when a completed search returns no suggestions. */
   emptyMessage?: string;
   /** Id of the text input, so an external `<label for>` associates. */
   id?: string;
+  /** Name of the text input. */
   name?: string;
+  /** Accessible name of the input and the list. */
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  /** Marks the field as invalid and draws the danger border. */
   'aria-invalid'?: boolean | 'true' | 'false';
   /** Ref of the root element. */
   ref?: Ref<HTMLDivElement>;
@@ -169,12 +179,15 @@ export function Autocomplete({
   const select = (option: unknown, originalEvent?: Event) => {
     if (disabled || isDisabledOption(option)) return;
     if (multiple) {
-      if (isSelected(option)) return;
-      setCurrent([...selected, option]);
+      // A value that is already chosen is not added twice, but the query is still dismissed.
+      if (!isSelected(option)) {
+        setCurrent([...selected, option]);
+        onOptionSelect?.({ value: option, originalEvent });
+      }
     } else {
       setCurrent(option);
+      onOptionSelect?.({ value: option, originalEvent });
     }
-    onOptionSelect?.({ value: option, originalEvent });
     setQuery('');
     hide();
     focusInput();

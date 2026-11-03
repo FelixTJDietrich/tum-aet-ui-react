@@ -27,4 +27,13 @@ describe('Tag', () => {
     );
     await expectNoA11yViolations();
   });
+
+  it('prefers value over children and renders every severity', () => {
+    const { rerender } = render(<Tag value="Value">Child</Tag>);
+    expect(screen.getByText('Value')).toBeInTheDocument();
+    for (const severity of ['secondary', 'success', 'info', 'warn', 'danger', 'contrast'] as const) {
+      rerender(<Tag severity={severity}>S</Tag>);
+      expect(screen.getByText('S')).toHaveAttribute('data-severity', severity);
+    }
+  });
 });

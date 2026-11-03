@@ -180,3 +180,84 @@ describe('Tabs', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('Tabs fallback selection and structure', () => {
+  it('writes the fallback selection back, like the Angular tabs', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<Example value="zzz" onChange={onChange} />);
+    expect(onChange).toHaveBeenCalledWith('a');
+    onChange.mockClear();
+    rerender(<Example value="b" disabledB onChange={onChange} />);
+    expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('does not report a change when the value already names an enabled tab', () => {
+    const onChange = vi.fn();
+    render(<Example value="b" onChange={onChange} />);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('selects the first enabled tab when uncontrolled without a default', () => {
+    const onChange = vi.fn();
+    render(<Example onChange={onChange} />);
+    expect(onChange).toHaveBeenCalledWith('a');
+    expect(tab('Alpha')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('falls back to the first tab when the selected tab is removed', () => {
+    function Dynamic({ withC }: { withC: boolean }) {
+      const [value, setValue] = useState<number | string>('c');
+      return (
+        <Tabs value={value} onChange={setValue}>
+          <TabList aria-label="Dyn">
+            <Tab value="a">Alpha</Tab>
+            {withC && <Tab value="c">Gamma</Tab>}
+          </TabList>
+        </Tabs>
+      );
+    }
+    const { rerender } = render(<Dynamic withC />);
+    expect(tab('Gamma')).toHaveAttribute('aria-selected', 'true');
+    rerender(<Dynamic withC={false} />);
+    expect(tab('Alpha')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('wires aria-controls only for tabs that have a panel, and labels only panels that have a tab', () => {
+    render(
+      <Tabs defaultValue="a">
+        <TabList aria-label="x">
+          <Tab value="a">Alpha</Tab>
+          <Tab value="b">Beta</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel value="a">A</TabPanel>
+          <TabPanel value="orphan" preserveContent>
+            O
+          </TabPanel>
+        </TabPanels>
+      </Tabs>,
+    );
+    expect(tab('Alpha')).toHaveAttribute('aria-controls');
+    expect(tab('Beta')).not.toHaveAttribute('aria-controls');
+    expect(screen.getByText('O').closest('[role="tabpanel"]')).not.toHaveAttribute('aria-labelledby');
+    expect(screen.getByText('O').closest('[role="tabpanel"]')).toHaveAttribute('hidden');
+  });
+
+  it('reverses the arrow keys in right-to-left layouts', async () => {
+    render(
+      <div dir="rtl">
+        <Example defaultValue="a" />
+      </div>,
+    );
+    tab('Alpha').focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(tab('Beta')).toHaveFocus();
+    expect(tab('Beta')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('makes the active panel focusable and hides inactive panels from the accessibility tree', () => {
+    render(<Example defaultValue="a" />);
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('tabindex', '0');
+    expect(document.querySelectorAll('[role="tabpanel"][hidden][inert]')).toHaveLength(2);
+  });
+});

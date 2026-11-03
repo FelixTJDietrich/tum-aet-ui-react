@@ -150,11 +150,21 @@ export function Tooltip({
       if (hovered) clearTimeout(hideTimer.current);
       else scheduleHideIfInactive();
     };
+    // The pointer left the page: nothing is hovered any more, so the tooltip must not stay open on its last position.
+    const onPageLeave = () => {
+      s.hovered = false;
+      s.tooltipHovered = false;
+      scheduleHideIfInactive();
+    };
     const onWindowBlur = () => hideNow();
     document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerleave', onPageLeave);
+    document.documentElement.addEventListener('pointerleave', onPageLeave);
     window.addEventListener('blur', onWindowBlur);
     return () => {
       document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerleave', onPageLeave);
+      document.documentElement.removeEventListener('pointerleave', onPageLeave);
       window.removeEventListener('blur', onWindowBlur);
     };
     // The handlers only touch refs and state setters.

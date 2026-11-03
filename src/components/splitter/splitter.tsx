@@ -15,6 +15,7 @@ import { useTranslate } from '../../internal/i18n';
 export type SplitterLayout = 'horizontal' | 'vertical';
 
 export interface SplitterProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** `horizontal` places the panels side by side (Left/Right keys), `vertical` stacks them (Up/Down keys). */
   layout?: SplitterLayout;
   /** Initial relative weights (normalized to 100). Changing them resets user resizes. */
   panelSizes?: readonly [number, number];
@@ -88,11 +89,15 @@ export function Splitter({
   const clamp = (value: number) => Math.max(minimum, Math.min(maximum, Number.isFinite(value) ? value : 50));
 
   // User resizes are kept until the initial sizes (or the storage key) change.
-  const [state, setState] = useState(() => ({ signature, size: initialSize(panelSizes, storageKey) }));
+  // `resets` counts replacements of the sizes from outside; they end a running drag, like in the Angular version.
+  const [state, setState] = useState(() => ({ signature, size: initialSize(panelSizes, storageKey), resets: 0 }));
   let rawSize = state.size;
+  let resets = state.resets;
   if (state.signature !== signature) {
     rawSize = initialSize(panelSizes, storageKey);
-    setState({ signature, size: rawSize });
+    // A parent echoing the emitted sizes only differs by rounding and must not end the drag.
+    if (Math.abs(clamp(rawSize) - clamp(state.size)) > 1e-9) resets += 1;
+    setState({ signature, size: rawSize, resets });
   }
   const size = clamp(rawSize);
 
@@ -100,11 +105,15 @@ export function Splitter({
   latest.current = { size, clamp, onSizesChange, onResizeEnd, storageKey };
   const dragCleanup = useRef<(() => void) | undefined>(undefined);
   useEffect(() => () => dragCleanup.current?.(), []);
+  // Changing the constraints, layout, gutter or collapsed state, or replacing the sizes, ends a running drag.
+  useEffect(() => {
+    dragCleanup.current?.();
+  }, [resets, layout, minSizes[0], minSizes[1], collapsedSecondSize, gutterSize]);
 
   const update = (value: number) => {
     const next = latest.current.clamp(value);
     latest.current.size = next;
-    setState({ signature, size: next });
+    setState((current) => ({ ...current, size: next }));
     latest.current.onSizesChange?.([next, 100 - next]);
   };
 

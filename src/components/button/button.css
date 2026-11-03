@@ -21,15 +21,18 @@
   white-space: nowrap;
   text-decoration: none;
   transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .tumaet-ui-btn[data-size='small'] {
   font-size: var(--tumaet-ui-font-size-sm);
+  line-height: var(--tumaet-ui-line-height-sm);
   padding: calc(var(--tumaet-ui-spacing) * 1.5) calc(var(--tumaet-ui-spacing) * 2.5);
 }
 .tumaet-ui-btn[data-size='large'] {
   font-size: var(--tumaet-ui-font-size-lg);
+  line-height: var(--tumaet-ui-line-height-lg);
   padding: calc(var(--tumaet-ui-spacing) * 2.5) calc(var(--tumaet-ui-spacing) * 4);
 }
 .tumaet-ui-btn-rounded {
@@ -171,4 +174,11 @@
 }
 .tumaet-ui-button-group > .tumaet-ui-btn:focus-visible {
   z-index: 1;
+}
+
+/* The Angular spinner stops under reduced motion (motion-reduce:animate-none). */
+@media (prefers-reduced-motion: reduce) {
+  .tumaet-ui-btn .tumaet-ui-spin {
+    animation: none;
+  }
 }

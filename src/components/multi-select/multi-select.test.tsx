@@ -168,6 +168,24 @@ describe('MultiSelect', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
+  it('activates the first option when an open, empty control receives options', async () => {
+    const { rerender } = render(<MultiSelect aria-label="Fruit" options={[]} />);
+    await userEvent.click(trigger());
+    expect(trigger()).not.toHaveAttribute('aria-activedescendant');
+    rerender(<MultiSelect aria-label="Fruit" options={fruits} />);
+    expect(activeText()).toBe('Apple');
+  });
+
+  it('closes when disabled while open and stays closed when enabled again', async () => {
+    const { rerender, container } = render(<MultiSelect aria-label="Fruit" options={fruits} />);
+    await userEvent.click(trigger());
+    rerender(<MultiSelect aria-label="Fruit" options={fruits} disabled />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute('data-disabled');
+    rerender(<MultiSelect aria-label="Fruit" options={fruits} />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
   it('has no accessibility violations closed and open', async () => {
     render(<MultiSelect aria-label="Fruit" options={fruits} defaultValue={['Apple']} />);
     await expectNoA11yViolations();

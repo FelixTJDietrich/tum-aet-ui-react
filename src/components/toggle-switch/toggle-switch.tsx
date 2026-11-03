@@ -7,11 +7,17 @@ export interface ToggleSwitchProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'type' | 'size' | 'role' | 'checked' | 'defaultChecked' | 'onChange' | 'className' | 'style'
 > {
+  /** State of a controlled switch. Omit it for an uncontrolled one. */
   checked?: boolean;
+  /** Initial state of an uncontrolled switch. */
   defaultChecked?: boolean;
+  /** Called with the new state and the originating event. */
   onChange?: (checked: boolean, event: ChangeEvent<HTMLInputElement>) => void;
+  /** Marks the switch invalid (also set by an enclosing invalid FormField). */
   invalid?: boolean;
+  /** Class of the wrapper element. */
   className?: string;
+  /** Style of the wrapper element. */
   style?: CSSProperties;
   ref?: Ref<HTMLInputElement>;
 }

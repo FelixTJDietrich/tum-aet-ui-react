@@ -39,7 +39,8 @@
   outline-offset: 2px;
 }
 /* Both paddings are constant so the term does not shift when the clear control appears. */
-.tumaet-ui-search-field > .tumaet-ui-input {
+/* [data-size] raises the specificity above the Input size variants, whatever the stylesheet order. */
+.tumaet-ui-search-field > .tumaet-ui-input[data-size] {
   width: 100%;
   padding-inline-start: calc(var(--tumaet-ui-spacing) * 10);
   padding-inline-end: calc(var(--tumaet-ui-spacing) * 8);

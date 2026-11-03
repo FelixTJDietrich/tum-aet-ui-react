@@ -172,9 +172,9 @@ describe('DataTable', () => {
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
 
-  it('exposes the help hint as title and name', () => {
+  it('names the help control by its hint', () => {
     render(<DataTable columns={columns} rows={rows} totalRecords={2} />);
-    expect(screen.getByRole('button', { name: 'Who owns it' })).toHaveAttribute('title', 'Who owns it');
+    expect(screen.getByRole('button', { name: 'Who owns it' })).toBeInTheDocument();
   });
 
   it('can reset the page through apiRef', async () => {
@@ -271,5 +271,157 @@ describe('Table and SortableColumnHeader', () => {
       </Table>,
     );
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('DataTable details', () => {
+  it('translates headerKey and marks responsive columns with hideBelow', () => {
+    render(
+      <DataTable
+        columns={[
+          { field: 'name', headerKey: 'tumAetUi.table.actions', hideBelow: 'md' },
+          { field: 'id', header: 'ID' },
+        ]}
+        rows={rows}
+        totalRecords={2}
+      />,
+    );
+    const header = screen.getByRole('columnheader', { name: 'Actions', hidden: true });
+    expect(header).toHaveAttribute('data-hide-below', 'md');
+    expect(screen.getAllByRole('cell', { hidden: true })[0]).toHaveAttribute('data-hide-below', 'md');
+    expect(screen.getByRole('columnheader', { name: 'ID' })).not.toHaveAttribute('data-hide-below');
+  });
+
+  it('spans the empty message across all columns including the actions column', () => {
+    render(<DataTable columns={columns} rows={[]} totalRecords={0} rowActions={() => null} showSearch={false} />);
+    const cell = screen.getAllByText('No results found')[0]!.closest('td');
+    expect(cell).toHaveAttribute('colspan', '4');
+  });
+
+  it('uses a custom empty message and search placeholder (key or text)', () => {
+    render(
+      <DataTable columns={columns} rows={[]} totalRecords={0} emptyMessage="Nothing here" searchPlaceholder="Find" />,
+    );
+    expect(screen.getAllByText('Nothing here').length).toBeGreaterThan(0);
+    expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveAttribute('placeholder', 'Find');
+  });
+
+  it('hides the search, rows-per-page and page report on request', () => {
+    render(
+      <DataTable
+        columns={columns}
+        rows={rows}
+        totalRecords={2}
+        showSearch={false}
+        showRowsPerPage={false}
+        showCurrentPageReport={false}
+      />,
+    );
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByText(/Showing/)).toBeNull();
+  });
+
+  it('shows the header hint as a tooltip when the help control is focused, without announcing it twice', async () => {
+    render(<DataTable columns={columns} rows={rows} totalRecords={2} />);
+    await userEvent.tab();
+    const help = screen.getByRole('button', { name: 'Who owns it' });
+    help.focus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Who owns it');
+    expect(help).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('keeps the page size and sort when paging, and sends the trimmed search term', async () => {
+    const onDataRequest = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        rows={rows}
+        totalRecords={95}
+        pageSize={10}
+        initialSortField="id"
+        showSearch={false}
+        onDataRequest={onDataRequest}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(onDataRequest).toHaveBeenLastCalledWith({
+      pageIndex: 1,
+      pageSize: 10,
+      sort: { field: 'id', direction: 'asc' },
+      searchTerm: undefined,
+    });
+  });
+
+  it('shows an object cell as text and an empty cell for a missing field', () => {
+    render(
+      <DataTable
+        columns={[
+          { field: 'owner', header: 'Owner' },
+          { field: 'nothing', header: 'None' },
+        ]}
+        rows={rows}
+        totalRecords={2}
+        showSearch={false}
+      />,
+    );
+    expect(screen.getAllByRole('cell')[0]).toHaveTextContent('{"name":"Ada"}');
+    expect(screen.getAllByRole('cell')[1]).toBeEmptyDOMElement();
+  });
+
+  it('does not make a column sortable without a field', () => {
+    render(
+      <DataTable columns={[{ header: 'Computed', sort: true }]} rows={rows} totalRecords={2} showSearch={false} />,
+    );
+    expect(screen.getByRole('columnheader', { name: 'Computed' })).not.toHaveAttribute('aria-sort');
+    expect(screen.queryByRole('button', { name: 'Computed' })).toBeNull();
+  });
+
+  it('applies scrollHeight and scrollable to the scroll area', () => {
+    const { container } = render(
+      <DataTable columns={columns} rows={rows} totalRecords={2} scrollable scrollHeight="10rem" />,
+    );
+    const scroll = container.querySelector<HTMLElement>('.tumaet-ui-data-table-scroll')!;
+    expect(scroll.style.maxHeight).toBe('10rem');
+    expect(scroll.style.overflowY).toBe('auto');
+    expect(container.querySelector('table')).toHaveAttribute('data-sticky', 'true');
+  });
+});
+
+describe('Table details', () => {
+  it('does not request a sort from a disabled header and treats sortOrder 0 as unsorted', async () => {
+    const onSortChange = vi.fn();
+    render(
+      <Table aria-label="t" sortField="a" sortOrder={0} onSortChange={onSortChange}>
+        <thead>
+          <tr>
+            <SortableColumnHeader field="a">A</SortableColumnHeader>
+            <SortableColumnHeader field="b" disabled>
+              B
+            </SortableColumnHeader>
+          </tr>
+        </thead>
+      </Table>,
+    );
+    expect(screen.getByRole('columnheader', { name: 'A' })).toHaveAttribute('aria-sort', 'none');
+    await userEvent.click(screen.getByRole('button', { name: 'B' }));
+    expect(onSortChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('columnheader', { name: 'B' })).toHaveAttribute('aria-sort', 'none');
+    expect(screen.getByRole('columnheader', { name: 'B' })).not.toHaveAttribute('data-sortable');
+  });
+
+  it('toggles descending back to ascending', async () => {
+    const onSortChange = vi.fn();
+    render(
+      <Table aria-label="t" sortField="a" sortOrder={-1} onSortChange={onSortChange}>
+        <thead>
+          <tr>
+            <SortableColumnHeader field="a">A</SortableColumnHeader>
+          </tr>
+        </thead>
+      </Table>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'A' }));
+    expect(onSortChange).toHaveBeenLastCalledWith({ field: 'a', order: 1 });
   });
 });

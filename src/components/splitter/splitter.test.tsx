@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { expectNoA11yViolations } from '../../test-utils';
 import { Splitter } from './splitter';
 
@@ -164,5 +165,187 @@ describe('Splitter', () => {
       </main>,
     );
     await expectNoA11yViolations();
+  });
+
+  describe('pointer gestures', () => {
+    const pointer = (target: Element | Document | Window, type: string, x = 0, pointerId = 1, button = 0) =>
+      fireEvent(
+        target,
+        Object.assign(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, button }), { pointerId }),
+      );
+    const shield = () => document.querySelector('[data-tumaet-splitter-shield]');
+    const mockWidth = (container: HTMLElement, width = 1008) =>
+      vi.spyOn(container.firstElementChild as HTMLElement, 'getBoundingClientRect').mockReturnValue({
+        left: 0,
+        top: 0,
+        width,
+        height: 508,
+      } as DOMRect);
+
+    it('ignores the secondary button, other pointers, and rolls back cancellations without onResizeEnd', () => {
+      const onResizeEnd = vi.fn();
+      const { container, separator } = setup({ onResizeEnd, gutterSize: 8 });
+      mockWidth(container);
+      pointer(separator, 'pointerdown', 600, 1, 2);
+      expect(shield()).toBeNull();
+      pointer(separator, 'pointerdown', 600);
+      pointer(document, 'pointermove', 650, 2);
+      pointer(document, 'pointercancel', 0, 2);
+      expect(separator).toHaveAttribute('aria-valuenow', '60');
+      expect(shield()).not.toBeNull();
+      pointer(document, 'pointermove', 650);
+      expect(separator).toHaveAttribute('aria-valuenow', '65');
+      pointer(document, 'pointercancel', 650);
+      expect(separator).toHaveAttribute('aria-valuenow', '60');
+      expect(onResizeEnd).not.toHaveBeenCalled();
+    });
+
+    it.each(['lostpointercapture', 'blur'])('cancels the gesture on %s', (event) => {
+      const { container, separator } = setup({ gutterSize: 8 });
+      mockWidth(container);
+      pointer(separator, 'pointerdown', 600);
+      pointer(document, 'pointermove', 650);
+      pointer(event === 'blur' ? window : separator, event);
+      expect(shield()).toBeNull();
+      expect(separator).toHaveAttribute('aria-valuenow', '60');
+    });
+
+    it('uses the rendered gutter size for the pointer percentages', () => {
+      const { container, separator } = setup();
+      mockWidth(container);
+      vi.spyOn(separator, 'getBoundingClientRect').mockReturnValue({ width: 108, height: 508 } as DOMRect);
+      pointer(separator, 'pointerdown', 600);
+      pointer(document, 'pointermove', 645);
+      expect(separator).toHaveAttribute('aria-valuenow', '65');
+      pointer(document, 'pointerup', 645);
+    });
+
+    it('continues a drag when the parent echoes the emitted sizes', () => {
+      function Controlled() {
+        const [sizes, setSizes] = useState<[number, number]>([60, 40]);
+        return (
+          <Splitter panelSizes={sizes} minSizes={[20, 30]} gutterSize={8} onSizesChange={setSizes}>
+            <i />
+            <i />
+          </Splitter>
+        );
+      }
+      const { container } = render(<Controlled />);
+      mockWidth(container, 966);
+      const separator = screen.getByRole('separator');
+      pointer(separator, 'pointerdown', 600);
+      pointer(document, 'pointermove', 601);
+      expect(shield()).not.toBeNull();
+      pointer(document, 'pointermove', 603);
+      expect(shield()).not.toBeNull();
+      expect(Number(separator.getAttribute('aria-valuenow'))).toBeCloseTo(60 + (3 * 100) / 958, 8);
+      pointer(document, 'pointerup', 603);
+      expect(shield()).toBeNull();
+    });
+
+    it('ends a running drag when the parent replaces the panel sizes', () => {
+      const { container, rerender, separator } = setup({ gutterSize: 8 });
+      mockWidth(container);
+      pointer(separator, 'pointerdown', 600);
+      pointer(document, 'pointermove', 650);
+      rerender(
+        <Splitter panelSizes={[45, 55]} minSizes={[20, 30]} gutterSize={8}>
+          <i />
+          <i />
+        </Splitter>,
+      );
+      expect(shield()).toBeNull();
+      expect(separator).toHaveAttribute('aria-valuenow', '45');
+      pointer(document, 'pointermove', 700);
+      expect(separator).toHaveAttribute('aria-valuenow', '45');
+    });
+
+    it('ends a running drag when the second panel collapses or the layout changes, and on unmount', () => {
+      const { container, rerender, separator, unmount } = setup({ gutterSize: 8 });
+      mockWidth(container);
+      pointer(separator, 'pointerdown', 600);
+      rerender(
+        <Splitter panelSizes={[60, 40]} minSizes={[20, 30]} gutterSize={8} collapsedSecondSize="3rem">
+          <i />
+          <i />
+        </Splitter>,
+      );
+      expect(shield()).toBeNull();
+      rerender(
+        <Splitter panelSizes={[60, 40]} minSizes={[20, 30]} gutterSize={8}>
+          <i />
+          <i />
+        </Splitter>,
+      );
+      pointer(separator, 'pointerdown', 600);
+      rerender(
+        <Splitter panelSizes={[60, 40]} minSizes={[20, 30]} gutterSize={8} layout="vertical">
+          <i />
+          <i />
+        </Splitter>,
+      );
+      expect(shield()).toBeNull();
+      pointer(separator, 'pointerdown', 600);
+      expect(shield()).not.toBeNull();
+      unmount();
+      expect(shield()).toBeNull();
+    });
+  });
+
+  it('ignores unrelated keys and invalid stored values, and keeps independent sizes per layout', async () => {
+    window.localStorage.setItem('k-horizontal', 'invalid');
+    window.localStorage.setItem('k-vertical', '35');
+    const { rerender, separator } = setup({ stateKey: 'k' });
+    expect(separator).toHaveAttribute('aria-valuenow', '60');
+    separator.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(separator).toHaveAttribute('aria-valuenow', '60');
+    rerender(
+      <Splitter panelSizes={[60, 40]} minSizes={[20, 30]} stateKey="k" layout="vertical">
+        <i />
+        <i />
+      </Splitter>,
+    );
+    expect(separator).toHaveAttribute('aria-valuenow', '35');
+  });
+
+  it('keeps resizing available when local storage fails', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('disabled');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('disabled');
+    });
+    const onResizeEnd = vi.fn();
+    const { separator } = setup({ stateKey: 'k', onResizeEnd });
+    separator.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(onResizeEnd).toHaveBeenCalledWith([62, 38]);
+    vi.restoreAllMocks();
+  });
+
+  it('uses an explicit separator label', () => {
+    const { separator } = setup({ separatorLabel: 'Resize documents' });
+    expect(separator).toHaveAccessibleName('Resize documents');
+  });
+
+  it('keeps the panel content mounted across collapse and expand', () => {
+    const { rerender } = setup();
+    const input = screen.getByLabelText('Draft') as HTMLInputElement;
+    input.value = 'Edited';
+    rerender(
+      <Splitter collapsedSecondSize="3rem">
+        <input aria-label="Draft" />
+        <p>Second</p>
+      </Splitter>,
+    );
+    rerender(
+      <Splitter>
+        <input aria-label="Draft" />
+        <p>Second</p>
+      </Splitter>,
+    );
+    expect(screen.getByLabelText('Draft')).toBe(input);
+    expect(input.value).toBe('Edited');
   });
 });

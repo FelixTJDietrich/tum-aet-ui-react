@@ -4,13 +4,16 @@ import { SearchIcon, XIcon } from '../../internal/icons';
 import { useTranslate } from '../../internal/i18n';
 import { mergeRefs } from '../../internal/merge-refs';
 import { useControllable } from '../../internal/use-controllable';
+import { useFormFieldContext } from '../form-field/form-field';
 import { Input, type InputProps } from '../input/input';
 
 export interface SearchFieldProps extends Omit<
   InputProps,
   'type' | 'value' | 'defaultValue' | 'onChange' | 'className' | 'style' | 'ref'
 > {
+  /** Current term. Omit for an uncontrolled field. */
   value?: string;
+  /** Initial term of an uncontrolled field. */
   defaultValue?: string;
   /** Called on every keystroke and on clear with the new term. */
   onChange?: (value: string) => void;
@@ -41,6 +44,7 @@ export function SearchField({
   ...rest
 }: SearchFieldProps) {
   const t = useTranslate();
+  const field = useFormFieldContext();
   const [term, setTerm] = useControllable<string>(value, defaultValue, onChange);
   const inputRef = useRef<HTMLInputElement>(null);
   const placeholderText = placeholder ?? t('tumAetUi.searchField.placeholder');
@@ -58,7 +62,8 @@ export function SearchField({
         value={term}
         disabled={disabled}
         placeholder={placeholderText}
-        aria-label={labelledBy ? ariaLabel : (ariaLabel ?? placeholderText)}
+        // Inside a FormField the visible label names the input; the placeholder would override it otherwise.
+        aria-label={labelledBy || field ? ariaLabel : (ariaLabel ?? placeholderText)}
         aria-labelledby={labelledBy}
         onChange={(event: ChangeEvent<HTMLInputElement>) => setTerm(event.target.value)}
       />

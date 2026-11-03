@@ -41,9 +41,27 @@ describe('EmptyState', () => {
           actions={<button>Go</button>}
           documentation={<a href="#x">Docs</a>}
         />
-        ,
       </main>,
     );
     await expectNoA11yViolations();
+  });
+
+  it('renders children between description and actions, and every variant', () => {
+    const { container, rerender } = render(
+      <EmptyState title="T" description="D" actions={<button>Go</button>}>
+        <span data-testid="extra" />
+      </EmptyState>,
+    );
+    const order = [...container.firstElementChild!.children].map((el) => el.className || el.tagName);
+    expect(order).toEqual([
+      'tumaet-ui-empty-state-title',
+      'tumaet-ui-empty-state-description',
+      'SPAN',
+      'tumaet-ui-empty-state-actions',
+    ]);
+    for (const variant of ['outlined', 'solid', 'plain'] as const) {
+      rerender(<EmptyState title="T" variant={variant} />);
+      expect(container.firstElementChild).toHaveAttribute('data-variant', variant);
+    }
   });
 });

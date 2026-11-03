@@ -19,11 +19,21 @@
 }
 
 .tumaet-ui-date-picker-timezone {
-  display: inline-flex;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: calc(var(--tumaet-ui-spacing) * 4);
   height: calc(var(--tumaet-ui-spacing) * 4);
   margin-block-end: calc(var(--tumaet-ui-spacing) * 1);
   color: var(--tumaet-ui-muted-color);
+}
+/* A small clock at the lower end of the globe, like the Font Awesome stack (shrink-6 down-5 right-5) of the Angular version. */
+.tumaet-ui-date-picker-timezone > svg {
+  position: absolute;
+}
+.tumaet-ui-date-picker-timezone-clock {
+  transform: translate(31.25%, 31.25%) scale(0.625);
 }
 .tumaet-ui-date-picker-timezone:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
@@ -35,13 +45,42 @@
   display: flex;
   align-items: center;
 }
+/* The look of the Angular field: a plain bordered box, with no shadow and no hover or focus border colour. */
 .tumaet-ui-date-picker-input {
   box-sizing: border-box;
+  appearance: none;
   width: 100%;
+  margin: 0;
+  font: inherit;
+  padding-block: calc(var(--tumaet-ui-spacing) * 2);
+  padding-inline-start: calc(var(--tumaet-ui-spacing) * 3);
   padding-inline-end: calc(var(--tumaet-ui-spacing) * 17);
+  color: var(--tumaet-ui-text-color);
+  background-color: var(--tumaet-ui-control-background);
+  border: 1px solid var(--tumaet-ui-control-border-color);
+  border-start-start-radius: var(--_tumaet-ui-input-group-start-radius, var(--tumaet-ui-radius-md));
+  border-end-start-radius: var(--_tumaet-ui-input-group-start-radius, var(--tumaet-ui-radius-md));
+  border-start-end-radius: var(--_tumaet-ui-input-group-end-radius, var(--tumaet-ui-radius-md));
+  border-end-end-radius: var(--_tumaet-ui-input-group-end-radius, var(--tumaet-ui-radius-md));
+}
+.tumaet-ui-date-picker-input::placeholder {
+  color: var(--tumaet-ui-muted-color);
+  opacity: 1;
+}
+.tumaet-ui-date-picker-input:disabled {
+  opacity: 1;
+  background-color: var(--tumaet-ui-disabled-background);
+  color: var(--tumaet-ui-disabled-color);
 }
 .tumaet-ui-date-picker-input[aria-invalid='true'] {
   border-color: var(--tumaet-ui-state-danger);
+}
+/* Inside an input group the corners that touch a neighbour are square, as for the Angular field. */
+.tumaet-ui-input-group > .tumaet-ui-date-picker:not(:first-child) {
+  --_tumaet-ui-input-group-start-radius: 0;
+}
+.tumaet-ui-input-group > .tumaet-ui-date-picker:not(:last-child) {
+  --_tumaet-ui-input-group-end-radius: 0;
 }
 .tumaet-ui-date-picker-input:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
@@ -147,6 +186,9 @@
   font: inherit;
   cursor: pointer;
 }
+.tumaet-ui-calendar-nav:dir(rtl) > svg {
+  transform: scaleX(-1);
+}
 .tumaet-ui-calendar-nav:hover {
   background: var(--tumaet-ui-hover-background);
 }
@@ -199,7 +241,6 @@
   color: var(--tumaet-ui-disabled-color);
   cursor: not-allowed;
   text-decoration: line-through;
-  box-shadow: none;
 }
 
 /* time steppers */

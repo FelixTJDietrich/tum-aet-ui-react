@@ -41,4 +41,22 @@ describe('Chip', () => {
     );
     await expectNoA11yViolations();
   });
+
+  it('prefers label over children, reflects size, and does not remove on other keys or when not removable', async () => {
+    const onRemove = vi.fn();
+    const { container } = render(
+      <Chip label="Label" size="small" removable onRemove={onRemove}>
+        Child
+      </Chip>,
+    );
+    expect(screen.getByText('Label')).toBeInTheDocument();
+    expect(screen.queryByText('Child')).toBeNull();
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'small');
+    expect(container.firstElementChild).toHaveAttribute('data-removable');
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
+    expect(onRemove).toHaveBeenCalledOnce();
+    await userEvent.keyboard('{Escape}');
+    expect(onRemove).toHaveBeenCalledOnce();
+  });
 });

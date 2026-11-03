@@ -29,22 +29,31 @@ export interface MultiSelectProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'onChange' | 'defaultValue' | 'placeholder'
 > {
+  /** The options: primitives, or objects read through `optionLabel` and `optionValue`. */
   options?: readonly unknown[];
+  /** Property used as the visible label of object options. */
   optionLabel?: string;
   /** Property written as the value; omit it to use the option itself. */
   optionValue?: string;
   /** Array of the chosen values. */
   value?: readonly unknown[];
+  /** Initial values when the control is uncontrolled. */
   defaultValue?: readonly unknown[];
   /** Called with the new array of chosen values whenever an option is toggled. */
   onChange?: (value: unknown[]) => void;
+  /** Text of the trigger while nothing is chosen. */
   placeholder?: string;
+  /** Disables the trigger; an open list closes. */
   disabled?: boolean;
+  /** Reports the control as required to assistive technology. */
   required?: boolean;
+  /** Height and font size of the trigger. */
   size?: MultiSelectSize;
+  /** `outlined` looks like an outlined primary button. */
   variant?: MultiSelectVariant;
   /** How many chosen labels the default summary lists before it falls back to a count. */
   maxSelectedLabels?: number;
+  /** Message shown when there are no options. */
   emptyMessage?: string;
   /** Replaces the label of an option row. */
   renderOption?: (option: unknown, state: { selected: boolean }) => ReactNode;
@@ -52,11 +61,15 @@ export interface MultiSelectProps extends Omit<
   renderSelectedItems?: (options: unknown[]) => ReactNode;
   /** Id of the trigger, so an external `<label for>` associates. */
   id?: string;
+  /** Name of the hidden inputs (one per value) that carry the values in a native form. */
   name?: string;
+  /** Accessible name of the trigger and the list. */
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  /** Marks the control as invalid and draws the danger border. */
   'aria-invalid'?: boolean | 'true' | 'false';
+  /** Ref of the root element. */
   ref?: Ref<HTMLDivElement>;
 }
 
@@ -104,6 +117,10 @@ export function MultiSelect({
   const [openState, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const open = openState && !disabled;
+  if (disabled && openState) {
+    // Disabling while open closes the list for good, so it does not reappear when the control is enabled again.
+    setOpen(false);
+  }
 
   const isSelected = (option: unknown) => {
     const v = optionValueOf(option, optionValue);
@@ -111,7 +128,8 @@ export function MultiSelect({
   };
   // In the order of the option list, so the summary does not depend on the order of choosing.
   const selectedOptions = options.filter(isSelected);
-  const activeIndex = Math.min(active, options.length - 1);
+  // Also activates the first option of an open list that was empty.
+  const activeIndex = open && active < 0 && options.length > 0 ? 0 : Math.min(active, options.length - 1);
 
   const openPanel = () => {
     if (open || disabled) return;
@@ -219,6 +237,7 @@ export function MultiSelect({
       data-size={size}
       data-variant={variant}
       data-open={open || undefined}
+      data-disabled={disabled || undefined}
     >
       <div
         ref={trigger}

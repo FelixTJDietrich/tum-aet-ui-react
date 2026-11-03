@@ -18,6 +18,7 @@ import {
 export type SelectSize = 'small' | 'default' | 'large';
 
 export interface SelectProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue' | 'placeholder'> {
+  /** The options: primitives, or objects read through `optionLabel` and `optionValue`. */
   options?: readonly unknown[];
   /** Property used as the visible label of object options. */
   optionLabel?: string;
@@ -25,30 +26,43 @@ export interface SelectProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
   optionValue?: string;
   /** Selected value. Cleared with `null`. */
   value?: unknown;
+  /** Initial value when the select is uncontrolled. */
   defaultValue?: unknown;
   /** Called with the new value (`null` after clearing). */
   onChange?: (value: unknown) => void;
+  /** Text of the trigger while nothing is selected. */
   placeholder?: string;
+  /** Disables the trigger; an open list closes. */
   disabled?: boolean;
   /** Reports the control as required to assistive technology. */
   required?: boolean;
+  /** Shows a button that clears the selection. */
   showClear?: boolean;
   /** Adds a search field above the list. */
   filter?: boolean;
   /** Comma-separated property names searched by the filter; defaults to the label. */
   filterBy?: string;
+  /** Placeholder of the search field. */
   filterPlaceholder?: string;
+  /** Accessible name of the search field. */
   filterAriaLabel?: string;
+  /** Accessible name of the clear button. */
   clearAriaLabel?: string;
+  /** Message shown when there are no options. */
   emptyMessage?: string;
+  /** Height and font size of the trigger. */
   size?: SelectSize;
   /** Id of the trigger, so an external `<label for>` associates. */
   id?: string;
+  /** Name of a hidden input that carries the value in a native form. */
   name?: string;
+  /** Accessible name of the trigger and the list. */
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  /** Marks the control as invalid and draws the danger border. */
   'aria-invalid'?: boolean | 'true' | 'false';
+  /** Ref of the root element. */
   ref?: Ref<HTMLDivElement>;
 }
 
@@ -98,6 +112,11 @@ export function Select({
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
   const open = openState && !disabled;
+  if (disabled && openState) {
+    // Disabling while open closes the list for good, so it does not reappear when the select is enabled again.
+    setOpen(false);
+    setQuery('');
+  }
 
   const hasValue = current !== undefined && current !== null;
   const isSelected = (option: unknown) => hasValue && valuesMatch(optionValueOf(option, optionValue), current);
@@ -117,8 +136,8 @@ export function Select({
   const visible = filtering
     ? options.filter((o) => fields(o).some((f) => f.toLocaleLowerCase().includes(needle)))
     : options;
-  // Keeps aria-activedescendant valid when the list shrinks.
-  const activeIndex = Math.min(active, visible.length - 1);
+  // Keeps aria-activedescendant valid when the list shrinks, and activates the first option of an open list that was empty.
+  const activeIndex = open && active < 0 && visible.length > 0 ? 0 : Math.min(active, visible.length - 1);
 
   const openPanel = (initial?: { index?: number; query?: string }) => {
     if (open || disabled) return;

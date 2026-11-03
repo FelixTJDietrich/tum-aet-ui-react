@@ -45,6 +45,10 @@
 .tumaet-ui-sortable-column {
   white-space: nowrap;
 }
+.tumaet-ui-sortable-column[data-sortable] {
+  cursor: pointer;
+  user-select: none;
+}
 .tumaet-ui-sortable-column[data-sortable]:hover {
   background: var(--tumaet-ui-hover-background);
 }
@@ -127,9 +131,6 @@
   padding: calc(var(--tumaet-ui-spacing) * 1.5) calc(var(--tumaet-ui-spacing) * 10) calc(var(--tumaet-ui-spacing) * 1.5)
     calc(var(--tumaet-ui-spacing) * 3);
 }
-.tumaet-ui-data-table-search input:hover {
-  border-color: var(--tumaet-ui-control-border-hover-color);
-}
 .tumaet-ui-data-table-search input:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
@@ -183,9 +184,6 @@
   color: var(--tumaet-ui-highlight-color);
   /* Not colour alone, so the row still reads as singled out without relying on hue. */
   font-weight: 500;
-}
-.tumaet-ui-data-table-table tbody tr[data-highlighted] td {
-  color: inherit;
 }
 .tumaet-ui-data-table-actions {
   text-align: end;

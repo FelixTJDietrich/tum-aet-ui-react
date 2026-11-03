@@ -158,13 +158,27 @@ describe('Autocomplete', () => {
       expect(screen.getByRole('option', { name: 'Apple' })).toHaveAttribute('aria-selected', 'true');
       await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
       expect(onChange).toHaveBeenCalledTimes(1);
-      await userEvent.click(screen.getByRole('option', { name: 'Apricot' }));
+      await userEvent.type(input(), 'a');
+      await userEvent.click(await screen.findByRole('option', { name: 'Apricot' }));
       expect(onChange).toHaveBeenLastCalledWith(['Apple', 'Apricot']);
       await userEvent.keyboard('{Backspace}');
       expect(onChange).toHaveBeenLastCalledWith(['Apple']);
       expect(onOptionRemove).toHaveBeenLastCalledWith(expect.objectContaining({ value: 'Apricot' }));
       await userEvent.click(screen.getByRole('button', { name: 'Remove Apple' }));
       expect(onChange).toHaveBeenLastCalledWith([]);
+      expect(input()).toHaveFocus();
+    });
+
+    it('dismisses the query and suggestions when an already chosen suggestion is picked', async () => {
+      const onChange = vi.fn();
+      const onOptionSelect = vi.fn();
+      render(<Harness multiple defaultValue={['Apple']} onChange={onChange} onOptionSelect={onOptionSelect} />);
+      await userEvent.type(input(), 'a');
+      await userEvent.click(await screen.findByRole('option', { name: 'Apple' }));
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onOptionSelect).not.toHaveBeenCalled();
+      expect(input()).toHaveValue('');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       expect(input()).toHaveFocus();
     });
 

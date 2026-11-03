@@ -6,6 +6,7 @@ export type IconFieldPosition = 'left' | 'right';
 export interface IconFieldProps extends HTMLAttributes<HTMLDivElement> {
   /** Decorative icon shown inside the field. */
   icon?: ReactNode;
+  /** Side of the field the icon sits on. The input gets matching padding. Follows the writing direction (RTL flips it). */
   iconPosition?: IconFieldPosition;
   ref?: Ref<HTMLDivElement>;
 }

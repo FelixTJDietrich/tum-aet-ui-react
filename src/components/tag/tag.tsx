@@ -6,10 +6,13 @@ export type TagSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger' |
 export type TagSize = 'sm' | 'md';
 
 export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Colour role. `secondary` is the neutral default, `contrast` the inverted high-emphasis tag. */
   severity?: TagSeverity;
+  /** `md` for a standalone tag, `sm` for a tag that annotates other content. */
   size?: TagSize;
   /** Text of the tag; `children` are used when it is not set. */
   value?: string;
+  /** Fully rounded (pill) corners instead of the medium radius. */
   rounded?: boolean;
   ref?: Ref<HTMLSpanElement>;
   children?: ReactNode;

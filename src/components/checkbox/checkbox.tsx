@@ -16,12 +16,15 @@ export interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'type' | 'size' | 'checked' | 'defaultChecked' | 'onChange' | 'className' | 'style'
 > {
+  /** Checked state of a controlled checkbox. Omit it for an uncontrolled one. */
   checked?: boolean;
+  /** Initial state of an uncontrolled checkbox. */
   defaultChecked?: boolean;
   /** Called with the new state and the originating event. */
   onChange?: (checked: boolean, event: ChangeEvent<HTMLInputElement>) => void;
   /** Shows the partial-selection dash. Purely visual and exposed as the native indeterminate state; `checked` is unchanged. */
   indeterminate?: boolean;
+  /** Marks the checkbox invalid (also set by an enclosing invalid FormField). */
   invalid?: boolean;
   /** Class of the wrapper element. */
   className?: string;
@@ -76,6 +79,8 @@ export function Checkbox({
         checked={isChecked}
         disabled={disabled}
         onChange={(event) => {
+          // A click makes the browser drop the native mixed state; the parent owns it, so put it back.
+          event.target.indeterminate = indeterminate;
           setChecked(event.target.checked);
           onChange?.(event.target.checked, event);
         }}

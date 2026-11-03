@@ -7,9 +7,12 @@ export type ButtonSize = 'small' | 'default' | 'large';
 export type ButtonVariant = 'solid' | 'outlined' | 'text';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Colour role of the button. */
   severity?: ButtonSeverity;
   size?: ButtonSize;
+  /** `solid` fills, `outlined` draws a border only, `text` has neither. */
   variant?: ButtonVariant;
+  /** Fully rounded (pill) corners, for icon-only buttons. */
   rounded?: boolean;
   /** Replaces the icon with a spinner and disables the button. */
   loading?: boolean;
@@ -48,7 +51,25 @@ export function Button({
   );
 }
 
-/** Class names for styling a native `<a>` or other element like a button. */
+/** Class names for styling a native `<a>` or other element like a button. Pair with `buttonAttributes` for severity, size and variant. */
 export function buttonClassName({ rounded }: { rounded?: boolean } = {}): string {
   return cx('tumaet-ui-btn', rounded && 'tumaet-ui-btn-rounded');
+}
+
+/**
+ * Props that style a native `<a>` or any element like a `Button` (the counterpart of the Angular `tumAetUiButton` directive):
+ * `<a href="/x" {...buttonAttributes({ variant: 'text' })}>Details</a>`.
+ */
+export function buttonAttributes({
+  severity = 'primary',
+  size = 'default',
+  variant = 'solid',
+  rounded,
+}: Pick<ButtonProps, 'severity' | 'size' | 'variant' | 'rounded'> = {}) {
+  return {
+    className: buttonClassName({ rounded }),
+    'data-severity': severity,
+    'data-size': size,
+    'data-variant': variant,
+  } as const;
 }

@@ -1,5 +1,5 @@
 import type { HTMLAttributes, KeyboardEvent, ButtonHTMLAttributes, Ref } from 'react';
-import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { cx } from '../../internal/cx';
 import { mergeRefs } from '../../internal/merge-refs';
 import { useControllable } from '../../internal/use-controllable';
@@ -17,7 +17,9 @@ import {
 export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
   /** Value of the selected tab and its panel (controlled). */
   value?: TabValue;
+  /** Initially selected tab when uncontrolled. */
   defaultValue?: TabValue;
+  /** Called with the value of the tab the user selected, and when a fallback selection replaces a value that names no enabled tab. */
   onChange?: (value: TabValue) => void;
   /** `automatic` selects a tab when it receives focus, `manual` only on Enter, Space or click. */
   activation?: 'automatic' | 'manual';
@@ -38,6 +40,12 @@ export function Tabs({ value, defaultValue, onChange, activation = 'automatic', 
   const ordered = sortTabs(tabs);
   const activeValue = resolveActiveValue(selected, ordered);
   const tabbableValue = ordered.some((tab) => tab.value === activeValue) ? activeValue : ordered[0]?.value;
+
+  // Like the Angular tabs, write a fallback selection back: when the value names no enabled tab, the first enabled
+  // tab is shown, so the owner of the value must hear about it instead of staying on a stale value.
+  useEffect(() => {
+    if (ordered.length > 0 && activeValue !== undefined && activeValue !== selected) setSelected(activeValue);
+  }, [ordered.length, activeValue, selected, setSelected]);
 
   const select = (next: TabValue) => {
     if (next !== activeValue) setSelected(next);

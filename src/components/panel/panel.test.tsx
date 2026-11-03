@@ -71,9 +71,36 @@ describe('Panel', () => {
             B
           </Panel>
         </>
-        ,
       </main>,
     );
     await expectNoA11yViolations();
+  });
+
+  it('treats a whitespace-only header like no header for names and the region', () => {
+    render(
+      <Panel header="   " toggleable>
+        Body
+      </Panel>,
+    );
+    expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument();
+    expect(screen.queryByRole('region')).toBeNull();
+  });
+
+  it('prefers toggleLabel over the header and does not toggle when not toggleable', async () => {
+    const onCollapsedChange = vi.fn();
+    const { rerender } = render(
+      <Panel header="Programming" toggleable toggleLabel="Programming exercises (3)">
+        Body
+      </Panel>,
+    );
+    expect(screen.getByRole('button', { name: 'Programming exercises (3)' })).not.toHaveAttribute('aria-labelledby');
+    rerender(
+      <Panel header="Static" collapsed onCollapsedChange={onCollapsedChange}>
+        Body
+      </Panel>,
+    );
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(document.querySelector('.tumaet-ui-panel')).not.toHaveAttribute('data-collapsed');
+    expect(document.querySelector('.tumaet-ui-panel-content-container')).not.toHaveAttribute('inert');
   });
 });

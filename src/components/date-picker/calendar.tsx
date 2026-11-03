@@ -150,8 +150,6 @@ export function Calendar({
     }
   };
 
-  const rtl = typeof document !== 'undefined' && document.dir === 'rtl';
-
   return (
     <div
       {...rest}
@@ -169,7 +167,7 @@ export function Calendar({
           onClick={() => changeMonth(addMonths(startOfMonth(activeMonth), -1))}
           aria-label={translate('tumAetUi.datePicker.previousMonth', { month: monthName(-1) })}
         >
-          {rtl ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          <ChevronLeftIcon />
         </button>
         <span className="tumaet-ui-calendar-title" aria-live="polite">
           {monthLabel}
@@ -180,7 +178,7 @@ export function Calendar({
           onClick={() => changeMonth(addMonths(startOfMonth(activeMonth), 1))}
           aria-label={translate('tumAetUi.datePicker.nextMonth', { month: monthName(1) })}
         >
-          {rtl ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          <ChevronRightIcon />
         </button>
       </div>
       <table role="grid" aria-label={monthLabel} className="tumaet-ui-calendar-grid">

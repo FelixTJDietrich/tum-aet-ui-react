@@ -2,6 +2,7 @@ import {
   cloneElement,
   useCallback,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   type HTMLAttributes,
@@ -79,6 +80,16 @@ export function Popover({
     (tabbables(node)[0] ?? node).focus({ preventScroll: true });
   }, []);
 
+  // Closed from outside (the parent sets `open` to false, a button inside the panel closes it): the panel that held focus
+  // is gone and focus fell back to the body, so give it back to the trigger. A focus that already went somewhere else stays.
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    return () => {
+      const active = document.activeElement;
+      if (!active || active === document.body) anchor.current?.focus();
+    };
+  }, [isOpen]);
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     rest.onKeyDown?.(event);
     if (event.key !== 'Tab') return;
@@ -117,6 +128,7 @@ export function Popover({
         anchor={anchor}
         open={isOpen}
         placement={placement}
+        offset={8}
         onDismiss={close}
         id={panelId}
         role="dialog"

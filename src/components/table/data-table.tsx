@@ -4,6 +4,7 @@ import { cx } from '../../internal/cx';
 import { useTranslate } from '../../internal/i18n';
 import { SearchIcon, SortDownIcon, SortIcon, SortUpIcon } from '../../internal/icons';
 import { Paginator } from '../paginator/paginator';
+import { Tooltip } from '../tooltip/tooltip';
 import { CircleQuestionIcon } from './icons';
 import {
   ariaSortFor,
@@ -26,10 +27,13 @@ export interface DataTableApi {
 }
 
 export interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Columns in display order. Nested field paths use `a.b[0].c` syntax. */
   columns: ColumnDef<T>[];
   /** Rows of the current page. Sorting and filtering are not applied locally. */
   rows: T[];
+  /** Total number of records on the server, for the paginator. */
   totalRecords?: number;
+  /** Shows a spinner overlay, sets `aria-busy` and disables the paginator. */
   loading?: boolean;
   /** Renders the content of an extra trailing actions column. */
   rowActions?: (row: T) => ReactNode;
@@ -37,20 +41,29 @@ export interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 
   rowHighlighted?: (row: T) => boolean;
   /** Stable key per row; defaults to the row index. */
   getRowKey?: (row: T, index: number) => Key;
+  /** Alternating row background. */
   striped?: boolean;
+  /** Scrolls vertically inside the table and keeps the header row sticky. */
   scrollable?: boolean;
   /** Max height of the scroll area (any CSS length), or `'flex'` to fill a flex parent. */
   scrollHeight?: string;
+  /** Shows the search field (debounced by 300 ms). */
   showSearch?: boolean;
   /** Translation key or text. */
   searchPlaceholder?: string;
   /** Translation key or text shown when there are no rows. */
   emptyMessage?: string;
+  /** Initial rows per page. */
   pageSize?: number;
+  /** Choices of the rows-per-page select. */
   pageSizeOptions?: number[];
+  /** Shows the rows-per-page select. */
   showRowsPerPage?: boolean;
+  /** Shows the "Showing x to y of z" text. */
   showCurrentPageReport?: boolean;
+  /** Field sorted at first, reported with the first data request. */
   initialSortField?: string;
+  /** Direction of the initial sort. */
   initialSortDirection?: SortDirection;
   /** Visually hidden caption that names the table. Alternatively pass `aria-label` or `aria-labelledby`. */
   caption?: ReactNode;
@@ -58,6 +71,7 @@ export interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 
   'aria-labelledby'?: string;
   /** Called on mount and whenever page, page size, sort or the (debounced) search term changes. */
   onDataRequest?: (query: TableQuery) => void;
+  /** Receives the imperative API (`resetPage`). */
   apiRef?: Ref<DataTableApi>;
   ref?: Ref<HTMLDivElement>;
 }
@@ -223,14 +237,11 @@ export function DataTable<T>({
                         <span>{heading}</span>
                       )}
                       {tooltip && (
-                        <button
-                          type="button"
-                          className="tumaet-ui-data-table-help"
-                          title={tooltip}
-                          aria-label={tooltip}
-                        >
-                          <CircleQuestionIcon />
-                        </button>
+                        <Tooltip content={tooltip} describesHost={false}>
+                          <button type="button" className="tumaet-ui-data-table-help" aria-label={tooltip}>
+                            <CircleQuestionIcon />
+                          </button>
+                        </Tooltip>
                       )}
                     </span>
                   </th>

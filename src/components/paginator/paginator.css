@@ -72,9 +72,6 @@
   font: inherit;
   cursor: pointer;
 }
-.tumaet-ui-paginator-select:hover:not(:disabled) {
-  border-color: var(--tumaet-ui-control-border-hover-color);
-}
 .tumaet-ui-paginator-select:disabled {
   cursor: default;
   opacity: 0.5;

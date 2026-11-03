@@ -12,6 +12,7 @@ export interface DialogProps extends Omit<
 > {
   /** Controlled open state. */
   open?: boolean;
+  /** Initial open state when `open` is not given (uncontrolled). */
   defaultOpen?: boolean;
   /** Called with `false` when the user dismisses the dialog (close button, Escape, mask click) and the parent should close it. */
   onOpenChange?: (open: boolean) => void;
@@ -33,6 +34,7 @@ export interface DialogProps extends Omit<
   size?: DialogSize;
   /** Overrides the translated label of the close button. */
   closeButtonAriaLabel?: string;
+  /** `alertdialog` for a decision that interrupts the user. */
   role?: 'dialog' | 'alertdialog';
   /** Initial focus target. `'dialog'` keeps long content at its starting scroll position. */
   autoFocus?: 'dialog' | 'first-tabbable';
@@ -148,9 +150,20 @@ function DialogSurface({
         event.preventDefault();
         if (closeOnEscape) onRequestClose();
       }}
-      onClose={() => {
-        // Closed natively (for example by a `<form method="dialog">` inside): tell the parent.
-        if (!closing.current) onRequestClose();
+      onClose={(event) => {
+        // Closed natively (for example by a `<form method="dialog">` inside): tell the parent. The event is queued by
+        // the browser, so one caused by our own close() can arrive after the dialog was opened again (StrictMode
+        // re-runs the effect): an open dialog was not closed.
+        if (!closing.current && !event.currentTarget.open) onRequestClose();
+      }}
+      onKeyDown={(event) => {
+        rest.onKeyDown?.(event);
+        if (event.key !== 'Escape' || event.defaultPrevented) return;
+        // Escape is handled here instead of through the browser's `cancel`, so it is the same in every browser (Chromium
+        // closes a dialog natively on a repeated Escape even after `cancel` was prevented) and the topmost popup wins:
+        // a menu, popover, select list or tooltip portalled into this dialog closes first and leaves the dialog open.
+        event.preventDefault();
+        if (closeOnEscape && !event.currentTarget.querySelector(':scope > .tumaet-ui-overlay')) onRequestClose();
       }}
       onPointerDown={(event) => {
         pressedOnMask.current = event.target === event.currentTarget;

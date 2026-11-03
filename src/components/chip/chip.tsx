@@ -8,7 +8,9 @@ export type ChipSize = 'small';
 export interface ChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'onKeyDown'> {
   /** Text of the chip; `children` are used when it is not set. */
   label?: string;
+  /** Shows a remove button at the end of the chip. The chip does not hide itself: remove it in `onRemove`. */
   removable?: boolean;
+  /** `small` is the compact chip; leave unset for the default size. */
   size?: ChipSize;
   /** Accessible name of the remove button; defaults to the translated "Remove". */
   removeLabel?: string;

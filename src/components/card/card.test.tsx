@@ -26,4 +26,19 @@ describe('Card', () => {
     );
     await expectNoA11yViolations();
   });
+
+  it('puts media before the body and the footer after the content inside the body', () => {
+    const { container } = render(
+      <Card header="T" media={<div data-testid="media" />} footer={<div data-testid="footer" />}>
+        <span data-testid="content" />
+      </Card>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.firstElementChild).toBe(screen.getByTestId('media'));
+    const body = root.querySelector('.tumaet-ui-card-body') as HTMLElement;
+    expect(body.lastElementChild).toBe(screen.getByTestId('footer'));
+    expect(screen.getByTestId('content').closest('.tumaet-ui-card-content')).not.toBeNull();
+    expect(body.querySelector('.tumaet-ui-card-title')).toHaveTextContent('T');
+    expect(body.querySelector('.tumaet-ui-card-subtitle')).toBeNull();
+  });
 });

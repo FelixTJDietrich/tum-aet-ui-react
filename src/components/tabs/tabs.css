@@ -69,17 +69,19 @@
   pointer-events: none;
 }
 
-.tumaet-ui-tab-panel {
+.tumaet-ui-tab-panels {
   display: block;
   padding: calc(var(--tumaet-ui-spacing) * 3.5) calc(var(--tumaet-ui-spacing) * 4.5)
     calc(var(--tumaet-ui-spacing) * 4.5);
+}
+.tumaet-ui-tab-panel {
+  display: block;
 }
 .tumaet-ui-tab-panel[hidden] {
   display: none;
 }
 .tumaet-ui-tab-panel:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
-  outline-offset: -2px;
 }
 .tumaet-ui-tab-panel[data-fill] {
   height: 100%;
