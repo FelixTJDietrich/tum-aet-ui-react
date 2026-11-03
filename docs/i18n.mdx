@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Texts and localisation" />
+
+# Texts and localisation
+
+Texts that a component produces itself, such as the label of a close button, "No results found" or the paginator summary, are English by default. Keys look like `tumAetUi.dialog.close` and are the same as in the Angular library. The default catalogue is exported as `DEFAULT_TRANSLATIONS`.
+
+Replace them with `TumAetUiI18nProvider`. Pass a function that turns a key and optional parameters into text, for example from your i18n library. `locale` is used for dates and numbers.
+
+```tsx
+import { TumAetUiI18nProvider } from '@tumaet/ui-react';
+
+const de = { 'tumAetUi.dialog.close': 'Schließen' };
+
+function translate(key: string, params?: Record<string, string | number>) {
+  return (de[key] ?? key).replace(/\{(\w+)\}/g, (m, name) => String(params?.[name] ?? m));
+}
+
+<TumAetUiI18nProvider translate={translate} locale="de-DE">
+  <App />
+</TumAetUiI18nProvider>;
+```
+
+Return the key (or a fallback text) for keys you do not know. Texts you pass to components yourself, such as labels and placeholders, are not translated by the library.

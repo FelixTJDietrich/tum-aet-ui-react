@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# TUM AET UI for React
+
+React components and styles of the design system of the Applied Education Technologies (AET) research group at TUM. It is a port of `@tumaet/ui-angular` and shares its design tokens (`--tumaet-ui-*`), class names, light and dark theme.
+
+## Install and use
+
+The package is not published to npm yet. Until then, install it from the repository or link it in a workspace.
+
+```tsx
+import '@tumaet/ui-react/styles.css';
+import { Button, Dialog } from '@tumaet/ui-react';
+```
+
+Import the stylesheet once, after your own global styles. It contains the theme (in the `tumaet-ui-theme` cascade layer, so your own declarations win) and the styles of every component. Components have no runtime dependencies besides `react` and `react-dom` 19.
+
+## Principles
+
+- **Plain CSS and tokens.** Colours, spacing, radii, shadows and type sizes come from CSS custom properties. There is no CSS-in-JS and no Tailwind.
+- **Native platform features.** Modal dialogs use `<dialog>`, dates use `Intl`, popups are positioned by a small built-in helper.
+- **Accessibility is part of the component.** See the Accessibility page.
+- **Same look as the Angular library.** If a component differs from its Angular counterpart, it is documented on its page.
+
+## Where to go next
+
+- **Theming**: dark mode and overriding tokens.
+- **Texts and localisation**: replacing the built-in English texts.
+- **Conventions**: how component props are shaped (controlled and uncontrolled state, `ref`, events).
+- **Accessibility**: what the components do for you and what stays your job.

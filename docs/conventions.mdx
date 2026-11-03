@@ -1,0 +1,13 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Conventions" />
+
+# Conventions
+
+- **Props are spread onto the root element.** Native attributes (`id`, `aria-*`, `data-*`, handlers) work as usual. For composite controls such as `Checkbox`, `ToggleSwitch` or `Select`, native props go to the focusable control and `className` and `style` go to the wrapper; the component's page says so.
+- **`ref` is a normal prop** (React 19).
+- **Controlled or uncontrolled.** Pass `value` (or `open`, `checked`, ...) and an `onChange`-style handler to control a component, or `defaultValue` to let it keep its own state. The change handler receives the new value as first argument; native-like inputs (`Input`, `Textarea`) receive the event. An empty value is `null`, not `undefined`, because `undefined` means "uncontrolled".
+- **Variants are props:** `severity`, `size`, `variant`. They render as `data-*` attributes, which you can use in your own CSS.
+- **Icons are `ReactNode`s.** Bring your own icon library or inline SVGs. Icons next to text are decorative; give icon-only buttons an `aria-label`.
+- **Forms.** Wrap a control in `FormField` to connect its label, hint and error message. `FormField` provides ids and `aria-describedby` / `aria-invalid` to the control inside it.
+- **Class names** start with `tumaet-ui-`. They are stable and usable for styling, for example `tumaet-ui-btn`.
