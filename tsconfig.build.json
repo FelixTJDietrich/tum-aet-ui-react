@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": false, "declaration": true, "emitDeclarationOnly": true, "outDir": "dist/types", "rootDir": "src", "types": ["vite/client"] },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.tsx", "src/**/*.test.ts", "src/**/*.demo.tsx", "src/test-setup.ts", "src/test-utils.ts"]
+}
