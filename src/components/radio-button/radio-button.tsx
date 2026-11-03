@@ -125,7 +125,8 @@ export function RadioButton({
         {...rest}
         ref={ref}
         type="radio"
-        id={control.id}
+        // Several radios share a group, so they must not all adopt the field's single control id.
+        id={group ? (id ?? undefined) : control.id}
         aria-describedby={control['aria-describedby']}
         aria-invalid={control['aria-invalid']}
         className="tumaet-ui-radio-button-input"

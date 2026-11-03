@@ -1,3 +1,4 @@
+import { FormField } from '../form-field/form-field';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
@@ -117,5 +118,18 @@ describe('RadioGroup', () => {
     render(<RadioButton aria-label="Solo" checked={false} onChange={() => {}} />);
     await userEvent.click(screen.getByRole('radio'));
     expect(screen.getByRole('radio')).not.toBeChecked();
+  });
+
+  it('does not give every radio of a group the id of the enclosing FormField', () => {
+    render(
+      <FormField label="Plan" controlId="plan">
+        <RadioGroup defaultValue="a">
+          <RadioButton value="a" aria-label="A" />
+          <RadioButton value="b" aria-label="B" />
+        </RadioGroup>
+      </FormField>,
+    );
+    const ids = screen.getAllByRole('radio').map((r) => r.id);
+    expect(new Set(ids.filter(Boolean)).size).toBe(ids.filter(Boolean).length);
   });
 });

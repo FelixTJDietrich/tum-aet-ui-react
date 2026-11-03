@@ -25,10 +25,15 @@
   text-align: start;
   white-space: nowrap;
 }
-.tumaet-ui-table tbody td {
+.tumaet-ui-table tbody td,
+.tumaet-ui-table tbody th[scope='row'] {
   padding: var(--_py) var(--_px);
   border-bottom: 1px solid var(--tumaet-ui-border-color);
   color: var(--tumaet-ui-text-color);
+}
+.tumaet-ui-table tbody th[scope='row'] {
+  font-weight: 600;
+  text-align: start;
 }
 .tumaet-ui-table[data-striped] tbody tr:nth-child(odd) {
   background: var(--tumaet-ui-table-striped-background);
