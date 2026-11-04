@@ -11,7 +11,7 @@ interface Participant {
   status: string;
 }
 
-const columns: ColumnDef<Participant>[] = [
+const columns: Array<ColumnDef<Participant>> = [
   { field: 'name', header: 'Participant', sort: true, width: '14rem' },
   { field: 'score', header: 'Score', sort: true },
   { field: 'status', header: 'Status', hideBelow: 'sm' },

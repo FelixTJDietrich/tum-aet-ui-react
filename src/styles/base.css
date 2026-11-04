@@ -5,6 +5,7 @@
   line-height: var(--tumaet-ui-line-height-base);
   color: var(--tumaet-ui-text-color);
 }
+
 :where(.tumaet-ui-root, .tumaet-ui-overlay) :where(button, input, select, textarea) {
   font: inherit;
 }
@@ -12,14 +13,17 @@
 .tumaet-ui-icon {
   flex: none;
 }
+
 .tumaet-ui-spin {
   animation: tumaet-ui-spin 1s linear infinite;
 }
+
 @keyframes tumaet-ui-spin {
   to {
     transform: rotate(360deg);
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .tumaet-ui-spin {
     animation-duration: 3s;
@@ -28,19 +32,26 @@
 
 .tumaet-ui-overlay {
   z-index: 1100;
-  background: var(--tumaet-ui-overlay-background);
+
   border: 1px solid var(--tumaet-ui-border-color);
   border-radius: var(--tumaet-ui-radius-md);
+
+  background: var(--tumaet-ui-overlay-background);
   box-shadow: var(--tumaet-ui-shadow-md);
 }
+
 .tumaet-ui-sr-only {
   position: absolute;
+
+  overflow: hidden;
+
   width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  padding: 0;
   border: 0;
+
+  white-space: nowrap;
+
+  clip-path: inset(50%);
 }

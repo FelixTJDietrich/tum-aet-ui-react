@@ -37,7 +37,7 @@ describe('parseDisplay and formatDisplay', () => {
       '13.06.2026 08:30 x',
       'abc',
     ]) {
-      expect(parseDisplay(text), text).toBeUndefined();
+      expect(parseDisplay(text)).toBeUndefined();
     }
   });
 
@@ -53,7 +53,7 @@ describe('parseDisplay and formatDisplay', () => {
       '01.01.2026 24:00',
       '01.01.2026 10:60',
     ]) {
-      expect(parseDisplay(text), text).toBeUndefined();
+      expect(parseDisplay(text)).toBeUndefined();
     }
   });
 

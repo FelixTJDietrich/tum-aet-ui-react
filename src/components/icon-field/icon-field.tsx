@@ -13,14 +13,16 @@ export interface IconFieldProps extends HTMLAttributes<HTMLDivElement> {
 
 /** Wraps an `Input` and overlays a decorative icon at its start or end. */
 export function IconField({ icon, iconPosition = 'left', className, children, ...rest }: IconFieldProps) {
+  // Keeps the falsy semantics of ReactNode (`''`, `0`, `false` render no icon).
+  const hasIcon = Boolean(icon);
   return (
     <div
       {...rest}
       className={cx('tumaet-ui-icon-field', className)}
       data-position={iconPosition}
-      data-has-icon={icon ? '' : undefined}
+      data-has-icon={hasIcon ? '' : undefined}
     >
-      {icon ? (
+      {hasIcon ? (
         <span className="tumaet-ui-input-icon" aria-hidden="true">
           {icon}
         </span>

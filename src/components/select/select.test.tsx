@@ -59,7 +59,9 @@ describe('Select', () => {
       return (
         <>
           <Select aria-label="Fruit" options={fruits} value={value} onChange={setValue} />
-          <button onClick={() => setValue('Cherry')}>external</button>
+          <button type="button" onClick={() => setValue('Cherry')}>
+            external
+          </button>
         </>
       );
     }
@@ -229,7 +231,7 @@ describe('Select', () => {
     render(
       <>
         <Select aria-label="Fruit" options={fruits} />
-        <button>outside</button>
+        <button type="button">outside</button>
       </>,
     );
     await userEvent.click(trigger());

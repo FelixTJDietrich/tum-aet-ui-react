@@ -42,14 +42,14 @@ const KEY_STEP = 2;
 const KEY_STEP_SHIFT = 10;
 
 function percentage(value: number | undefined): number {
-  return Number.isFinite(value) ? Math.max(0, Math.min(100, value!)) : 0;
+  return value !== undefined && Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
 }
 
 function initialSize(sizes: readonly [number, number], key: string | undefined): number {
   const [first, second] = sizes;
   const sum = first + second;
   let initial = Number.isFinite(sum) && first >= 0 && second >= 0 && sum > 0 ? (first * 100) / sum : 50;
-  if (key) {
+  if (key !== undefined && key !== '') {
     try {
       const stored = typeof window === 'undefined' ? null : window.localStorage.getItem(key);
       if (stored !== null && Number.isFinite(Number(stored))) initial = Number(stored);
@@ -78,7 +78,10 @@ export function Splitter({
   const t = useTranslate();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const horizontal = layout === 'horizontal';
-  const storageKey = stateKey ? `${stateKey}-${layout}` : undefined;
+  const isCollapsed = collapsedSecondSize !== undefined && collapsedSecondSize !== '';
+  const firstMinSize = minSizes[0];
+  const secondMinSize = minSizes[1];
+  const storageKey = stateKey !== undefined && stateKey !== '' ? `${stateKey}-${layout}` : undefined;
   const signature = `${panelSizes[0]},${panelSizes[1]},${storageKey ?? ''}`;
 
   const first = percentage(minSizes[0]);
@@ -108,7 +111,7 @@ export function Splitter({
   // Changing the constraints, layout, gutter or collapsed state, or replacing the sizes, ends a running drag.
   useEffect(() => {
     dragCleanup.current?.();
-  }, [resets, layout, minSizes[0], minSizes[1], collapsedSecondSize, gutterSize]);
+  }, [resets, layout, firstMinSize, secondMinSize, collapsedSecondSize, gutterSize]);
 
   const update = (value: number) => {
     const next = latest.current.clamp(value);
@@ -119,7 +122,7 @@ export function Splitter({
 
   const persist = () => {
     const { size: current, storageKey: key } = latest.current;
-    if (key) {
+    if (key !== undefined && key !== '') {
       try {
         window.localStorage.setItem(key, String(current));
       } catch {
@@ -130,7 +133,7 @@ export function Splitter({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (collapsedSecondSize) return;
+    if (isCollapsed) return;
     const decrease = horizontal ? 'ArrowLeft' : 'ArrowUp';
     const increase = horizontal ? 'ArrowRight' : 'ArrowDown';
     const step = event.shiftKey ? KEY_STEP_SHIFT : KEY_STEP;
@@ -147,7 +150,7 @@ export function Splitter({
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     const root = rootRef.current;
-    if (event.button !== 0 || collapsedSecondSize || !root) return;
+    if (event.button !== 0 || isCollapsed || !root) return;
     event.preventDefault();
     dragCleanup.current?.();
     const separator = event.currentTarget;
@@ -163,7 +166,8 @@ export function Splitter({
     const previous = size;
     const pointerId = event.pointerId;
     separator.focus();
-    separator.setPointerCapture?.(pointerId);
+    // jsdom has no pointer capture.
+    if ('setPointerCapture' in separator) separator.setPointerCapture(pointerId);
     // A full-viewport shield keeps embedded frames (PDF, video) from swallowing the gesture.
     const shield = document.createElement('div');
     shield.setAttribute('data-tumaet-splitter-shield', '');
@@ -181,7 +185,8 @@ export function Splitter({
       separator.removeEventListener('lostpointercapture', onCancelPointer);
       window.removeEventListener('blur', cancel);
       shield.remove();
-      if (separator.hasPointerCapture?.(pointerId)) separator.releasePointerCapture(pointerId);
+      if ('hasPointerCapture' in separator && separator.hasPointerCapture(pointerId))
+        separator.releasePointerCapture(pointerId);
       dragCleanup.current = undefined;
     };
     function onUp(end: globalThis.PointerEvent) {
@@ -219,15 +224,19 @@ export function Splitter({
       data-layout={layout}
       className={cx('tumaet-ui-splitter', className)}
     >
-      <div className="tumaet-ui-splitter-panel" style={{ flex: collapsedSecondSize ? '1 1 0' : `${size} 1 0` }}>
+      <div className="tumaet-ui-splitter-panel" style={{ flex: isCollapsed ? '1 1 0' : `${size} 1 0` }}>
         {firstPanel}
       </div>
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- a focusable separator is the WAI-ARIA window splitter widget */}
       <div
         className="tumaet-ui-splitter-separator"
         role="separator"
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a focusable separator is the WAI-ARIA window splitter widget
         tabIndex={0}
-        hidden={!!collapsedSecondSize}
-        aria-label={separatorLabel || t('tumAetUi.splitter.resize')}
+        hidden={isCollapsed}
+        aria-label={
+          separatorLabel !== undefined && separatorLabel !== '' ? separatorLabel : t('tumAetUi.splitter.resize')
+        }
         aria-orientation={horizontal ? 'vertical' : 'horizontal'}
         aria-valuenow={size}
         aria-valuemin={minimum}
@@ -238,7 +247,7 @@ export function Splitter({
       />
       <div
         className="tumaet-ui-splitter-panel"
-        style={{ flex: collapsedSecondSize ? `0 0 ${collapsedSecondSize}` : `${100 - size} 1 0` }}
+        style={{ flex: isCollapsed ? `0 0 ${collapsedSecondSize}` : `${100 - size} 1 0` }}
       >
         {secondPanel}
       </div>

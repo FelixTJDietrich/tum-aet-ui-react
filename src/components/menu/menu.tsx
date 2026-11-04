@@ -2,7 +2,6 @@ import {
   cloneElement,
   useCallback,
   useId,
-  useMemo,
   useRef,
   type AnchorHTMLAttributes,
   type ButtonHTMLAttributes,
@@ -61,8 +60,14 @@ export function Menu({
   const generatedTriggerId = useId();
   const triggerId = trigger.props.id ?? generatedTriggerId;
   const anchor = useRef<HTMLElement | null>(null);
-  const triggerRef = trigger.props.ref;
-  const mergedTriggerRef = useMemo(() => mergeRefs<HTMLElement>(triggerRef, anchor), [triggerRef]);
+  const userTriggerRef = trigger.props.ref;
+  const mergedTriggerRef = useCallback(
+    (node: HTMLElement | null) => {
+      anchor.current = node;
+      return mergeRefs<HTMLElement>(userTriggerRef)(node);
+    },
+    [userTriggerRef],
+  );
   const initialFocus = useRef<'first' | 'last'>('first');
   const focusedPanel = useRef<HTMLDivElement | null>(null);
   const spaceHandled = useRef(false);
@@ -94,11 +99,11 @@ export function Menu({
     state.text += char.toLowerCase();
     state.timer = setTimeout(() => (state.text = ''), TYPEAHEAD_RESET_MS);
     // A repeated single letter cycles through the entries that start with it.
-    const cycling = state.text.length > 1 && [...state.text].every((c) => c === state.text[0]);
-    const term = cycling ? state.text[0]! : state.text;
+    const cycling = state.text.length > 1 && Array.from(state.text).every((c) => c === state.text.charAt(0));
+    const term = cycling ? state.text.charAt(0) : state.text;
     const from = current + (cycling || state.text.length === 1 ? 1 : 0);
     const ordered = [...items.slice(from), ...items.slice(0, from)];
-    const match = ordered.find((item) => item.textContent?.trim().toLowerCase().startsWith(term));
+    const match = ordered.find((item) => item.textContent.trim().toLowerCase().startsWith(term));
     match?.focus();
     return match !== undefined;
   };
@@ -114,14 +119,22 @@ export function Menu({
       items[(index + items.length) % items.length]?.focus();
     };
     switch (event.key) {
-      case 'ArrowDown':
-        return focusAt(current + 1);
-      case 'ArrowUp':
-        return focusAt(current < 0 ? items.length - 1 : current - 1);
-      case 'Home':
-        return focusAt(0);
-      case 'End':
-        return focusAt(items.length - 1);
+      case 'ArrowDown': {
+        focusAt(current + 1);
+        return;
+      }
+      case 'ArrowUp': {
+        focusAt(current < 0 ? items.length - 1 : current - 1);
+        return;
+      }
+      case 'Home': {
+        focusAt(0);
+        return;
+      }
+      case 'End': {
+        focusAt(items.length - 1);
+        return;
+      }
       case 'Tab':
         // Leave the menu and let the browser continue from the trigger.
         if (!event.altKey && !event.ctrlKey && !event.metaKey) closeAndFocus();
@@ -158,11 +171,13 @@ export function Menu({
     onBlur?.(event);
     const next = event.relatedTarget;
     // Focus moved elsewhere in the page: close without stealing it back. A null target (window blur) keeps the menu open.
-    if (next instanceof Node && !event.currentTarget.contains(next) && !anchor.current?.contains(next)) setOpen(false);
+    if (next instanceof Node && !event.currentTarget.contains(next) && anchor.current?.contains(next) !== true)
+      setOpen(false);
   };
 
   return (
     <>
+      {/* eslint-disable-next-line react-hooks/refs -- the merged callback ref only writes the anchor when React attaches the element, never during render */}
       {cloneElement(trigger, {
         ref: mergedTriggerRef,
         id: triggerId,
@@ -199,7 +214,10 @@ export function Menu({
         onDismiss={closeAndFocus}
         id={menuId}
         role="menu"
-        aria-labelledby={rest['aria-labelledby'] ?? (rest['aria-label'] ? undefined : triggerId)}
+        aria-labelledby={
+          rest['aria-labelledby'] ??
+          (rest['aria-label'] !== undefined && rest['aria-label'] !== '' ? undefined : triggerId)
+        }
         tabIndex={-1}
         style={{ visibility: 'visible', ...rest.style }}
         className={cx('tumaet-ui-menu', className)}
@@ -210,7 +228,7 @@ export function Menu({
         onClick={(event) => {
           rest.onClick?.(event);
           const item = (event.target as Element).closest(ITEMS);
-          if (item && item.getAttribute('aria-disabled') !== 'true') closeAndFocus();
+          if (item !== null && item.getAttribute('aria-disabled') !== 'true') closeAndFocus();
         }}
       >
         {children}
@@ -219,7 +237,10 @@ export function Menu({
   );
 }
 
-type CommonItemProps = { disabled?: boolean; icon?: ReactNode };
+interface CommonItemProps {
+  disabled?: boolean;
+  icon?: ReactNode;
+}
 type ButtonItemProps = CommonItemProps &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled'> & { href?: undefined; ref?: Ref<HTMLButtonElement> };
 type LinkItemProps = CommonItemProps &
@@ -232,22 +253,21 @@ export type MenuItemProps = ButtonItemProps | LinkItemProps;
  */
 export function MenuItem({ disabled, icon, className, children, onClick, ...rest }: MenuItemProps) {
   const common = {
-    role: 'menuitem' as const,
     tabIndex: -1,
-    'aria-disabled': disabled || undefined,
+    'aria-disabled': disabled === true ? true : undefined,
     className: cx('tumaet-ui-menu-item', className),
   };
   const handleClick = (event: MouseEvent<never>) => {
-    if (disabled) {
+    if (disabled === true) {
       event.preventDefault();
       return;
     }
-    (onClick as ((e: MouseEvent<never>) => void) | undefined)?.(event);
+    onClick?.(event);
   };
   if ('href' in rest && rest.href !== undefined) {
-    const { ref, ...anchorProps } = rest as LinkItemProps;
+    const { ref, href, ...anchorProps } = rest as LinkItemProps;
     return (
-      <a {...anchorProps} {...common} ref={ref} onClick={handleClick}>
+      <a {...anchorProps} {...common} href={href} role="menuitem" ref={ref} onClick={handleClick}>
         {icon}
         {children}
       </a>
@@ -255,7 +275,7 @@ export function MenuItem({ disabled, icon, className, children, onClick, ...rest
   }
   const { ref, ...buttonProps } = rest as ButtonItemProps;
   return (
-    <button type="button" {...buttonProps} {...common} ref={ref} onClick={handleClick}>
+    <button type="button" {...buttonProps} {...common} role="menuitem" ref={ref} onClick={handleClick}>
       {icon}
       {children}
     </button>

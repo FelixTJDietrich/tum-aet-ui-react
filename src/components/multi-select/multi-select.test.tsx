@@ -66,7 +66,9 @@ describe('MultiSelect', () => {
       return (
         <>
           <MultiSelect aria-label="Fruit" options={fruits} value={value} onChange={setValue} />
-          <button onClick={() => setValue(['Date'])}>external</button>
+          <button type="button" onClick={() => setValue(['Date'])}>
+            external
+          </button>
         </>
       );
     }
@@ -122,7 +124,13 @@ describe('MultiSelect', () => {
         defaultValue={['Apple']}
         renderSelectedItems={(selected) =>
           selected.map((o) => (
-            <button key={String(o)} onClick={() => onRemove(o)}>
+            <button
+              key={String(o)}
+              type="button"
+              onClick={() => {
+                onRemove(o);
+              }}
+            >
               remove {String(o)}
             </button>
           ))

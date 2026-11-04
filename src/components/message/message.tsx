@@ -19,6 +19,11 @@ export interface MessageProps extends HTMLAttributes<HTMLDivElement> {
   ref?: Ref<HTMLDivElement>;
 }
 
+/** True for anything React would render as visible content (not nullish, boolean, empty string or 0). */
+function hasContent(node: ReactNode): boolean {
+  return node !== undefined && node !== null && node !== false && node !== '' && node !== 0;
+}
+
 export function Message({
   severity = 'info',
   icon,
@@ -39,13 +44,13 @@ export function Message({
       className={cx('tumaet-ui-message', className)}
     >
       <div className="tumaet-ui-message-content">
-        {icon && (
+        {hasContent(icon) ? (
           <span className="tumaet-ui-message-icon" aria-hidden="true">
             {icon}
           </span>
-        )}
+        ) : null}
         <span className="tumaet-ui-message-text">{children}</span>
-        {dismissible && (
+        {dismissible === true ? (
           <button
             type="button"
             className="tumaet-ui-message-dismiss"
@@ -54,7 +59,7 @@ export function Message({
           >
             <XIcon />
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -24,9 +24,9 @@ export function Tag({ severity = 'secondary', size = 'md', value, rounded, class
       {...rest}
       data-severity={severity}
       data-size={size}
-      className={cx('tumaet-ui-tag', rounded && 'tumaet-ui-tag-rounded', className)}
+      className={cx('tumaet-ui-tag', rounded === true && 'tumaet-ui-tag-rounded', className)}
     >
-      {value || children}
+      {value !== undefined && value !== '' ? value : children}
     </span>
   );
 }

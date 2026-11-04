@@ -1,8 +1,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { expectNoA11yViolations } from '../../test-utils';
 import { ConfirmDialog, ConfirmProvider, useConfirm, type ConfirmationRequest } from './confirm-dialog';
+
+const noop = (): void => {
+  // Intentionally does nothing.
+};
 
 const base: ConfirmationRequest = {
   header: 'Delete?',
@@ -13,10 +17,38 @@ const base: ConfirmationRequest = {
 
 function Host({ request = base, results }: { request?: ConfirmationRequest; results?: boolean[] }) {
   const confirm = useConfirm();
-  return <button onClick={() => confirm(request).then((r) => results?.push(r))}>Ask</button>;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void confirm(request).then((r) => results?.push(r));
+      }}
+    >
+      Ask
+    </button>
+  );
 }
 
-function renderHost(request?: ConfirmationRequest, results: boolean[] = []) {
+type Confirm = ReturnType<typeof useConfirm>;
+const captured: { current: Confirm | null } = { current: null };
+
+/** Hands the `confirm` function of the enclosing provider to the test body. */
+function Grab() {
+  const confirm = useConfirm();
+  useEffect(() => {
+    captured.current = confirm;
+  }, [confirm]);
+  return null;
+}
+
+function grabbedConfirm(): Confirm {
+  if (captured.current === null) {
+    throw new Error('Grab was not rendered.');
+  }
+  return captured.current;
+}
+
+function mountHost(request?: ConfirmationRequest, results: boolean[] = []) {
   render(
     <ConfirmProvider>
       <Host request={request} results={results} />
@@ -26,12 +58,12 @@ function renderHost(request?: ConfirmationRequest, results: boolean[] = []) {
   return results;
 }
 
-const ask = () => userEvent.click(screen.getByRole('button', { name: 'Ask' }));
-const flush = () => new Promise((resolve) => setTimeout(resolve));
+const ask = async () => userEvent.click(screen.getByRole('button', { name: 'Ask' }));
+const flush = async () => new Promise((resolve) => setTimeout(resolve));
 
 describe('ConfirmDialog', () => {
   it('shows an alertdialog described by the message', async () => {
-    renderHost();
+    mountHost();
     expect(screen.queryByRole('alertdialog')).toBeNull();
     await ask();
     const dialog = screen.getByRole('alertdialog', { name: 'Delete?' });
@@ -40,7 +72,7 @@ describe('ConfirmDialog', () => {
 
   it('resolves true and calls accept when confirmed', async () => {
     const accept = vi.fn();
-    const results = renderHost({ ...base, accept });
+    const results = mountHost({ ...base, accept });
     await ask();
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await flush();
@@ -51,7 +83,7 @@ describe('ConfirmDialog', () => {
 
   it('resolves false and calls reject when cancelled, closed or dismissed with Escape', async () => {
     const reject = vi.fn();
-    const results = renderHost({ ...base, reject });
+    const results = mountHost({ ...base, reject });
     await ask();
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await ask();
@@ -64,7 +96,7 @@ describe('ConfirmDialog', () => {
   });
 
   it('routes requests by key and shows the icon decoratively with severities', async () => {
-    renderHost({ ...base, key: 'a', icon: <svg data-testid="icon" />, acceptSeverity: 'danger' });
+    mountHost({ ...base, key: 'a', icon: <svg data-testid="icon" />, acceptSeverity: 'danger' });
     await ask();
     expect(screen.getByTestId('icon').parentElement).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute('data-severity', 'danger');
@@ -83,17 +115,13 @@ describe('ConfirmDialog', () => {
   });
 
   it('rejects a pending request that is replaced by a new one with the same key', async () => {
-    let confirm!: ReturnType<typeof useConfirm>;
-    function Grab() {
-      confirm = useConfirm();
-      return null;
-    }
     render(
       <ConfirmProvider>
         <Grab />
         <ConfirmDialog />
       </ConfirmProvider>,
     );
+    const confirm = grabbedConfirm();
     const first = confirm(base);
     const second = confirm({ ...base, header: 'Second' });
     await expect(first).resolves.toBe(false);
@@ -101,13 +129,8 @@ describe('ConfirmDialog', () => {
     void second;
   });
 
-  it('keeps keyed requests independent: opening one neither dismisses nor rejects another', async () => {
+  it('keeps keyed requests independent: opening one neither dismisses nor rejects another', () => {
     const rejectA = vi.fn();
-    let confirm!: ReturnType<typeof useConfirm>;
-    function Grab() {
-      confirm = useConfirm();
-      return null;
-    }
     render(
       <ConfirmProvider>
         <Grab />
@@ -115,6 +138,7 @@ describe('ConfirmDialog', () => {
         <ConfirmDialog confirmKey="b" />
       </ConfirmProvider>,
     );
+    const confirm = grabbedConfirm();
     act(() => void confirm({ ...base, header: 'A', message: 'request-a', key: 'a', reject: rejectA }));
     act(() => void confirm({ ...base, header: 'B', message: 'request-b', key: 'b' }));
     expect(screen.getByRole('alertdialog', { name: 'A', hidden: true })).toBeInTheDocument();
@@ -123,7 +147,7 @@ describe('ConfirmDialog', () => {
   });
 
   it('renders the message as a single span that keeps line breaks and a custom accept label and severity', async () => {
-    renderHost({ ...base, message: 'First line\nSecond line', acceptLabel: 'Yes', rejectSeverity: 'danger' });
+    mountHost({ ...base, message: 'First line\nSecond line', acceptLabel: 'Yes', rejectSeverity: 'danger' });
     await ask();
     const message = document.querySelector('.tumaet-ui-confirm-dialog-message')!;
     expect(message.textContent).toBe('First line\nSecond line');
@@ -148,13 +172,13 @@ describe('ConfirmDialog', () => {
   });
 
   it('throws outside a provider', () => {
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(noop);
     expect(() => render(<ConfirmDialog />)).toThrow(/ConfirmProvider/);
     error.mockRestore();
   });
 
   it('has no accessibility violations', async () => {
-    renderHost();
+    mountHost();
     await ask();
     await expectNoA11yViolations();
   });

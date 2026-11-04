@@ -4,6 +4,10 @@ import { expectNoA11yViolations } from '../../test-utils';
 import { FormField } from '../form-field/form-field';
 import { Checkbox } from './checkbox';
 
+const noop = (): void => {
+  // Intentionally does nothing.
+};
+
 describe('Checkbox', () => {
   it('toggles on click and calls onChange with the new state', async () => {
     const onChange = vi.fn();
@@ -25,7 +29,7 @@ describe('Checkbox', () => {
 
   it('exposes the indeterminate state without changing checked', () => {
     render(<Checkbox aria-label="All" indeterminate />);
-    const box = screen.getByRole('checkbox') as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>('checkbox');
     expect(box.indeterminate).toBe(true);
     expect(box).not.toBeChecked();
   });
@@ -50,7 +54,7 @@ describe('Checkbox', () => {
   it('keeps the native indeterminate state after a click, as the parent owns it', async () => {
     const onChange = vi.fn();
     render(<Checkbox aria-label="All" indeterminate checked={false} onChange={onChange} />);
-    const box = screen.getByRole('checkbox') as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>('checkbox');
     await userEvent.click(box);
     expect(onChange).toHaveBeenCalledWith(true, expect.anything());
     expect(box.indeterminate).toBe(true);
@@ -68,10 +72,10 @@ describe('Checkbox', () => {
   it('shows the tick when checked and the dash when indeterminate, the dash winning', () => {
     const { container, rerender } = render(<Checkbox aria-label="x" />);
     expect(container.querySelector('.tumaet-ui-checkbox-icon')).toBeNull();
-    rerender(<Checkbox aria-label="x" checked onChange={() => {}} />);
+    rerender(<Checkbox aria-label="x" checked onChange={noop} />);
     expect(container.querySelectorAll('.tumaet-ui-checkbox-icon')).toHaveLength(1);
     const tick = container.querySelector('.tumaet-ui-checkbox-icon')!.innerHTML;
-    rerender(<Checkbox aria-label="x" checked indeterminate onChange={() => {}} />);
+    rerender(<Checkbox aria-label="x" checked indeterminate onChange={noop} />);
     expect(container.querySelectorAll('.tumaet-ui-checkbox-icon')).toHaveLength(1);
     expect(container.querySelector('.tumaet-ui-checkbox-icon')!.innerHTML).not.toBe(tick);
   });

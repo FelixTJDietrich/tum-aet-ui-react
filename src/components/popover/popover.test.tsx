@@ -9,10 +9,10 @@ function Host(props: Partial<PopoverProps>) {
   return (
     <>
       <Popover aria-label="Details" trigger={<Button>Trigger</Button>} {...props}>
-        <button>First</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Last</button>
       </Popover>
-      <button>Outside</button>
+      <button type="button">Outside</button>
     </>
   );
 }
@@ -115,7 +115,9 @@ describe('Popover', () => {
       const [open, setOpen] = useState(false);
       return (
         <Popover aria-label="Details" open={open} onOpenChange={setOpen} trigger={<Button>Trigger</Button>}>
-          <button onClick={() => setOpen(false)}>Done</button>
+          <button type="button" onClick={() => setOpen(false)}>
+            Done
+          </button>
         </Popover>
       );
     }

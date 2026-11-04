@@ -4,6 +4,10 @@ import { expectNoA11yViolations } from '../../test-utils';
 import { FormField } from '../form-field/form-field';
 import { SearchField } from './search-field';
 
+const noop = (): void => {
+  // Intentionally does nothing.
+};
+
 describe('SearchField', () => {
   it('is a labelled search box using the translated placeholder', () => {
     render(<SearchField />);
@@ -39,15 +43,15 @@ describe('SearchField', () => {
   });
 
   it('reflects a term set from outside and offers the clear button only with a term', () => {
-    const { rerender } = render(<SearchField value="" onChange={() => {}} />);
+    const { rerender } = render(<SearchField value="" onChange={noop} />);
     expect(screen.queryByRole('button')).toBeNull();
-    rerender(<SearchField value="beta" onChange={() => {}} />);
+    rerender(<SearchField value="beta" onChange={noop} />);
     expect(screen.getByRole('searchbox')).toHaveValue('beta');
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
   });
 
   it('stays controlled when the parent keeps the value', async () => {
-    render(<SearchField value="a" onChange={() => {}} />);
+    render(<SearchField value="a" onChange={noop} />);
     await userEvent.type(screen.getByRole('searchbox'), 'b');
     expect(screen.getByRole('searchbox')).toHaveValue('a');
   });

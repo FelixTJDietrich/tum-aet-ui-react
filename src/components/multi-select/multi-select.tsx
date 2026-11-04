@@ -74,6 +74,24 @@ export interface MultiSelectProps extends Omit<
   ref?: Ref<HTMLDivElement>;
 }
 
+/** Text of a chosen value in a hidden form input; objects are not representable and give an empty string. */
+function hiddenInputValue(v: unknown): string {
+  switch (typeof v) {
+    case 'string':
+      return v;
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+    case 'undefined':
+      return String(v);
+    case 'symbol':
+    case 'function':
+      return v.toString();
+    case 'object':
+      return '';
+  }
+}
+
 /** Chooses any number of values from a listbox popup that stays open while options are toggled. */
 export function MultiSelect({
   options = [],
@@ -112,19 +130,25 @@ export function MultiSelect({
   const root = useRef<HTMLDivElement | null>(null);
   const trigger = useRef<HTMLDivElement | null>(null);
   // A stable ref: Floating measures the anchor in a layout effect that runs before an inline callback ref is re-attached.
-  useImperativeHandle(ref, () => root.current as HTMLDivElement, []);
+  useImperativeHandle(ref, () => {
+    const element = root.current;
+    if (element === null) {
+      throw new Error('MultiSelect root element is not mounted.');
+    }
+    return element;
+  }, []);
 
   const [values, setValues] = useControllable<readonly unknown[]>(
     value,
     defaultValue ?? NO_VALUES,
     onChange as ((next: readonly unknown[]) => void) | undefined,
   );
-  const [openState, setOpen] = useState(false);
+  const [openRequested, setOpenRequested] = useState(false);
   const [active, setActive] = useState(-1);
-  const open = openState && !disabled;
-  if (disabled && openState) {
+  const open = openRequested && !disabled;
+  if (disabled && openRequested) {
     // Disabling while open closes the list for good, so it does not reappear when the control is enabled again.
-    setOpen(false);
+    setOpenRequested(false);
   }
 
   const isSelected = (option: unknown) => {
@@ -139,11 +163,12 @@ export function MultiSelect({
   const openPanel = () => {
     if (open || disabled) return;
     const first = options.findIndex(isSelected);
-    setActive(first >= 0 ? first : options.length > 0 ? 0 : -1);
-    setOpen(true);
+    const fallback = options.length > 0 ? 0 : -1;
+    setActive(first >= 0 ? first : fallback);
+    setOpenRequested(true);
   };
   const close = (restoreFocus = true) => {
-    setOpen(false);
+    setOpenRequested(false);
     if (restoreFocus) trigger.current?.focus();
   };
   const toggleOption = (index: number) => {
@@ -195,7 +220,7 @@ export function MultiSelect({
       content: (
         <>
           <span className="tumaet-ui-multi-select-box" data-checked={selected || undefined} aria-hidden="true">
-            {selected && <CheckIcon />}
+            {selected ? <CheckIcon /> : null}
           </span>
           {renderOption ? (
             renderOption(option, { selected })
@@ -208,9 +233,10 @@ export function MultiSelect({
   });
 
   const labels = selectedOptions.map((o) => optionLabelOf(o, optionLabel));
-  const placeholderNode = placeholder ? (
-    <span className="tumaet-ui-multi-select-text tumaet-ui-multi-select-placeholder">{placeholder}</span>
-  ) : null;
+  const placeholderNode =
+    placeholder !== undefined && placeholder !== '' ? (
+      <span className="tumaet-ui-multi-select-text tumaet-ui-multi-select-placeholder">{placeholder}</span>
+    ) : null;
   let summary: ReactNode;
   if (renderSelectedItems) {
     summary = (
@@ -231,7 +257,8 @@ export function MultiSelect({
     summary = <span className="tumaet-ui-multi-select-text">{labels.join(', ')}</span>;
   }
 
-  const panelWidth = open ? Math.max(root.current?.getBoundingClientRect().width ?? 0, MIN_PANEL_WIDTH_PX) : undefined;
+  // One hidden input per chosen value, in order; the position is the identity of an entry.
+  const hiddenInputs = values.map((v, position) => ({ key: position, value: hiddenInputValue(v) }));
   const invalid = ariaInvalid === true || ariaInvalid === 'true';
 
   return (
@@ -256,7 +283,7 @@ export function MultiSelect({
         aria-controls={open ? listboxId : undefined}
         aria-activedescendant={open && activeIndex >= 0 ? optionId(listboxId, activeIndex) : undefined}
         aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy ?? (ariaLabel ? undefined : formCtx?.labelId)}
+        aria-labelledby={ariaLabelledBy ?? (ariaLabel !== undefined && ariaLabel !== '' ? undefined : formCtx?.labelId)}
         aria-describedby={ariaDescribedBy}
         aria-invalid={ariaInvalid}
         aria-required={required || undefined}
@@ -268,19 +295,21 @@ export function MultiSelect({
       >
         {summary}
       </div>
-      {name &&
-        values.map((v, i) => (
-          <input key={i} type="hidden" name={name} value={typeof v === 'object' ? '' : String(v)} disabled={disabled} />
-        ))}
+      {name !== undefined && name !== ''
+        ? hiddenInputs.map((input) => (
+            <input key={input.key} type="hidden" name={name} value={input.value} disabled={disabled} />
+          ))
+        : null}
       <span className="tumaet-ui-multi-select-chevron" aria-hidden="true">
         <ChevronDownIcon />
       </span>
       <Floating
         anchor={root}
         open={open}
+        matchWidth
         onDismiss={() => close()}
         className="tumaet-ui-multi-select-panel"
-        style={{ minWidth: panelWidth }}
+        style={{ minWidth: MIN_PANEL_WIDTH_PX }}
       >
         <Listbox
           id={listboxId}
@@ -291,7 +320,7 @@ export function MultiSelect({
           emptyText={emptyMessage ?? t('tumAetUi.select.empty')}
           multiselectable
           aria-label={ariaLabel}
-          aria-labelledby={ariaLabel ? undefined : ariaLabelledBy}
+          aria-labelledby={ariaLabel !== undefined && ariaLabel !== '' ? undefined : ariaLabelledBy}
         />
       </Floating>
     </div>

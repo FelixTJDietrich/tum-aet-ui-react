@@ -63,14 +63,12 @@ describe('Panel', () => {
   it('has no accessibility violations', async () => {
     render(
       <main>
-        <>
-          <Panel header="One" toggleable>
-            A
-          </Panel>
-          <Panel header="Two" toggleable defaultCollapsed>
-            B
-          </Panel>
-        </>
+        <Panel header="One" toggleable>
+          A
+        </Panel>
+        <Panel header="Two" toggleable defaultCollapsed>
+          B
+        </Panel>
       </main>,
     );
     await expectNoA11yViolations();
@@ -86,7 +84,7 @@ describe('Panel', () => {
     expect(screen.queryByRole('region')).toBeNull();
   });
 
-  it('prefers toggleLabel over the header and does not toggle when not toggleable', async () => {
+  it('prefers toggleLabel over the header and does not toggle when not toggleable', () => {
     const onCollapsedChange = vi.fn();
     const { rerender } = render(
       <Panel header="Programming" toggleable toggleLabel="Programming exercises (3)">

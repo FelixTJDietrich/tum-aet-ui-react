@@ -111,16 +111,17 @@ export function RadioButton({
   const group = useContext(RadioGroupContext);
   const control = useFormFieldControl({ id, invalid, 'aria-describedby': describedBy, 'aria-invalid': ariaInvalid });
   const isChecked = group ? value !== undefined && group.value === value : checked;
-  const isDisabled = Boolean(disabled || group?.disabled);
+  const isDisabled = disabled === true || group?.disabled === true;
 
   return (
     <span
       className={cx('tumaet-ui-radio-button', className)}
       style={style}
-      data-checked={isChecked || undefined}
+      data-checked={isChecked === true ? true : undefined}
       data-disabled={isDisabled || undefined}
       data-invalid={control.invalid || undefined}
     >
+      {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- the field's invalid state is deliberately exposed on the native radio */}
       <input
         {...rest}
         ref={ref}

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type HTMLAttributes, type KeyboardEvent, type Ref } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type HTMLAttributes, type KeyboardEvent, type Ref } from 'react';
 import { cx } from '../../internal/cx';
 import { ChevronLeftIcon, ChevronRightIcon } from '../../internal/icons';
 import { useLocale, useTranslate } from '../../internal/i18n';
@@ -50,9 +50,9 @@ export function Calendar({
 }: CalendarProps) {
   const translate = useTranslate();
   const locale = useLocale();
-  const [today] = useState(() => new Date());
+  const today = useMemo(() => new Date(), []);
   const root = useRef<HTMLDivElement | null>(null);
-  const pendingFocus = useRef(!!focusOnMount);
+  const pendingFocus = useRef(Boolean(focusOnMount));
 
   const selectedKey = selected ? toIsoDay(selected) : '';
   const monthKey = `${activeMonth.getFullYear()}-${activeMonth.getMonth()}`;
@@ -81,7 +81,11 @@ export function Calendar({
     new Intl.DateTimeFormat(locale, options).format(date);
   const weeks = buildMonthMatrix(activeMonth);
   const flat = weeks.flat();
-  const at = (index: number) => flat[index] as Date;
+  const at = (index: number): Date => {
+    const day = flat[index];
+    if (day === undefined) throw new RangeError(`No calendar day at index ${index}`);
+    return day;
+  };
   const monthLabel = format(activeMonth, { month: 'long', year: 'numeric' });
   const monthName = (offset: number) =>
     format(addMonths(startOfMonth(activeMonth), offset), { month: 'long', year: 'numeric' });
@@ -104,7 +108,7 @@ export function Calendar({
 
   const changeMonth = (month: Date) => onMonthChange?.(startOfMonth(month));
   const selectDay = (day: Date) => {
-    if (!disabled && !isDayDisabled(day, min, max)) onDaySelect?.(day);
+    if (disabled !== true && !isDayDisabled(day, min, max)) onDaySelect?.(day);
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -117,18 +121,30 @@ export function Calendar({
       if (target < 0 || target >= flat.length) changeMonth(day);
     };
     switch (event.key) {
-      case 'ArrowRight':
-        return moveTo(index + (isRtl(event.currentTarget) ? -1 : 1));
-      case 'ArrowLeft':
-        return moveTo(index + (isRtl(event.currentTarget) ? 1 : -1));
-      case 'ArrowDown':
-        return moveTo(index + 7);
-      case 'ArrowUp':
-        return moveTo(index - 7);
-      case 'Home':
-        return moveTo(index - (index % 7));
-      case 'End':
-        return moveTo(index - (index % 7) + 6);
+      case 'ArrowRight': {
+        moveTo(index + (isRtl(event.currentTarget) ? -1 : 1));
+        return;
+      }
+      case 'ArrowLeft': {
+        moveTo(index + (isRtl(event.currentTarget) ? 1 : -1));
+        return;
+      }
+      case 'ArrowDown': {
+        moveTo(index + 7);
+        return;
+      }
+      case 'ArrowUp': {
+        moveTo(index - 7);
+        return;
+      }
+      case 'Home': {
+        moveTo(index - (index % 7));
+        return;
+      }
+      case 'End': {
+        moveTo(index - (index % 7) + 6);
+        return;
+      }
       case 'PageUp':
       case 'PageDown': {
         event.preventDefault();
@@ -181,6 +197,7 @@ export function Calendar({
           <ChevronRightIcon />
         </button>
       </div>
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role -- WAI-ARIA date picker pattern: a month grid is a table with role=grid and roving focus */}
       <table role="grid" aria-label={monthLabel} className="tumaet-ui-calendar-grid">
         <thead>
           <tr>
@@ -193,11 +210,11 @@ export function Calendar({
         </thead>
         <tbody>
           {weeks.map((week, w) => (
-            <tr key={w}>
+            <tr key={week.map((day) => toIsoDay(day)).join('|')}>
               {week.map((day, d) => {
                 const index = w * 7 + d;
                 const isSelected = !!selected && isSameDay(selected, day);
-                const isDisabled = disabled || isDayDisabled(day, min, max);
+                const isDisabled = disabled === true || isDayDisabled(day, min, max);
                 return (
                   <td key={toIsoDay(day)} role="gridcell" aria-selected={isSelected ? 'true' : undefined}>
                     <button

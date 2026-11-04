@@ -37,15 +37,16 @@ export function Button({
   return (
     <button
       {...rest}
+      // eslint-disable-next-line react/button-has-type -- `type` is a caller-supplied union that defaults to 'button'
       type={type}
-      disabled={disabled || loading}
-      aria-busy={loading || undefined}
+      disabled={disabled === true || loading === true}
+      aria-busy={loading === true ? true : undefined}
       data-severity={severity}
       data-size={size}
       data-variant={variant}
-      className={cx('tumaet-ui-btn', rounded && 'tumaet-ui-btn-rounded', className)}
+      className={cx('tumaet-ui-btn', rounded === true && 'tumaet-ui-btn-rounded', className)}
     >
-      {loading ? <SpinnerIcon /> : icon}
+      {loading === true ? <SpinnerIcon /> : icon}
       {children}
     </button>
   );
@@ -53,7 +54,7 @@ export function Button({
 
 /** Class names for styling a native `<a>` or other element like a button. Pair with `buttonAttributes` for severity, size and variant. */
 export function buttonClassName({ rounded }: { rounded?: boolean } = {}): string {
-  return cx('tumaet-ui-btn', rounded && 'tumaet-ui-btn-rounded');
+  return cx('tumaet-ui-btn', rounded === true && 'tumaet-ui-btn-rounded');
 }
 
 /**

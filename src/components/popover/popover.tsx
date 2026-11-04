@@ -3,13 +3,13 @@ import {
   useCallback,
   useId,
   useLayoutEffect,
-  useMemo,
   useRef,
   type HTMLAttributes,
   type KeyboardEvent,
   type ReactElement,
   type ReactNode,
   type Ref,
+  type RefObject,
 } from 'react';
 import { cx } from '../../internal/cx';
 import { Floating, type Placement } from '../../internal/floating';
@@ -42,6 +42,11 @@ function tabbables(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(TABBABLE)).filter((el) => !el.closest('[hidden], [inert]'));
 }
 
+/** Callback ref that fills the consumer's trigger ref and our own anchor ref. Stable while `ref` is. */
+function useMergedRef<T>(ref: Ref<T> | undefined, own: RefObject<T | null>) {
+  return useCallback((node: T | null) => mergeRefs<T>(ref, own)(node), [ref, own]);
+}
+
 /**
  * Anchored panel for rich or interactive content, toggled by its trigger. Use `Tooltip` for a short, non-interactive hint
  * and `Menu` for a list of commands. Focus moves into the panel on open, is kept inside while open and returns to the
@@ -63,7 +68,7 @@ export function Popover({
   const panelId = useId();
   const anchor = useRef<HTMLElement | null>(null);
   const triggerRef = trigger.props.ref;
-  const mergedTriggerRef = useMemo(() => mergeRefs<HTMLElement>(triggerRef, anchor), [triggerRef]);
+  const mergedTriggerRef = useMergedRef(triggerRef, anchor);
 
   const close = () => {
     setOpen(false);
@@ -86,6 +91,8 @@ export function Popover({
     if (!isOpen) return;
     return () => {
       const active = document.activeElement;
+      // The cleanup must reach the trigger that is mounted when the popover closes, not the one from when it opened.
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally reads the latest trigger element
       if (!active || active === document.body) anchor.current?.focus();
     };
   }, [isOpen]);

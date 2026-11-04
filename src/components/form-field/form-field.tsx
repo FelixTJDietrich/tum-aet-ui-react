@@ -63,7 +63,7 @@ export function useFormFieldControl(options: FormFieldControlOptions = {}): Form
   const own = options.id;
   const adopt = field?.adoptControlId;
   useLayoutEffect(() => {
-    if (own) adopt?.(own);
+    if (own !== undefined && own !== '') adopt?.(own);
   }, [own, adopt]);
   const id = field?.explicitControlId ?? own ?? field?.controlId ?? fallbackId;
   const describedBy = [options['aria-describedby'], field?.describedBy].filter(Boolean).join(' ') || undefined;
@@ -128,7 +128,12 @@ export function FormField({
   const errorId = `${base}-error`;
   const targetId = controlId ?? adopted ?? generatedId;
   const showHint = isPresent(hint) && !invalid;
-  const describedBy = invalid ? errorId : showHint ? hintId : undefined;
+  let describedBy: string | undefined;
+  if (invalid) {
+    describedBy = errorId;
+  } else if (showHint) {
+    describedBy = hintId;
+  }
   const adoptControlId = useCallback((id: string) => setAdopted(id), []);
 
   const value = useMemo<FormFieldContextValue>(
@@ -147,30 +152,31 @@ export function FormField({
   /** Clicking the label focuses a control the browser would not focus itself (a focusable div, for example). */
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     onClick?.(event);
-    if (!(event.target instanceof Element) || !event.target.closest('.tumaet-ui-form-field-label')) return;
+    if (!(event.target instanceof Element) || event.target.closest('.tumaet-ui-form-field-label') === null) return;
     const target = document.getElementById(targetId);
-    if (target && !target.matches(LABELABLE)) target.focus();
+    if (target !== null && !target.matches(LABELABLE)) target.focus();
   };
 
   return (
     <FormFieldContext value={value}>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- delegates clicks on the label (which the browser makes keyboard-operable); the wrapper itself is not interactive */}
       <div {...rest} className={cx('tumaet-ui-form-field', className)} onClick={handleClick}>
-        {label != null && label !== false && label !== '' && (
+        {label !== undefined && label !== null && label !== false && label !== '' && (
           <label id={labelId} htmlFor={targetId} className="tumaet-ui-form-field-label">
             {label}
-            {required && (
+            {required ? (
               <span className="tumaet-ui-form-field-required" aria-hidden="true">
                 *
               </span>
-            )}
+            ) : null}
           </label>
         )}
         <div className="tumaet-ui-form-field-control">{children}</div>
-        {showHint && (
+        {showHint ? (
           <span id={hintId} className="tumaet-ui-form-field-hint">
             {hint}
           </span>
-        )}
+        ) : null}
         <div id={errorId} className="tumaet-ui-form-field-error" role="alert" hidden={!invalid}>
           {error}
         </div>

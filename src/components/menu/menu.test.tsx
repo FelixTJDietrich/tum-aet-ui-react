@@ -17,7 +17,7 @@ function Host({ onArchive = vi.fn(), onRename = vi.fn() }: { onArchive?: () => v
         </MenuItem>
         <MenuItem>Delete</MenuItem>
       </Menu>
-      <button>Outside</button>
+      <button type="button">Outside</button>
     </>
   );
 }
@@ -157,7 +157,7 @@ describe('Menu', () => {
   it('lets Escape on a closed trigger reach enclosing handlers', async () => {
     const onKeyDown = vi.fn();
     render(
-      <div onKeyDown={onKeyDown}>
+      <div role="presentation" onKeyDown={onKeyDown}>
         <Host />
       </div>,
     );

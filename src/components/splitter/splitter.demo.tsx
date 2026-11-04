@@ -22,7 +22,9 @@ export default function SplitterDemo() {
       <div style={{ height: 120, border: '1px solid var(--tumaet-ui-border-color)' }}>
         <Splitter collapsedSecondSize={collapsed ? '4rem' : undefined}>
           <div style={pane}>
-            <button onClick={() => setCollapsed((c) => !c)}>Toggle second panel</button>
+            <button type="button" onClick={() => setCollapsed((c) => !c)}>
+              Toggle second panel
+            </button>
           </div>
           <div style={pane}>Second</div>
         </Splitter>

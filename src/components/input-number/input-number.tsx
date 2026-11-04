@@ -125,7 +125,7 @@ function createSyntax(locale: string | undefined, accepted: readonly string[]): 
 
 const matchAt = (text: string, index: number, candidates: readonly string[]) =>
   candidates.find((c) => c.length > 0 && text.startsWith(c, index));
-const charLength = (text: string, index: number) => (text.codePointAt(index)! > 0xffff ? 2 : 1);
+const charLength = (text: string, index: number) => ((text.codePointAt(index) ?? 0) > 0xffff ? 2 : 1);
 
 /** Numeric text field with locale grouping, affixes, optional decimals and step controls (`role="spinbutton"`). */
 export function InputNumber({
@@ -173,8 +173,8 @@ export function InputNumber({
     n === null || Number.isNaN(n) ? '' : `${prefix}${formatter.format(n)}${suffix}`;
   const strip = (text: string) => {
     let body = text;
-    if (prefix && body.startsWith(prefix)) body = body.slice(prefix.length);
-    if (suffix && body.endsWith(suffix)) body = body.slice(0, body.length - suffix.length);
+    if (prefix !== '' && body.startsWith(prefix)) body = body.slice(prefix.length);
+    if (suffix !== '' && body.endsWith(suffix)) body = body.slice(0, body.length - suffix.length);
     return body;
   };
 
@@ -186,8 +186,8 @@ export function InputNumber({
     let inFraction = false;
     for (let i = 0; i < body.length;) {
       const digit = matchAt(body, i, syntax.digitSymbols);
-      if (digit) {
-        const ascii = syntax.digitBySymbol.get(digit)!;
+      if (digit !== undefined) {
+        const ascii = syntax.digitBySymbol.get(digit) ?? '';
         if (inFraction) {
           if (fraction.length < maxFractionDigits) fraction += ascii;
         } else integer += ascii;
@@ -195,14 +195,14 @@ export function InputNumber({
         continue;
       }
       const minus = matchAt(body, i, syntax.minusSigns);
-      if (minus) {
+      if (minus !== undefined) {
         negative ||= integer.length === 0;
         i += minus.length;
         continue;
       }
       if (maxFractionDigits > 0 && !inFraction) {
         const decimal = matchAt(body, i, syntax.decimalSeparators);
-        if (decimal) {
+        if (decimal !== undefined) {
           inFraction = true;
           i += decimal.length;
           continue;
@@ -212,7 +212,9 @@ export function InputNumber({
       i += group?.length ?? charLength(body, i);
     }
     if (integer === '' && fraction === '') return null;
-    const parsed = Number.parseFloat(`${negative ? '-' : ''}${integer || '0'}.${fraction || '0'}`);
+    const parsed = Number.parseFloat(
+      `${negative ? '-' : ''}${integer === '' ? '0' : integer}.${fraction === '' ? '0' : fraction}`,
+    );
     return Number.isNaN(parsed) ? null : parsed;
   };
 
@@ -220,7 +222,7 @@ export function InputNumber({
     let count = 0;
     for (let i = 0; i < text.length;) {
       const digit = matchAt(text, i, syntax.digitSymbols);
-      if (digit) {
+      if (digit !== undefined) {
         count++;
         i += digit.length;
       } else i += charLength(text, i);
@@ -235,7 +237,7 @@ export function InputNumber({
     let seen = 0;
     for (let i = start; i < end;) {
       const digit = matchAt(text, i, syntax.digitSymbols);
-      if (digit && ++seen === digits) return i + digit.length;
+      if (digit !== undefined && ++seen === digits) return i + digit.length;
       i += digit?.length ?? charLength(text, i);
     }
     return end;
@@ -247,15 +249,15 @@ export function InputNumber({
     const body = strip(text);
     for (let i = 0; i < body.length;) {
       const decimal = matchAt(body, i, syntax.decimalSeparators);
-      if (decimal) {
+      if (decimal !== undefined) {
         let ascii = '';
-        const rest = body.slice(i + decimal.length);
-        for (let j = 0; j < rest.length;) {
-          const d = matchAt(rest, j, syntax.digitSymbols);
-          if (d) {
-            ascii += syntax.digitBySymbol.get(d)!;
+        const afterDecimal = body.slice(i + decimal.length);
+        for (let j = 0; j < afterDecimal.length;) {
+          const d = matchAt(afterDecimal, j, syntax.digitSymbols);
+          if (d !== undefined) {
+            ascii += syntax.digitBySymbol.get(d) ?? '';
             j += d.length;
-          } else j += charLength(rest, j);
+          } else j += charLength(afterDecimal, j);
         }
         return ascii === '' || ascii.endsWith('0');
       }
@@ -280,7 +282,7 @@ export function InputNumber({
   };
 
   const stepBy = (delta: number) => {
-    if (disabled || readOnly) return;
+    if (disabled === true || readOnly === true) return;
     const next = clamp(Number(steppedValue(current ?? 0, delta).toFixed(maxFractionDigits)));
     setDraft(null);
     setCurrent(next);
@@ -327,15 +329,8 @@ export function InputNumber({
     setDraft(null);
   };
 
-  const displayText = draft && draft.forValue === current ? draft.text : format(current);
-  const buttonProps = (delta: number) => ({
-    type: 'button' as const,
-    tabIndex: -1,
-    'aria-hidden': true as const,
-    disabled: disabled || readOnly,
-    onMouseDown: (e: React.MouseEvent) => e.preventDefault(),
-    onClick: () => stepBy(delta),
-  });
+  const displayText = draft?.forValue === current ? draft.text : format(current);
+  const buttonsDisabled = disabled === true || readOnly === true;
 
   return (
     <span
@@ -363,16 +358,32 @@ export function InputNumber({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
       />
-      {showButtons && (
+      {showButtons ? (
         <span className="tumaet-ui-input-number-button-group">
-          <button {...buttonProps(step)} className="tumaet-ui-input-number-button tumaet-ui-input-number-increment">
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            disabled={buttonsDisabled}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => stepBy(step)}
+            className="tumaet-ui-input-number-button tumaet-ui-input-number-increment"
+          >
             <ChevronUpIcon />
           </button>
-          <button {...buttonProps(-step)} className="tumaet-ui-input-number-button tumaet-ui-input-number-decrement">
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            disabled={buttonsDisabled}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => stepBy(-step)}
+            className="tumaet-ui-input-number-button tumaet-ui-input-number-decrement"
+          >
             <ChevronDownIcon />
           </button>
         </span>
-      )}
+      ) : null}
     </span>
   );
 }

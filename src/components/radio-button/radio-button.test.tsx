@@ -12,6 +12,11 @@ const group = (props = {}) => (
   </RadioGroup>
 );
 
+/** Stands in for a handler on a controlled radio whose state stays with the parent. */
+const noop = () => {
+  // intentionally empty
+};
+
 describe('RadioGroup', () => {
   it('selects on click and reports the value', async () => {
     const onChange = vi.fn();
@@ -115,7 +120,7 @@ describe('RadioGroup', () => {
   });
 
   it('lets a controlled standalone radio stay as the parent says', async () => {
-    render(<RadioButton aria-label="Solo" checked={false} onChange={() => {}} />);
+    render(<RadioButton aria-label="Solo" checked={false} onChange={noop} />);
     await userEvent.click(screen.getByRole('radio'));
     expect(screen.getByRole('radio')).not.toBeChecked();
   });

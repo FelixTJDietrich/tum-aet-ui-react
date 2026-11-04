@@ -68,7 +68,7 @@ describe('InputNumber', () => {
   });
 
   describe('behaviour from the Angular spec', () => {
-    const typeInto = (input: HTMLElement, text: string) => userEvent.type(input, text);
+    const typeInto = async (input: HTMLElement, text: string) => userEvent.type(input, text);
 
     it('forwards native and accessibility attributes to the inner input', () => {
       render(

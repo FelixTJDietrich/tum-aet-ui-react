@@ -95,12 +95,12 @@ describe('FormField', () => {
       </FormField>,
     );
     await expectNoA11yViolations(container);
-    const invalid = render(
+    const { container: invalidContainer } = render(
       <FormField label="Mail" invalid error="Bad">
         <Input />
       </FormField>,
     );
-    await expectNoA11yViolations(invalid.container);
+    await expectNoA11yViolations(invalidContainer);
   });
 
   it('renders no required marker, hint element or description by default', () => {
@@ -173,7 +173,16 @@ describe('FormField', () => {
   it('focuses a control the browser would not focus itself when the label is clicked', async () => {
     function Custom() {
       const field = useFormFieldContext();
-      return <div id={field?.controlId} tabIndex={0} role="combobox" aria-expanded="false" aria-label="x" />;
+      return (
+        <div
+          id={field?.controlId}
+          tabIndex={0}
+          role="combobox"
+          aria-expanded="false"
+          aria-controls="x-list"
+          aria-label="x"
+        />
+      );
     }
     render(
       <FormField label="Pick">

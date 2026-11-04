@@ -70,7 +70,7 @@ export const KeyboardNavigation: Story = {
 
     const settings = canvas.getByRole('tab', { name: 'Settings' });
     await expect(settings).toHaveFocus();
-    await waitFor(() => expect(settings).toHaveAttribute('aria-selected', 'true'));
+    await waitFor(async () => expect(settings).toHaveAttribute('aria-selected', 'true'));
     await expect(canvas.getByRole('tabpanel')).toHaveTextContent('Course settings');
     await expect(args.onChange).toHaveBeenCalledWith('settings');
 
@@ -106,12 +106,16 @@ export const BoundedContent: Story = {
     const messages = canvas.getByRole('log', { name: 'Messages' });
     const composer = canvas.getByRole('textbox', { name: 'Message' });
 
-    await waitFor(() => {
-      expect(chat.getBoundingClientRect().bottom).toBeLessThanOrEqual(bounds.getBoundingClientRect().bottom + 0.5);
-      expect(chat.getBoundingClientRect().height).toBeGreaterThan(0);
-      expect(chat.getBoundingClientRect().height).toBeLessThan(bounds.getBoundingClientRect().height);
-      expect(composer.getBoundingClientRect().bottom).toBeLessThanOrEqual(bounds.getBoundingClientRect().bottom + 0.5);
-      expect(messages.scrollHeight).toBeGreaterThan(messages.clientHeight);
+    await waitFor(async () => {
+      await expect(chat.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        bounds.getBoundingClientRect().bottom + 0.5,
+      );
+      await expect(chat.getBoundingClientRect().height).toBeGreaterThan(0);
+      await expect(chat.getBoundingClientRect().height).toBeLessThan(bounds.getBoundingClientRect().height);
+      await expect(composer.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        bounds.getBoundingClientRect().bottom + 0.5,
+      );
+      await expect(messages.scrollHeight).toBeGreaterThan(messages.clientHeight);
     });
     await userEvent.type(composer, 'Unsaved draft');
     const composerTop = composer.getBoundingClientRect().top;
@@ -119,9 +123,9 @@ export const BoundedContent: Story = {
     await expect(composer.getBoundingClientRect().top).toBeCloseTo(composerTop, 1);
 
     await userEvent.click(canvas.getByRole('tab', { name: 'Notes' }));
-    await waitFor(() => expect(chat).not.toBeVisible());
+    await waitFor(async () => expect(chat).not.toBeVisible());
     await userEvent.click(canvas.getByRole('tab', { name: 'Chat' }));
-    await waitFor(() => expect(chat).toBeVisible());
+    await waitFor(async () => expect(chat).toBeVisible());
     await expect(canvas.getByRole('textbox', { name: 'Message' })).toBe(composer);
     await expect(composer).toHaveValue('Unsaved draft');
   },
@@ -142,6 +146,7 @@ function BoundedTabs({ messages }: { messages: string[] }) {
               aria-label="Chat conversation"
               style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}
             >
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be keyboard focusable so it can be scrolled */}
               <div role="log" aria-label="Messages" tabIndex={0} style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                 {messages.map((message) => (
                   <p key={message}>{message}</p>

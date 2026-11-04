@@ -72,7 +72,7 @@ export function ConfirmProvider({ children }: { children?: ReactNode }) {
   );
 
   const confirm = useCallback<ConfirmFunction>(
-    (request) =>
+    async (request) =>
       new Promise<boolean>((resolve) => {
         // A second request for the same key replaces the pending one, which counts as rejected.
         settle(request.key, false);
@@ -109,6 +109,8 @@ export function ConfirmDialog({ confirmKey }: ConfirmDialogProps) {
   const messageId = useId();
   const request = entries.get(confirmKey)?.request;
   if (!request) return null;
+  // Keeps the falsy semantics of ReactNode (`''`, `0`, `false` render no icon wrapper).
+  const hasIcon = Boolean(request.icon);
   return (
     <Dialog
       open
@@ -129,11 +131,11 @@ export function ConfirmDialog({ confirmKey }: ConfirmDialogProps) {
       }
     >
       <div className="tumaet-ui-confirm-dialog-body">
-        {request.icon && (
+        {hasIcon ? (
           <span className="tumaet-ui-confirm-dialog-icon" aria-hidden="true">
             {request.icon}
           </span>
-        )}
+        ) : null}
         <span id={messageId} className="tumaet-ui-confirm-dialog-message">
           {request.message}
         </span>

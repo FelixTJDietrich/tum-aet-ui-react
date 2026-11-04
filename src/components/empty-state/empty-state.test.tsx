@@ -19,7 +19,7 @@ describe('EmptyState', () => {
         title="T"
         icon={<svg />}
         description="Desc"
-        actions={<button>Go</button>}
+        actions={<button type="button">Go</button>}
         documentation={<a href="#x">Docs</a>}
         variant="solid"
       />,
@@ -38,7 +38,7 @@ describe('EmptyState', () => {
           title="T"
           description="D"
           icon={<svg />}
-          actions={<button>Go</button>}
+          actions={<button type="button">Go</button>}
           documentation={<a href="#x">Docs</a>}
         />
       </main>,
@@ -48,7 +48,7 @@ describe('EmptyState', () => {
 
   it('renders children between description and actions, and every variant', () => {
     const { container, rerender } = render(
-      <EmptyState title="T" description="D" actions={<button>Go</button>}>
+      <EmptyState title="T" description="D" actions={<button type="button">Go</button>}>
         <span data-testid="extra" />
       </EmptyState>,
     );

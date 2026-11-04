@@ -1,5 +1,5 @@
 import type { HTMLAttributes, Key, ReactNode, Ref } from 'react';
-import { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { cx } from '../../internal/cx';
 import { useTranslate } from '../../internal/i18n';
 import { SearchIcon, SortDownIcon, SortIcon, SortUpIcon } from '../../internal/icons';
@@ -21,6 +21,23 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 300;
 
+/** True for a string that is neither missing nor empty. */
+function nonEmpty(value: string | undefined): value is string {
+  return value !== undefined && value !== '';
+}
+
+/** True for anything React would render as visible content (not nullish, boolean, empty string or 0). */
+function hasContent(node: ReactNode): boolean {
+  return node !== undefined && node !== null && node !== false && node !== '' && node !== 0;
+}
+
+function sortGlyphFor(sort: SortState | undefined, field: string | undefined) {
+  if (sort === undefined || sort.field !== field) {
+    return SortIcon;
+  }
+  return sort.direction === 'asc' ? SortUpIcon : SortDownIcon;
+}
+
 export interface DataTableApi {
   /** Jumps back to the first page and requests data. For consumers that own filtering themselves (`showSearch` off). */
   resetPage: () => void;
@@ -28,7 +45,7 @@ export interface DataTableApi {
 
 export interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   /** Columns in display order. Nested field paths use `a.b[0].c` syntax. */
-  columns: ColumnDef<T>[];
+  columns: Array<ColumnDef<T>>;
   /** Rows of the current page. Sorting and filtering are not applied locally. */
   rows: T[];
   /** Total number of records on the server, for the paginator. */
@@ -110,7 +127,7 @@ export function DataTable<T>({
   const [page, setPage] = useState(0);
   const [pageSizeState, setPageSizeState] = useState<number | undefined>(undefined);
   const [sort, setSort] = useState<SortState | undefined>(
-    initialSortField ? { field: initialSortField, direction: initialSortDirection } : undefined,
+    nonEmpty(initialSortField) ? { field: initialSortField, direction: initialSortDirection } : undefined,
   );
   const searchTerm = useRef('');
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -121,15 +138,19 @@ export function DataTable<T>({
   const currentPage = Math.min(page, lastPage);
 
   const latest = useRef({ page, effectivePageSize, sort, onDataRequest });
-  latest.current = { page, effectivePageSize, sort, onDataRequest };
+  // Keeps the latest values for the emitters below; layout effects run before the effects that read them.
+  useLayoutEffect(() => {
+    latest.current = { page, effectivePageSize, sort, onDataRequest };
+  });
 
   const emit = (next: { page?: number; pageSize?: number; sort?: SortState | undefined } = {}) => {
     const state = latest.current;
+    const trimmedTerm = searchTerm.current.trim();
     state.onDataRequest?.({
       pageIndex: next.page ?? state.page,
       pageSize: next.pageSize ?? state.effectivePageSize,
       sort: 'sort' in next ? next.sort : state.sort,
-      searchTerm: searchTerm.current.trim() || undefined,
+      searchTerm: nonEmpty(trimmedTerm) ? trimmedTerm : undefined,
     });
   };
 
@@ -139,15 +160,20 @@ export function DataTable<T>({
       emit();
     }
     return () => clearTimeout(searchTimer.current);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // A shrinking result set can leave the page past the end: step back and request that page.
+  // The page is stepped back while rendering; `clampCount` then triggers the data request for it after the commit.
+  const [clampCount, setClampCount] = useState(0);
+  if (page > lastPage) {
+    setPage(lastPage);
+    setClampCount(clampCount + 1);
+  }
   useEffect(() => {
-    if (page > lastPage) {
-      setPage(lastPage);
-      emit({ page: lastPage });
+    if (clampCount > 0) {
+      emit({ page: latest.current.page });
     }
-  }, [page, lastPage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clampCount]);
 
   useImperativeHandle(apiRef, () => ({
     resetPage: () => {
@@ -179,12 +205,12 @@ export function DataTable<T>({
     overflowY: scrollable ? 'auto' : undefined,
     flex: scrollHeight === 'flex' ? '1 1 0%' : undefined,
     minHeight: scrollHeight === 'flex' ? 0 : undefined,
-    maxHeight: scrollHeight && scrollHeight !== 'flex' ? scrollHeight : undefined,
+    maxHeight: nonEmpty(scrollHeight) && scrollHeight !== 'flex' ? scrollHeight : undefined,
   } as const;
 
   return (
     <div {...rest} style={style} className={cx('tumaet-ui-data-table', className)}>
-      {showSearch && (
+      {showSearch ? (
         <div className="tumaet-ui-data-table-search">
           <SearchIcon className="tumaet-ui-icon tumaet-ui-data-table-search-icon" />
           <input
@@ -194,7 +220,7 @@ export function DataTable<T>({
             onChange={(event) => onSearchInput(event.target.value)}
           />
         </div>
-      )}
+      ) : null}
 
       <div className="tumaet-ui-data-table-scroll" style={scrollStyle}>
         <table
@@ -205,30 +231,29 @@ export function DataTable<T>({
           aria-busy={loading || undefined}
           data-sticky={scrollable || undefined}
         >
-          {caption && <caption className="tumaet-ui-data-table-sr-only">{caption}</caption>}
+          {hasContent(caption) ? <caption className="tumaet-ui-data-table-sr-only">{caption}</caption> : null}
           <thead>
             <tr>
               {columns.map((col, index) => {
-                const sortable = col.sort && col.field;
-                const heading = col.headerKey ? t(col.headerKey) : col.header;
-                const tooltip = col.headerTooltip ? t(col.headerTooltip) : undefined;
-                const SortGlyph =
-                  !sort || sort.field !== col.field ? SortIcon : sort.direction === 'asc' ? SortUpIcon : SortDownIcon;
+                const sortField = col.sort === true && nonEmpty(col.field) ? col.field : undefined;
+                const heading = nonEmpty(col.headerKey) ? t(col.headerKey) : col.header;
+                const tooltip = nonEmpty(col.headerTooltip) ? t(col.headerTooltip) : undefined;
+                const SortGlyph = sortGlyphFor(sort, col.field);
                 return (
                   <th
                     key={columnName(col, index)}
                     scope="col"
-                    style={col.width ? { minWidth: col.width } : undefined}
-                    aria-sort={sortable ? ariaSortFor(sort, col.field!) : undefined}
+                    style={nonEmpty(col.width) ? { minWidth: col.width } : undefined}
+                    aria-sort={sortField !== undefined ? ariaSortFor(sort, sortField) : undefined}
                     data-hide-below={col.hideBelow}
-                    data-wrap={col.wrapHeader || undefined}
+                    data-wrap={col.wrapHeader === true ? true : undefined}
                   >
                     <span className="tumaet-ui-data-table-heading">
-                      {sortable ? (
+                      {sortField !== undefined ? (
                         <button
                           type="button"
                           className="tumaet-ui-data-table-sort"
-                          onClick={() => sortColumn(col.field!)}
+                          onClick={() => sortColumn(sortField)}
                         >
                           <span>{heading}</span>
                           <SortGlyph className="tumaet-ui-icon tumaet-ui-data-table-sort-icon" />
@@ -236,55 +261,55 @@ export function DataTable<T>({
                       ) : (
                         <span>{heading}</span>
                       )}
-                      {tooltip && (
+                      {tooltip !== undefined && tooltip !== '' ? (
                         <Tooltip content={tooltip} describesHost={false}>
                           <button type="button" className="tumaet-ui-data-table-help" aria-label={tooltip}>
                             <CircleQuestionIcon />
                           </button>
                         </Tooltip>
-                      )}
+                      ) : null}
                     </span>
                   </th>
                 );
               })}
-              {rowActions && (
+              {rowActions ? (
                 <th scope="col">
                   <span className="tumaet-ui-data-table-sr-only">{t('tumAetUi.table.actions')}</span>
                 </th>
-              )}
+              ) : null}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
               <tr
                 key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
-                data-highlighted={rowHighlighted?.(row) || undefined}
+                data-highlighted={rowHighlighted?.(row) === true ? true : undefined}
               >
                 {columns.map((col, index) => {
-                  const value = col.field ? getByPath(row, col.field) : undefined;
+                  const value = nonEmpty(col.field) ? getByPath(row, col.field) : undefined;
                   return (
                     <td key={columnName(col, index)} data-hide-below={col.hideBelow}>
                       {col.cell ? col.cell({ data: row, col, value, rowIndex }) : formatCellValue(value)}
                     </td>
                   );
                 })}
-                {rowActions && <td className="tumaet-ui-data-table-actions">{rowActions(row)}</td>}
+                {rowActions ? <td className="tumaet-ui-data-table-actions">{rowActions(row)}</td> : null}
               </tr>
             ))}
-            {empty && (
+            {empty ? (
               <tr>
                 <td colSpan={Math.max(1, columnCount)} className="tumaet-ui-data-table-empty">
                   {t(emptyMessage)}
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
-        {loading && (
+        {loading ? (
           <div className="tumaet-ui-data-table-loading" aria-hidden="true">
             <span className="tumaet-ui-data-table-spinner" />
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Announces an empty result; the paginator announces the range. */}

@@ -1,70 +1,92 @@
 .tumaet-ui-autocomplete {
   display: block;
+
   max-width: 100%;
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-base);
   line-height: var(--tumaet-ui-line-height-base);
   color: var(--tumaet-ui-text-color);
 }
+
 .tumaet-ui-autocomplete-container {
-  box-sizing: border-box;
+  cursor: text;
+
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: calc(var(--tumaet-ui-spacing) * 1);
+  align-items: center;
+
+  box-sizing: border-box;
   width: 100%;
   padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 3);
-  color: var(--tumaet-ui-text-color);
-  background: var(--tumaet-ui-control-background);
   border: 1px solid var(--tumaet-ui-control-border-color);
   border-radius: var(--tumaet-ui-radius-md);
-  cursor: text;
+
+  color: var(--tumaet-ui-text-color);
+
+  background: var(--tumaet-ui-control-background);
+
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
+
   /* Tailwind's transition-colors. */
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-duration: 0.15s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 /* The multi-value field keeps tighter padding that leaves room for its chips. */
 .tumaet-ui-autocomplete-container[data-multiple] {
   padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 3);
 }
+
 .tumaet-ui-autocomplete-container[data-multiple][data-has-values] {
   padding: calc(var(--tumaet-ui-spacing) * 1);
 }
+
 .tumaet-ui-autocomplete-container:hover {
   border-color: var(--tumaet-ui-control-border-hover-color);
 }
+
 .tumaet-ui-autocomplete-container[data-focused] {
   border-color: var(--tumaet-ui-focus-color);
 }
+
 /* Also while a chip's remove button has focus. */
 .tumaet-ui-autocomplete-container:focus-within {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
 }
+
 .tumaet-ui-autocomplete-container[data-invalid] {
   border-color: var(--tumaet-ui-state-danger);
 }
+
 .tumaet-ui-autocomplete-container[data-disabled] {
+  cursor: default;
+  border-color: var(--tumaet-ui-control-border-color);
   color: var(--tumaet-ui-disabled-color);
   background: var(--tumaet-ui-disabled-background);
-  border-color: var(--tumaet-ui-control-border-color);
-  cursor: default;
 }
+
 .tumaet-ui-autocomplete-input {
-  box-sizing: border-box;
   flex: 1;
+
+  box-sizing: border-box;
   min-width: calc(var(--tumaet-ui-spacing) * 16);
   padding: 0;
+  border: 0;
+
   font: inherit;
   color: inherit;
+
   background: transparent;
-  border: 0;
   outline: none;
 }
+
 .tumaet-ui-autocomplete-input::placeholder {
   color: var(--tumaet-ui-muted-color);
 }
+
 .tumaet-ui-autocomplete-input:disabled {
   cursor: default;
 }
@@ -72,47 +94,60 @@
 /* Chips (own markup, the Chip component is not a dependency). */
 .tumaet-ui-autocomplete-chip {
   display: inline-flex;
-  align-items: center;
   gap: calc(var(--tumaet-ui-spacing) * 1);
+  align-items: center;
+
   max-width: 100%;
   padding: calc(var(--tumaet-ui-spacing) * 1) calc(var(--tumaet-ui-spacing) * 2);
+  border-radius: var(--tumaet-ui-radius-2xl);
+
   font-size: var(--tumaet-ui-font-size-sm);
   line-height: var(--tumaet-ui-line-height-sm);
   color: var(--tumaet-ui-text-color);
+
   background: var(--tumaet-ui-hover-background);
-  border-radius: var(--tumaet-ui-radius-2xl);
 }
+
 .tumaet-ui-autocomplete-chip[data-removable] {
   padding-inline-end: calc(var(--tumaet-ui-spacing) * 1);
 }
+
 .tumaet-ui-autocomplete-chip-label {
-  min-width: 0;
   overflow: hidden;
+  min-width: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .tumaet-ui-autocomplete-chip-remove {
+  cursor: pointer;
+
   display: inline-flex;
   flex: none;
-  appearance: none;
   align-items: center;
   justify-content: center;
+
   padding: 0;
-  line-height: 1;
-  color: inherit;
-  background: transparent;
   border: 0;
   border-radius: 50%;
-  cursor: pointer;
+
+  line-height: 1;
+  color: inherit;
+
+  appearance: none;
+  background: transparent;
 }
+
 .tumaet-ui-autocomplete-chip-remove:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 1px;
 }
+
 .tumaet-ui-autocomplete-panel {
   box-sizing: border-box;
   color: var(--tumaet-ui-text-color);
 }
+
 @media (prefers-reduced-motion: reduce) {
   .tumaet-ui-autocomplete-container {
     transition: none;

@@ -14,11 +14,11 @@ const roles = ['Admin', 'Tutor', 'Student', 'Instructor'];
 const all: Person[] = Array.from({ length: 87 }, (_, i) => ({
   id: i + 1,
   name: `Person ${i + 1}`,
-  role: roles[i % 4]!,
+  role: roles[i % 4] ?? 'Student',
   team: { name: `Team ${(i % 5) + 1}` },
 }));
 
-const columns: ColumnDef<Person>[] = [
+const columns: Array<ColumnDef<Person>> = [
   { field: 'id', header: 'ID', sort: true, width: '5rem' },
   { field: 'name', header: 'Name', sort: true },
   { field: 'role', header: 'Role', sort: true, headerTooltip: 'Role within the course' },
@@ -27,7 +27,10 @@ const columns: ColumnDef<Person>[] = [
 ];
 
 function serverQuery(q: TableQuery) {
-  let rows = all.filter((p) => !q.searchTerm || p.name.toLowerCase().includes(q.searchTerm.toLowerCase()));
+  let rows = all.filter(
+    (p) =>
+      q.searchTerm === undefined || q.searchTerm === '' || p.name.toLowerCase().includes(q.searchTerm.toLowerCase()),
+  );
   if (q.sort) {
     const { field, direction } = q.sort;
     rows = [...rows].sort(
@@ -37,6 +40,14 @@ function serverQuery(q: TableQuery) {
     );
   }
   return { total: rows.length, rows: rows.slice(q.pageIndex * q.pageSize, (q.pageIndex + 1) * q.pageSize) };
+}
+
+function personActions(p: Person) {
+  return (
+    <Button size="small" variant="text" onClick={() => alert(p.name)}>
+      Open
+    </Button>
+  );
 }
 
 export default function TableDemo() {
@@ -55,11 +66,7 @@ export default function TableDemo() {
         striped
         initialSortField="name"
         rowHighlighted={(p) => p.id === 3}
-        rowActions={(p) => (
-          <Button size="small" variant="text" onClick={() => alert(p.name)}>
-            Open
-          </Button>
-        )}
+        rowActions={personActions}
         onDataRequest={(q) => setResult(serverQuery(q))}
       />
       <Table

@@ -21,25 +21,25 @@ function DialogExample({
   open: initialOpen = false,
   ...props
 }: DialogProps & ExampleTexts) {
-  const [open, setOpenState] = useState(initialOpen);
-  const setOpen = (next: boolean) => {
-    setOpenState(next);
+  const [open, setOpen] = useState(initialOpen);
+  const changeOpen = (next: boolean) => {
+    setOpen(next);
     onOpenChange?.(next);
   };
   return (
     <>
-      <Button onClick={() => setOpen(true)}>{openLabel}</Button>
+      <Button onClick={() => changeOpen(true)}>{openLabel}</Button>
       <Dialog
         aria-describedby={DESCRIPTION_ID}
         {...props}
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={changeOpen}
         footer={
           <>
-            <Button severity="secondary" variant="outlined" onClick={() => setOpen(false)}>
+            <Button severity="secondary" variant="outlined" onClick={() => changeOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setOpen(false)}>{confirmLabel}</Button>
+            <Button onClick={() => changeOpen(false)}>{confirmLabel}</Button>
           </>
         }
       >
@@ -69,7 +69,7 @@ const meta = {
   argTypes: {
     size: {
       control: 'inline-radio',
-      options: ['small', 'medium', 'large', 'full', undefined] satisfies (DialogSize | undefined)[],
+      options: ['small', 'medium', 'large', 'full', undefined] satisfies Array<DialogSize | undefined>,
     },
     role: { control: 'inline-radio', options: ['dialog', 'alertdialog'] },
     autoFocus: { control: 'inline-radio', options: ['first-tabbable', 'dialog'] },
@@ -113,7 +113,7 @@ export const ClosesDialog: Story = {
     await dialogRemoved;
     await expect(args.onHide).toHaveBeenCalledOnce();
     await expect(canvas.queryByText('Enroll in Advanced Software Engineering?')).not.toBeInTheDocument();
-    await waitFor(() => expect(launcher).toHaveFocus());
+    await waitFor(async () => expect(launcher).toHaveFocus());
   },
 };
 
@@ -126,7 +126,7 @@ export const ClosesWithEscape: Story = {
     const dialogRemoved = waitForElementToBeRemoved(dialog);
     await userEvent.keyboard('{Escape}');
     await dialogRemoved;
-    await waitFor(() => expect(launcher).toHaveFocus());
+    await waitFor(async () => expect(launcher).toHaveFocus());
   },
 };
 

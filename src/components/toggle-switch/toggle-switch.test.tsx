@@ -31,8 +31,8 @@ describe('ToggleSwitch', () => {
   it('has no axe violations', async () => {
     const { container } = render(
       <>
-        <label>
-          Mail <ToggleSwitch />
+        <label htmlFor="mail-switch">
+          Mail <ToggleSwitch id="mail-switch" />
         </label>
         <ToggleSwitch aria-label="B" defaultChecked />
       </>,

@@ -63,11 +63,13 @@ export function SearchField({
         disabled={disabled}
         placeholder={placeholderText}
         // Inside a FormField the visible label names the input; the placeholder would override it otherwise.
-        aria-label={labelledBy || field ? ariaLabel : (ariaLabel ?? placeholderText)}
+        aria-label={
+          (labelledBy !== undefined && labelledBy !== '') || field ? ariaLabel : (ariaLabel ?? placeholderText)
+        }
         aria-labelledby={labelledBy}
         onChange={(event: ChangeEvent<HTMLInputElement>) => setTerm(event.target.value)}
       />
-      {term && (
+      {term ? (
         <button
           type="button"
           className="tumaet-ui-search-field-clear"
@@ -80,7 +82,7 @@ export function SearchField({
         >
           <XIcon />
         </button>
-      )}
+      ) : null}
     </div>
   );
 }

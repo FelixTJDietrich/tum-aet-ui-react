@@ -4,20 +4,15 @@ export const TYPEAHEAD_DEBOUNCE_MS = 500;
 
 /** Converts primitive values to text; objects and nullish values yield an empty string (as in the Angular library). */
 export function toText(value: unknown): string {
-  switch (typeof value) {
-    case 'string':
-      return value;
-    case 'number':
-    case 'boolean':
-    case 'bigint':
-      return String(value);
-    default:
-      return '';
-  }
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+  return '';
 }
 
 function property(option: unknown, key: string | undefined): unknown {
-  return key && option !== null && typeof option === 'object' ? (option as Record<string, unknown>)[key] : option;
+  return key !== undefined && key !== '' && option !== null && typeof option === 'object'
+    ? (option as Record<string, unknown>)[key]
+    : option;
 }
 
 /** Visible label of an option: the `optionLabel` property of an object option, or the option itself. */
@@ -77,7 +72,7 @@ export function useTypeahead(): {
   const match = useCallback((character: string, labels: readonly string[], active: number) => {
     const char = character.toLocaleLowerCase();
     clearTimeout(timer.current);
-    const repeats = buffer.current.length > 0 && [...buffer.current].every((c) => c === char);
+    const repeats = buffer.current.length > 0 && Array.from(buffer.current).every((c) => c === char);
     timer.current = setTimeout(() => {
       buffer.current = '';
     }, TYPEAHEAD_DEBOUNCE_MS);
@@ -86,7 +81,7 @@ export function useTypeahead(): {
     const find = (prefix: string, from: number) => {
       for (let offset = 0; offset < count; offset++) {
         const index = (from + offset) % count;
-        if (lower[index]?.startsWith(prefix)) return index;
+        if (lower[index]?.startsWith(prefix) === true) return index;
       }
       return -1;
     };

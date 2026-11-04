@@ -1,5 +1,4 @@
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -22,6 +21,14 @@ interface Box {
   height: number;
 }
 
+/** Offset of the floating box along the cross axis for an alignment. */
+function alignOffset(align: 'start' | 'end' | undefined, start: number, end: number, center: number): number {
+  if (align === 'start') {
+    return start;
+  }
+  return align === 'end' ? end : center;
+}
+
 /** Pure positioning: places `floating` next to `anchor`, flips to the opposite side when it does not fit and keeps it inside the viewport. */
 export function computePosition(
   anchor: Box,
@@ -30,7 +37,7 @@ export function computePosition(
   viewport: { width: number; height: number },
   offset = 4,
 ): { top: number; left: number; side: Side } {
-  const [wanted, align = 'center'] = placement.split('-') as [Side, ('start' | 'end')?];
+  const [wanted, align] = placement.split('-') as [Side, ('start' | 'end')?];
   const fits = (side: Side) => {
     switch (side) {
       case 'bottom':
@@ -49,24 +56,47 @@ export function computePosition(
   let left: number;
   if (side === 'top' || side === 'bottom') {
     top = side === 'bottom' ? anchor.top + anchor.height + offset : anchor.top - offset - floating.height;
-    left =
-      align === 'start'
-        ? anchor.left
-        : align === 'end'
-          ? anchor.left + anchor.width - floating.width
-          : anchor.left + (anchor.width - floating.width) / 2;
+    left = alignOffset(
+      align,
+      anchor.left,
+      anchor.left + anchor.width - floating.width,
+      anchor.left + (anchor.width - floating.width) / 2,
+    );
     left = Math.max(4, Math.min(left, viewport.width - floating.width - 4));
   } else {
     left = side === 'right' ? anchor.left + anchor.width + offset : anchor.left - offset - floating.width;
-    top =
-      align === 'start'
-        ? anchor.top
-        : align === 'end'
-          ? anchor.top + anchor.height - floating.height
-          : anchor.top + (anchor.height - floating.height) / 2;
+    top = alignOffset(
+      align,
+      anchor.top,
+      anchor.top + anchor.height - floating.height,
+      anchor.top + (anchor.height - floating.height) / 2,
+    );
     top = Math.max(4, Math.min(top, viewport.height - floating.height - 4));
   }
   return { top, left, side };
+}
+
+/** Measures the anchor and the panel and returns the position of the panel, or null while either is not mounted. */
+function measure(
+  a: HTMLElement | null,
+  p: HTMLElement | null,
+  matchWidth: boolean,
+  placement: Placement,
+  offset: number,
+): { minWidth: number | undefined; pos: { top: number; left: number; side: Side } } | null {
+  if (a === null || p === null) return null;
+  const r = a.getBoundingClientRect();
+  const f = p.getBoundingClientRect();
+  return {
+    minWidth: matchWidth ? r.width : undefined,
+    pos: computePosition(
+      { top: r.top, left: r.left, width: r.width, height: r.height },
+      { width: f.width, height: f.height },
+      placement,
+      { width: window.innerWidth, height: window.innerHeight },
+      offset,
+    ),
+  };
 }
 
 export interface FloatingProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -103,42 +133,36 @@ export function Floating({
   const [pos, setPos] = useState<{ top: number; left: number; side: Side } | null>(null);
   const [minWidth, setMinWidth] = useState<number | undefined>();
   const dismiss = useRef(onDismiss);
-  dismiss.current = onDismiss;
+  useLayoutEffect(() => {
+    dismiss.current = onDismiss;
+  });
 
-  const update = useCallback(() => {
-    const a = anchor.current;
-    const p = panel.current;
-    if (!a || !p) return;
-    const r = a.getBoundingClientRect();
-    setMinWidth(matchWidth ? r.width : undefined);
-    const f = p.getBoundingClientRect();
-    setPos(
-      computePosition(
-        { top: r.top, left: r.left, width: r.width, height: r.height },
-        { width: f.width, height: f.height },
-        placement,
-        { width: window.innerWidth, height: window.innerHeight },
-        offset,
-      ),
-    );
-  }, [anchor, matchWidth, placement, offset]);
+  // Forget the position when closed, so the next opening starts invisible until it is measured.
+  if (!open && pos !== null) {
+    setPos(null);
+  }
 
   useLayoutEffect(() => {
-    if (!open) {
-      setPos(null);
-      return;
-    }
-    update();
-  }, [open, update, children]);
+    if (!open) return;
+    const m = measure(anchor.current, panel.current, matchWidth === true, placement, offset);
+    if (m === null) return;
+    setMinWidth(m.minWidth);
+    setPos(m.pos);
+  }, [open, anchor, matchWidth, placement, offset, children]);
 
   useEffect(() => {
     if (!open) return;
-    const onScroll = () => update();
+    const onScroll = () => {
+      const m = measure(anchor.current, panel.current, matchWidth === true, placement, offset);
+      if (m === null) return;
+      setMinWidth(m.minWidth);
+      setPos(m.pos);
+    };
     window.addEventListener('resize', onScroll);
     window.addEventListener('scroll', onScroll, true);
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (panel.current?.contains(target) || anchor.current?.contains(target)) return;
+      if (panel.current?.contains(target) === true || anchor.current?.contains(target) === true) return;
       dismiss.current?.();
     };
     const onKeyDown = (event: KeyboardEvent) => {
@@ -155,19 +179,24 @@ export function Floating({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open, update, anchor]);
+  }, [open, anchor, matchWidth, placement, offset]);
 
   if (!open) return null;
   // A modal dialog sits in the top layer, above everything in <body>, so popups opened inside it are portalled into it.
   const container = anchor.current?.closest('dialog') ?? document.body;
+  // With `matchWidth`, a numeric `style.minWidth` is a floor for the anchor width instead of replacing it.
+  const styleMinWidth = style?.minWidth;
   const css: CSSProperties = {
     position: 'fixed',
     top: pos?.top ?? 0,
     left: pos?.left ?? 0,
-    minWidth,
     // Invisible but focusable until positioned: `visibility: hidden` would make `autoFocus` inside the panel fail in browsers.
     ...(pos ? null : { opacity: 0, pointerEvents: 'none' as const }),
     ...style,
+    minWidth:
+      typeof styleMinWidth === 'number' && minWidth !== undefined
+        ? Math.max(minWidth, styleMinWidth)
+        : (styleMinWidth ?? minWidth),
   };
   return createPortal(
     <div

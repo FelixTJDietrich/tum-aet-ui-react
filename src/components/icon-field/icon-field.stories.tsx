@@ -3,11 +3,15 @@ import { SearchIcon } from '../../internal/icons';
 import { Input } from '../input/input';
 import { IconField } from './icon-field';
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
 
 const meta = {
   title: 'Forms/Icon Field',

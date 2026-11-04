@@ -113,7 +113,7 @@ export const OpensAndTrapsFocus: Story = {
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toContainElement(document.activeElement as HTMLElement);
     // Waited for: the panel grows into place from transparent, so it is not yet visible on the frame it opens.
-    await waitFor(() => expect(within(panel).getByRole('button', { name: 'Delete' })).toBeVisible());
+    await waitFor(async () => expect(within(panel).getByRole('button', { name: 'Delete' })).toBeVisible());
     await expect(args.onOpenChange).toHaveBeenCalledWith(true);
 
     // Tab wraps inside the panel.

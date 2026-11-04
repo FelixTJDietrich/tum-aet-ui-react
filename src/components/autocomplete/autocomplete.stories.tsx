@@ -5,7 +5,7 @@ import { Autocomplete, type AutocompleteProps } from './autocomplete';
 
 /** Keeps the value in state, as a form would, and forwards every change to the `onChange` spy. */
 function StatefulAutocomplete({ value: initial, onChange, ...props }: AutocompleteProps) {
-  const [value, setValue] = useState<unknown>(initial ?? (props.multiple ? [] : null));
+  const [value, setValue] = useState<unknown>(initial ?? (props.multiple === true ? [] : null));
   return (
     <Autocomplete
       {...props}
@@ -65,18 +65,24 @@ export const SelectsSuggestion: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const input = canvas.getByRole('combobox', { name: 'Assignee' });
     await userEvent.click(input);
-    await expect(args.onSearch).toHaveBeenCalledWith({ originalEvent: expect.any(FocusEvent), query: '' });
-    await expect(getComputedStyle(input.parentElement!).outlineWidth).toBe('2px');
+    const focusEvent: unknown = expect.any(FocusEvent);
+    await expect(args.onSearch).toHaveBeenCalledWith({ originalEvent: focusEvent, query: '' });
+    const wrapper = input.parentElement;
+    if (wrapper === null) {
+      throw new Error('The combobox input has no wrapper element.');
+    }
+    await expect(getComputedStyle(wrapper).outlineWidth).toBe('2px');
 
     const listbox = await screen.findByRole('listbox', { name: 'Assignee' });
     await userEvent.keyboard('{ArrowDown}{Enter}');
 
     await expect(input).toHaveValue('Ada Lovelace');
+    const keyboardEvent: unknown = expect.any(KeyboardEvent);
     await expect(args.onOptionSelect).toHaveBeenCalledWith({
-      originalEvent: expect.any(KeyboardEvent),
+      originalEvent: keyboardEvent,
       value: 'Ada Lovelace',
     });
-    await waitFor(() => expect(listbox).not.toBeInTheDocument());
+    await waitFor(async () => expect(listbox).not.toBeInTheDocument());
   },
 };
 

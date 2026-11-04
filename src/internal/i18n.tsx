@@ -60,8 +60,8 @@ function interpolate(template: string, params?: TranslationParams): string {
   return template.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match));
 }
 
-const defaultTranslator: Translator = (key, params) =>
-  interpolate(DEFAULT_TRANSLATIONS[key as TranslationKey] ?? key, params);
+const defaultTexts: Readonly<Record<string, string | undefined>> = DEFAULT_TRANSLATIONS;
+const defaultTranslator: Translator = (key, params) => interpolate(defaultTexts[key] ?? key, params);
 
 const TranslatorContext = createContext<{ translate: Translator; locale?: string }>({ translate: defaultTranslator });
 

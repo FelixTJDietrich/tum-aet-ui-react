@@ -1,75 +1,101 @@
 .tumaet-ui-checkbox {
+  user-select: none;
+
   position: relative;
+
   display: inline-flex;
   flex: 0 0 auto;
+
   width: calc(var(--tumaet-ui-spacing, 0.25rem) * 5);
   height: calc(var(--tumaet-ui-spacing, 0.25rem) * 5);
+
   vertical-align: bottom;
-  user-select: none;
 }
+
 .tumaet-ui-checkbox-input {
+  cursor: pointer;
+
   position: absolute;
-  inset: 0;
   z-index: 1;
+  inset: 0;
+
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  opacity: 0;
-  cursor: pointer;
+
   appearance: none;
+  opacity: 0;
 }
+
 .tumaet-ui-checkbox-input:disabled {
   cursor: default;
 }
+
 .tumaet-ui-checkbox-box {
-  box-sizing: border-box;
   position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
-  color: var(--tumaet-ui-primary-contrast-color);
-  background-color: var(--tumaet-ui-control-background);
   border: 1px solid var(--tumaet-ui-control-border-color);
   border-radius: var(--tumaet-ui-radius-sm);
+
+  color: var(--tumaet-ui-primary-contrast-color);
+
+  background-color: var(--tumaet-ui-control-background);
   box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--tumaet-ui-text-color) 5%, transparent);
+
   transition:
     background-color 0.2s,
     border-color 0.2s,
     box-shadow 0.2s,
     outline-color 0.2s;
 }
+
 .tumaet-ui-checkbox-box::after {
+  pointer-events: none;
   content: '';
+
   position: absolute;
   inset: 0;
+
   border-radius: inherit;
+
   background-color: transparent;
-  pointer-events: none;
+
   transition: background-color 0.15s ease;
 }
+
 .tumaet-ui-checkbox-icon {
   font-size: var(--tumaet-ui-font-size-sm);
   line-height: 1;
 }
+
 .tumaet-ui-checkbox[data-checked] .tumaet-ui-checkbox-box,
 .tumaet-ui-checkbox[data-indeterminate] .tumaet-ui-checkbox-box {
-  background-color: var(--tumaet-ui-primary-color);
   border-color: var(--tumaet-ui-primary-color);
+  background-color: var(--tumaet-ui-primary-color);
 }
+
 .tumaet-ui-checkbox[data-invalid] .tumaet-ui-checkbox-box {
   border-color: var(--tumaet-ui-state-danger);
 }
+
 .tumaet-ui-checkbox[data-disabled] .tumaet-ui-checkbox-box {
-  background-color: var(--tumaet-ui-disabled-background);
   border-color: var(--tumaet-ui-control-border-color);
   color: var(--tumaet-ui-disabled-color);
+  background-color: var(--tumaet-ui-disabled-background);
 }
+
 .tumaet-ui-checkbox-input:hover:not(:disabled) + .tumaet-ui-checkbox-box::after {
   background-color: color-mix(in srgb, var(--tumaet-ui-text-color) 5%, transparent);
 }
+
 .tumaet-ui-checkbox-input:focus-visible + .tumaet-ui-checkbox-box {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
@@ -81,11 +107,13 @@
     transition: none;
   }
 }
+
 @media (forced-colors: active) {
   .tumaet-ui-checkbox-input {
     appearance: auto;
     opacity: 1;
   }
+
   .tumaet-ui-checkbox-box {
     display: none;
   }

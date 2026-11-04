@@ -61,13 +61,13 @@ export function columnName<T>(col: ColumnDef<T>, index: number): string {
 
 /** The next sort state when a sortable column is activated: a new column starts ascending, the active one toggles. */
 export function nextSort(current: SortState | undefined, field: string): SortState {
-  return current && current.field === field
+  return current?.field === field
     ? { field, direction: current.direction === 'asc' ? 'desc' : 'asc' }
     : { field, direction: 'asc' };
 }
 
 export function ariaSortFor(sort: SortState | undefined, field: string): 'ascending' | 'descending' | 'none' {
-  if (!sort || sort.field !== field) return 'none';
+  if (sort?.field !== field) return 'none';
   return sort.direction === 'asc' ? 'ascending' : 'descending';
 }
 
@@ -79,5 +79,8 @@ export function lastPageIndex(totalRecords: number, pageSize: number): number {
 export function formatCellValue(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object') return value instanceof Date ? value.toLocaleString() : JSON.stringify(value);
-  return String(value);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+  if (typeof value === 'symbol') return value.toString();
+  return typeof value === 'function' ? value.toString() : '';
 }

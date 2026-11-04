@@ -104,12 +104,22 @@ function DialogSurface({
   const closing = useRef(false);
   const pressedOnMask = useRef(false);
   const callbacks = useRef({ onShow, onHide });
-  callbacks.current = { onShow, onHide };
+  // The lifecycle effect below only runs on mount and unmount, so it reads the latest callbacks from this ref.
+  // Declared first so that it is also up to date when the lifecycle effect runs on mount.
+  useLayoutEffect(() => {
+    callbacks.current = { onShow, onHide };
+  });
+  // The focus target is read once per open, as the surface is only mounted while open.
+  const initialAutoFocus = useRef(autoFocus);
 
   const hasHeader =
-    showHeader && (typeof header === 'string' ? header.trim() !== '' : header != null && header !== false);
+    showHeader &&
+    (typeof header === 'string' ? header.trim() !== '' : header !== undefined && header !== null && header !== false);
   const ariaLabel = rest['aria-label']?.trim();
-  if (!hasHeader && !ariaLabel && !rest['aria-labelledby']) {
+  const hasAriaLabel = ariaLabel !== undefined && ariaLabel !== '';
+  const labelledBy = rest['aria-labelledby'];
+  const hasAriaLabelledBy = labelledBy !== undefined && labelledBy !== '';
+  if (!hasHeader && !hasAriaLabel && !hasAriaLabelledBy) {
     throw new Error('Dialog requires a visible header or an aria-label');
   }
 
@@ -120,20 +130,21 @@ function DialogSurface({
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     lockPageScroll();
     if (!dialog.open) dialog.showModal();
-    if (autoFocus === 'dialog') dialog.focus({ preventScroll: true });
+    if (initialAutoFocus.current === 'dialog') dialog.focus({ preventScroll: true });
     callbacks.current.onShow?.();
     return () => {
       closing.current = true;
       if (dialog.open) dialog.close();
       unlockPageScroll();
       // The platform restores focus on close(); this covers a dialog that is removed while open.
-      if (opener?.isConnected && document.activeElement !== opener) opener.focus();
+      if (opener?.isConnected === true && document.activeElement !== opener) opener.focus();
       callbacks.current.onHide?.();
     };
     // Runs once per open: the dialog surface is only mounted while open.
   }, []);
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- the native <dialog> needs these handlers for Escape and backdrop clicks; focus and keyboard are provided by the platform
     <dialog
       {...rest}
       ref={(node) => {
@@ -177,12 +188,12 @@ function DialogSurface({
       }}
     >
       <div className="tumaet-ui-dialog" data-size={size}>
-        {showHeader && (
+        {showHeader ? (
           <div className="tumaet-ui-dialog-header">
             <div id={titleId} className="tumaet-ui-dialog-title">
               {header}
             </div>
-            {closable && (
+            {closable ? (
               <button
                 type="button"
                 className="tumaet-ui-dialog-close"
@@ -191,11 +202,13 @@ function DialogSurface({
               >
                 <XIcon />
               </button>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
         <div className="tumaet-ui-dialog-content">{children}</div>
-        {footer != null && footer !== false && <div className="tumaet-ui-dialog-footer">{footer}</div>}
+        {footer !== undefined && footer !== null && footer !== false && (
+          <div className="tumaet-ui-dialog-footer">{footer}</div>
+        )}
       </div>
     </dialog>
   );

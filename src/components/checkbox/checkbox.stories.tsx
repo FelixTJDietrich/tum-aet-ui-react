@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
 import { FormField } from '../form-field/form-field';
 import { Checkbox } from './checkbox';
 
-const InlineControl: Decorator = (Story) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
-    <Story />
-  </div>
-);
+/** The element for `selector`, failing the story when it is missing. */
+function requireElement(root: Element, selector: string): Element {
+  const element = root.querySelector(selector);
+  if (element === null) throw new Error(`No element matches ${selector}`);
+  return element;
+}
+
+function InlineControl(Story: Parameters<Decorator>[0]) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
+      <Story />
+    </div>
+  );
+}
 
 const meta = {
   title: 'Forms/Checkbox',
@@ -33,6 +42,8 @@ const meta = {
   argTypes: { onChange: { control: false } },
   decorators: [InlineControl],
   render: function Render({ checked, onChange, ...args }) {
+    const generatedId = useId();
+    const id = args.id ?? generatedId;
     const [value, setValue] = useState(checked ?? false);
     const [seen, setSeen] = useState(checked);
     if (seen !== checked) {
@@ -41,10 +52,11 @@ const meta = {
       setValue(checked ?? false);
     }
     return (
-      <label style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
+      <label htmlFor={id} style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
         <Checkbox
           name="terms"
           {...args}
+          id={id}
           checked={value}
           onChange={(next, event) => {
             setValue(next);
@@ -129,7 +141,8 @@ export const StaysSquareBesideAWrappingLabel: Story = {
   ),
   play: async ({ canvasElement }) => {
     for (const id of ['wrap-centered', 'wrap-stretched', 'wrap-untokened']) {
-      const box = canvasElement.querySelector(`#${id}`)!.nextElementSibling!.getBoundingClientRect();
+      const box = requireElement(canvasElement, `#${id}`).nextElementSibling?.getBoundingClientRect();
+      if (box === undefined) throw new Error(`${id} has no box`);
       await expect(box.width, `${id} width`).toBeGreaterThan(0);
       await expect(box.width, `${id} is square`).toBeCloseTo(box.height, 1);
     }
@@ -145,7 +158,9 @@ export const StaysSquareInATightRow: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const { width, height } = canvasElement.querySelector('#tight')!.parentElement!.getBoundingClientRect();
+    const parent = requireElement(canvasElement, '#tight').parentElement;
+    if (parent === null) throw new Error('#tight has no parent');
+    const { width, height } = parent.getBoundingClientRect();
     await expect(width).toBeGreaterThan(0);
     await expect(width).toBeCloseTo(height, 1);
   },

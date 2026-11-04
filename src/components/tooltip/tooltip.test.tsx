@@ -6,7 +6,9 @@ import { Tooltip, type TooltipProps } from './tooltip';
 function Host(props: Partial<TooltipProps> & { describedBy?: string }) {
   return (
     <Tooltip content="Helpful hint" {...props}>
-      <button aria-describedby={props.describedBy}>Host</button>
+      <button type="button" aria-describedby={props.describedBy}>
+        Host
+      </button>
     </Tooltip>
   );
 }
@@ -16,7 +18,7 @@ const host = () => screen.getByRole('button', { name: 'Host' });
 describe('Tooltip', () => {
   beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
   afterEach(() => vi.useRealTimers());
-  const advance = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
+  const advance = async (ms: number) => act(async () => vi.advanceTimersByTimeAsync(ms));
 
   it('shows after the delay on hover and links the host through aria-describedby', async () => {
     render(<Host />);
@@ -153,9 +155,11 @@ describe('Tooltip', () => {
     render(
       <>
         <Tooltip content="Hint">
-          <button onFocus={onFocus}>Host</button>
+          <button type="button" onFocus={onFocus}>
+            Host
+          </button>
         </Tooltip>
-        <button>Elsewhere</button>
+        <button type="button">Elsewhere</button>
       </>,
     );
     await userEvent.tab();

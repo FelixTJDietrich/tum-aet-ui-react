@@ -2,51 +2,66 @@
   --_bg: var(--tumaet-ui-content-background);
   --_bd: var(--tumaet-ui-border-color);
   --_fg: var(--tumaet-ui-text-color);
+
   display: grid;
   grid-template-rows: 1fr;
+
   border-radius: var(--tumaet-ui-radius-md);
-  outline: 1px solid var(--_bd);
-  outline-offset: 0;
-  background: var(--_bg);
-  color: var(--_fg);
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-base);
-  line-height: var(--tumaet-ui-line-height-base);
   font-weight: 500;
+  line-height: var(--tumaet-ui-line-height-base);
+  color: var(--_fg);
+
+  background: var(--_bg);
+  outline: 1px solid var(--_bd);
+  outline-offset: 0;
 }
+
 .tumaet-ui-message-content {
   display: flex;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
   align-items: center;
+
   min-height: 0;
   padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 3);
-  gap: calc(var(--tumaet-ui-spacing) * 2);
 }
+
 .tumaet-ui-message-icon {
   display: inline-flex;
   flex-shrink: 0;
   font-size: var(--tumaet-ui-font-size-lg);
 }
+
 .tumaet-ui-message-dismiss {
+  cursor: pointer;
+
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+
   width: 2rem;
   height: 2rem;
   margin-inline-start: auto;
   padding: 0;
   border: 0;
   border-radius: 9999px;
-  background: transparent;
-  color: inherit;
+
   font: inherit;
-  cursor: pointer;
+  color: inherit;
+
   appearance: none;
+  background: transparent;
+
   transition: background-color 0.15s;
 }
+
 .tumaet-ui-message-dismiss:hover {
   background: color-mix(in srgb, currentcolor 12%, transparent);
 }
+
 .tumaet-ui-message-dismiss:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
@@ -57,31 +72,38 @@
   --_bd: var(--tumaet-ui-border-color);
   --_fg: var(--tumaet-ui-text-color);
 }
+
 .tumaet-ui-message[data-severity='contrast'] {
   --_bg: var(--tumaet-ui-contrast-background);
   --_bd: var(--tumaet-ui-contrast-background);
   --_fg: var(--tumaet-ui-contrast-color);
 }
+
 .tumaet-ui-message[data-severity='info'],
 .tumaet-ui-message[data-severity='success'],
 .tumaet-ui-message[data-severity='warn'],
 .tumaet-ui-message[data-severity='error'] {
   --_bg: color-mix(in srgb, var(--_state) 10%, var(--tumaet-ui-content-background));
   --_bd: color-mix(in srgb, var(--_state) 40%, var(--tumaet-ui-content-background));
+
   box-shadow: 0 4px 8px 0 color-mix(in srgb, var(--_state), transparent 96%);
 }
+
 .tumaet-ui-message[data-severity='info'] {
   --_state: var(--tumaet-ui-state-info);
   --_fg: var(--tumaet-ui-state-info-foreground);
 }
+
 .tumaet-ui-message[data-severity='success'] {
   --_state: var(--tumaet-ui-state-success);
   --_fg: var(--tumaet-ui-state-success-foreground);
 }
+
 .tumaet-ui-message[data-severity='warn'] {
   --_state: var(--tumaet-ui-state-warning);
   --_fg: var(--tumaet-ui-state-warning-foreground);
 }
+
 .tumaet-ui-message[data-severity='error'] {
   --_state: var(--tumaet-ui-state-danger);
   --_fg: var(--tumaet-ui-state-danger-foreground);

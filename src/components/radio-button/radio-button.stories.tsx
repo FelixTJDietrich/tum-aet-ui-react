@@ -10,11 +10,21 @@ const OPTIONS = [
   { label: 'Never', value: 'never' },
 ] as const;
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
+
+/** Narrows an element a play function expects to find. */
+function required<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) throw new Error('Expected the element to be present');
+  return value;
+}
 
 const optionStyle = { display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' } as const;
 
@@ -92,15 +102,15 @@ export const Selection: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole('radio', { name: 'Weekly' })).toBeChecked();
     await userEvent.click(canvas.getByRole('radio', { name: 'Daily' }));
-    await waitFor(() => expect(canvas.getByRole('radio', { name: 'Daily' })).toBeChecked());
-    await waitFor(() => expect(canvas.getByRole('radio', { name: 'Weekly' })).not.toBeChecked());
+    await waitFor(async () => expect(canvas.getByRole('radio', { name: 'Daily' })).toBeChecked());
+    await waitFor(async () => expect(canvas.getByRole('radio', { name: 'Weekly' })).not.toBeChecked());
 
     await userEvent.click(canvas.getByRole('radio', { name: 'Never' }));
-    await waitFor(() => expect(canvas.getByRole('radio', { name: 'Never' })).toBeChecked());
-    await waitFor(() => expect(canvas.getByRole('radio', { name: 'Daily' })).not.toBeChecked());
+    await waitFor(async () => expect(canvas.getByRole('radio', { name: 'Never' })).toBeChecked());
+    await waitFor(async () => expect(canvas.getByRole('radio', { name: 'Daily' })).not.toBeChecked());
     const radios = ['Daily', 'Weekly', 'Never'].map((name) => canvas.getByRole('radio', { name }));
     await waitFor(async () => {
-      const backgrounds = radios.map((radio) => getComputedStyle(radio.nextElementSibling!).backgroundColor);
+      const backgrounds = radios.map((radio) => getComputedStyle(required(radio.nextElementSibling)).backgroundColor);
       await expect(backgrounds[0]).toBe(backgrounds[1]);
       await expect(backgrounds[2]).not.toBe(backgrounds[0]);
     });
@@ -173,7 +183,9 @@ export const StaysRoundInATightRow: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const { width, height } = canvasElement.querySelector('#tight')!.parentElement!.getBoundingClientRect();
+    const { width, height } = required(
+      required(canvasElement.querySelector('#tight')).parentElement,
+    ).getBoundingClientRect();
     await expect(width).toBeGreaterThan(0);
     await expect(width).toBeCloseTo(height, 1);
   },
@@ -194,9 +206,9 @@ export const ShowsTheSelectedDotWithoutTheSpacingToken: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const wrapper = canvasElement.querySelector('#untokened')!.parentElement!;
+    const wrapper = required(required(canvasElement.querySelector('#untokened')).parentElement);
     const host = wrapper.getBoundingClientRect();
-    const indicator = wrapper.querySelector('.tumaet-ui-radio-button-icon')!.getBoundingClientRect();
+    const indicator = required(wrapper.querySelector('.tumaet-ui-radio-button-icon')).getBoundingClientRect();
     await expect(host.width, 'the ring is round').toBeCloseTo(host.height, 1);
     await expect(indicator.width, 'the dot has a size').toBeGreaterThan(0);
     await expect(indicator.width, 'the dot is round').toBeCloseTo(indicator.height, 1);

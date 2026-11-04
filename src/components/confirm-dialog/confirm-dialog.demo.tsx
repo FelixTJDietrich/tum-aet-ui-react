@@ -19,7 +19,13 @@ function Demo() {
   };
   return (
     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-      <Button severity="danger" variant="outlined" onClick={ask}>
+      <Button
+        severity="danger"
+        variant="outlined"
+        onClick={() => {
+          void ask();
+        }}
+      >
         Delete tutorial group
       </Button>
       <span>{result}</span>

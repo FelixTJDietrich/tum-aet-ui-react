@@ -44,7 +44,7 @@ export function ToggleSwitch({
       className={cx('tumaet-ui-toggle-switch', className)}
       style={style}
       data-checked={isChecked}
-      data-disabled={disabled || undefined}
+      data-disabled={disabled === true ? true : undefined}
       data-invalid={control.invalid || undefined}
     >
       <input

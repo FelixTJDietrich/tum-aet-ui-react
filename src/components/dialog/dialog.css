@@ -1,45 +1,57 @@
 /* The native <dialog> element is only the top-layer host: the visible surface is .tumaet-ui-dialog. */
 .tumaet-ui-dialog-modal {
+  overflow: visible;
+
   max-width: none;
   max-height: none;
   padding: 0;
-  overflow: visible;
-  color: var(--tumaet-ui-text-color);
-  background: transparent;
   border: 0;
+
+  color: var(--tumaet-ui-text-color);
+
+  background: transparent;
 }
+
 .tumaet-ui-dialog-modal:focus-visible {
   outline: none;
 }
+
 .tumaet-ui-dialog-modal::backdrop {
-  background: rgb(0 0 0 / 0.32);
+  background: rgb(0 0 0 / 32%);
 }
 
 .tumaet-ui-dialog {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+
   box-sizing: border-box;
   max-width: 90dvw;
   max-height: 90dvh;
-  overflow: hidden;
+  border: 1px solid var(--tumaet-ui-border-color);
+  border-radius: var(--tumaet-ui-radius-xl);
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-base);
   line-height: var(--tumaet-ui-line-height-base);
   color: var(--tumaet-ui-text-color);
+
   background: var(--tumaet-ui-overlay-background);
-  border: 1px solid var(--tumaet-ui-border-color);
-  border-radius: var(--tumaet-ui-radius-xl);
   box-shadow: var(--tumaet-ui-shadow-xl);
 }
+
 .tumaet-ui-dialog[data-size='small'] {
   width: min(32rem, 90dvw);
 }
+
 .tumaet-ui-dialog[data-size='medium'] {
   width: min(48rem, 90dvw);
 }
+
 .tumaet-ui-dialog[data-size='large'] {
   width: min(72rem, 90dvw);
 }
+
 .tumaet-ui-dialog[data-size='full'] {
   width: 90dvw;
   height: 90dvh;
@@ -48,51 +60,63 @@
 .tumaet-ui-dialog-header {
   display: flex;
   flex-shrink: 0;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
   align-items: center;
   justify-content: space-between;
-  gap: calc(var(--tumaet-ui-spacing) * 2);
+
   padding: calc(var(--tumaet-ui-spacing) * 4);
 }
+
 .tumaet-ui-dialog-title {
   font-size: var(--tumaet-ui-font-size-xl);
-  line-height: var(--tumaet-ui-line-height-xl);
   font-weight: 600;
+  line-height: var(--tumaet-ui-line-height-xl);
 }
+
 .tumaet-ui-dialog-close {
+  cursor: pointer;
+
   display: inline-flex;
   flex-shrink: 0;
-  appearance: none;
   align-items: center;
   justify-content: center;
+
   width: calc(var(--tumaet-ui-spacing) * 8);
   height: calc(var(--tumaet-ui-spacing) * 8);
-  padding: 0;
   margin-inline-start: auto;
-  font: inherit;
-  color: var(--tumaet-ui-muted-color);
-  cursor: pointer;
-  background: transparent;
+  padding: 0;
   border: 0;
   border-radius: 9999px;
+
+  font: inherit;
+  color: var(--tumaet-ui-muted-color);
+
+  appearance: none;
+  background: transparent;
+
   transition: background-color 0.15s ease;
 }
+
 .tumaet-ui-dialog-close:hover {
   background: var(--tumaet-ui-hover-background);
 }
+
 .tumaet-ui-dialog-close:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
 }
 
 .tumaet-ui-dialog-content {
+  overflow-y: auto;
   flex-grow: 1;
   padding: 0 calc(var(--tumaet-ui-spacing) * 4) calc(var(--tumaet-ui-spacing) * 4);
-  overflow-y: auto;
 }
+
 .tumaet-ui-dialog-footer {
   display: flex;
   flex-shrink: 0;
-  justify-content: flex-end;
   gap: calc(var(--tumaet-ui-spacing) * 2);
+  justify-content: flex-end;
+
   padding: 0 calc(var(--tumaet-ui-spacing) * 4) calc(var(--tumaet-ui-spacing) * 4);
 }

@@ -88,12 +88,17 @@ function pad(n: number, length = 2): string {
  * date and time) into one plain space.
  */
 export function normalizeDisplayText(text: string): string {
-  return text.trim().split(/\s+/).filter(Boolean).join(' ');
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part !== '')
+    .join(' ');
 }
 
 /** Whether `text`, already normalized, is shaped like a complete entry for that format. */
 export function matchesDisplayFormat(text: string, timeOnly: boolean, dateOnly = false): boolean {
-  return dateOnly ? DATE_REGEX.test(text) : timeOnly ? TIME_REGEX.test(text) : DISPLAY_REGEX.test(text);
+  if (dateOnly) return DATE_REGEX.test(text);
+  return timeOnly ? TIME_REGEX.test(text) : DISPLAY_REGEX.test(text);
 }
 
 /**
@@ -103,7 +108,7 @@ export function matchesDisplayFormat(text: string, timeOnly: boolean, dateOnly =
  */
 export function parseDisplay(text: string, timeOnly = false, onDate?: Date | null, dateOnly = false): Date | undefined {
   const normalized = normalizeDisplayText(text);
-  if (!normalized || !matchesDisplayFormat(normalized, timeOnly, dateOnly)) return undefined;
+  if (normalized === '' || !matchesDisplayFormat(normalized, timeOnly, dateOnly)) return undefined;
 
   if (timeOnly) {
     const [hour = 0, minute = 0] = normalized.split(':').map(Number);
@@ -115,7 +120,7 @@ export function parseDisplay(text: string, timeOnly = false, onDate?: Date | nul
 
   const [datePart = '', timePart] = normalized.split(' ');
   const [day = 0, month = 0, year = 0] = datePart.split('.').map(Number);
-  const [hour = 0, minute = 0] = timePart ? timePart.split(':').map(Number) : [0, 0];
+  const [hour = 0, minute = 0] = timePart !== undefined && timePart !== '' ? timePart.split(':').map(Number) : [0, 0];
   if (year < 1 || month < 1 || month > 12 || day < 1 || hour > 23 || minute > 59) return undefined;
   const result = makeDate(year, month - 1, day, hour, minute);
   const roundTrips =

@@ -67,7 +67,7 @@ export function Paginator({
       aria-label={ariaLabel ?? t('tumAetUi.paginator.ariaLabel')}
       className={cx('tumaet-ui-paginator', className)}
     >
-      {showCurrentPageReport && (
+      {showCurrentPageReport ? (
         <span className="tumaet-ui-paginator-report" aria-live="polite">
           {t('tumAetUi.paginator.currentPageReport', {
             first: state.rangeBegin,
@@ -75,7 +75,7 @@ export function Paginator({
             total: totalRecords,
           })}
         </span>
-      )}
+      ) : null}
       <button
         type="button"
         className="tumaet-ui-paginator-button"
@@ -125,7 +125,7 @@ export function Paginator({
       >
         <AnglesRightIcon />
       </button>
-      {showRowsPerPage && (
+      {showRowsPerPage ? (
         <div className="tumaet-ui-paginator-rows">
           <label htmlFor={selectId}>{t('tumAetUi.paginator.rowsPerPage')}</label>
           <select
@@ -144,7 +144,7 @@ export function Paginator({
             )}
           </select>
         </div>
-      )}
+      ) : null}
     </nav>
   );
 }

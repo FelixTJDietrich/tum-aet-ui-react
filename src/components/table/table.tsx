@@ -88,8 +88,13 @@ export function SortableColumnHeader({
   const table = useContext(TableContext);
   if (!table) throw new Error('SortableColumnHeader must be used inside <Table>');
   const active = table.sortField === field && table.sortOrder !== 0;
-  const ariaSort = !active ? 'none' : table.sortOrder < 0 ? 'descending' : 'ascending';
-  const Glyph = !active ? SortIcon : table.sortOrder < 0 ? SortDownIcon : SortUpIcon;
+  const descending = table.sortOrder < 0;
+  let ariaSort: 'none' | 'ascending' | 'descending' = 'none';
+  let Glyph = SortIcon;
+  if (active) {
+    ariaSort = descending ? 'descending' : 'ascending';
+    Glyph = descending ? SortDownIcon : SortUpIcon;
+  }
   return (
     <th
       scope="col"

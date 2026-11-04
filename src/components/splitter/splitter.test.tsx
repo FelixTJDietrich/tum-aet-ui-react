@@ -5,13 +5,13 @@ import { expectNoA11yViolations } from '../../test-utils';
 import { Splitter } from './splitter';
 
 function setup(props: Partial<React.ComponentProps<typeof Splitter>> = {}) {
-  const result = render(
+  const utils = render(
     <Splitter panelSizes={[60, 40]} minSizes={[20, 30]} {...props}>
       <input aria-label="Draft" />
       <p>Second</p>
     </Splitter>,
   );
-  return { ...result, separator: screen.getByRole('separator', { hidden: true }) };
+  return { ...utils, separator: screen.getByRole('separator', { hidden: true }) };
 }
 
 describe('Splitter', () => {
@@ -331,7 +331,7 @@ describe('Splitter', () => {
 
   it('keeps the panel content mounted across collapse and expand', () => {
     const { rerender } = setup();
-    const input = screen.getByLabelText('Draft') as HTMLInputElement;
+    const input = screen.getByLabelText<HTMLInputElement>('Draft');
     input.value = 'Edited';
     rerender(
       <Splitter collapsedSecondSize="3rem">

@@ -14,7 +14,7 @@ const rows: Row[] = [
   { id: 1, name: 'Alpha', owner: { name: 'Ada' } },
   { id: 2, name: 'Beta', owner: { name: 'Bob' } },
 ];
-const columns: ColumnDef<Row>[] = [
+const columns: Array<ColumnDef<Row>> = [
   { field: 'id', header: 'ID', sort: true },
   { field: 'name', header: 'Name', sort: true },
   { field: 'owner.name', header: 'Owner', headerTooltip: 'Who owns it' },
@@ -159,7 +159,7 @@ describe('DataTable', () => {
         ]}
         rows={rows}
         totalRecords={2}
-        rowActions={(row) => <button>Edit {row.name}</button>}
+        rowActions={(row) => <button type="button">Edit {row.name}</button>}
         rowHighlighted={(row) => row.id === 2}
         loading
       />,
@@ -204,7 +204,7 @@ describe('DataTable', () => {
         columns={columns}
         rows={rows}
         totalRecords={2}
-        rowActions={() => <button>Go</button>}
+        rowActions={() => <button type="button">Go</button>}
       />,
     );
     await expectNoA11yViolations(container);

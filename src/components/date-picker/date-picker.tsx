@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useId,
   useRef,
   useState,
   type FocusEventHandler,
@@ -111,11 +110,10 @@ export function DatePicker({
   ...rest
 }: DatePickerProps) {
   const translate = useTranslate();
-  const autoId = useId();
   const formField = useFormFieldControl({ id: idProp, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
   const ariaDescribedBy = formField['aria-describedby'];
   const ariaInvalid = formField['aria-invalid'];
-  const id = idProp ?? formField.id ?? autoId;
+  const id = idProp ?? formField.id;
   const panelId = `${id}-dialog`;
   const errorId = `${id}-error`;
   const [value, setValue] = useControllable<Date | null>(valueProp, defaultValue, onChange);
@@ -125,7 +123,7 @@ export function DatePicker({
   // while a different value from outside replaces it.
   const [draft, setDraft] = useState<{ base: string; text: string } | null>(null);
   if (draft && draft.base !== valueKey) setDraft(null);
-  const activeDraft = draft && draft.base === valueKey ? draft : null;
+  const activeDraft = draft?.base === valueKey ? draft : null;
   const inputText = activeDraft ? activeDraft.text : valueKey;
   const textValid = !activeDraft;
   const [editing, setEditing] = useState(false);
@@ -138,9 +136,9 @@ export function DatePicker({
     if (value) setActiveMonth(startOfMonth(value));
   }
 
-  const [isOpenState, setOpen] = useState(false);
+  const [isOpenState, setIsOpenState] = useState(false);
   // A picker that is disabled while open closes for good: it must not pop open again when it is enabled later.
-  if (isOpenState && (disabled || inline)) setOpen(false);
+  if (isOpenState && (disabled || inline)) setIsOpenState(false);
   const isOpen = isOpenState && !disabled && !inline;
   const field = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement | null>(null);
@@ -150,20 +148,25 @@ export function DatePicker({
 
   const reportedValidity = useRef(true);
   const validityCallback = useRef(onInputValidityChange);
-  validityCallback.current = onInputValidityChange;
+  useEffect(() => {
+    validityCallback.current = onInputValidityChange;
+  });
   useEffect(() => {
     if (reportedValidity.current === textValid) return;
     reportedValidity.current = textValid;
     validityCallback.current?.(textValid);
   }, [textValid]);
 
+  const ownLabel = ariaLabelledBy === undefined || ariaLabelledBy === '' ? ariaLabel : undefined;
   const externallyInvalid = ariaInvalid === true || ariaInvalid === 'true';
   const showTextError = !textValid && (!validateOnBlur || !editing);
   const showError = externallyInvalid || showTextError;
   const showMessage = !hideValidationMessage && showTextError;
   const describedBy = [showMessage ? errorId : undefined, ariaDescribedBy].filter(Boolean).join(' ') || undefined;
 
-  const mode = dateOnly ? 'date' : timeOnly ? 'time' : 'datetime';
+  let mode: 'date' | 'time' | 'datetime' = 'datetime';
+  if (dateOnly) mode = 'date';
+  else if (timeOnly) mode = 'time';
   const placeholderKey = {
     date: 'tumAetUi.datePicker.datePlaceholder',
     time: 'tumAetUi.datePicker.timePlaceholder',
@@ -226,15 +229,15 @@ export function DatePicker({
     if (isOpen || disabled) return;
     setActiveMonth(startOfMonth(value ?? startAt ?? nearestAllowedDay(min, max)));
     restoreFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setOpen(true);
+    setIsOpenState(true);
   };
 
   const closePanel = () => {
-    setOpen(false);
+    setIsOpenState(false);
     const target = restoreFocus.current;
     restoreFocus.current = null;
     if (disabled) return;
-    if (target?.isConnected && target !== document.body) target.focus();
+    if (target?.isConnected === true && target !== document.body) target.focus();
     else input.current?.focus();
   };
 
@@ -253,9 +256,9 @@ export function DatePicker({
     const items = Array.from(
       panel.current.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]'),
     ).filter((el) => el.tabIndex >= 0);
-    if (items.length === 0) return;
-    const first = items[0]!;
-    const last = items[items.length - 1]!;
+    const first = items[0];
+    const last = items.at(-1);
+    if (first === undefined || last === undefined) return;
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
@@ -270,7 +273,7 @@ export function DatePicker({
     if (!isOpen || !timeOnly) return;
     hourInput.current?.focus();
     const frame = requestAnimationFrame(() => {
-      if (!panel.current?.contains(document.activeElement)) hourInput.current?.focus();
+      if (panel.current?.contains(document.activeElement) !== true) hourInput.current?.focus();
     });
     return () => cancelAnimationFrame(frame);
   }, [isOpen, timeOnly]);
@@ -312,7 +315,7 @@ export function DatePicker({
         <div
           className="tumaet-ui-date-picker-inline"
           role="group"
-          aria-label={ariaLabelledBy ? undefined : ariaLabel}
+          aria-label={ownLabel}
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
           id={id}
@@ -329,14 +332,15 @@ export function DatePicker({
 
   return (
     <div {...rootProps}>
-      {showTimeZoneWarning && (
+      {showTimeZoneWarning ? (
         <Tooltip content={timeZoneText} describesHost={false}>
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- the tooltip trigger must be keyboard focusable to reveal the time zone */}
           <span className="tumaet-ui-date-picker-timezone" tabIndex={0} role="img" aria-label={timeZoneText}>
             <GlobeIcon />
             <ClockIcon className="tumaet-ui-date-picker-timezone-clock" />
           </span>
         </Tooltip>
-      )}
+      ) : null}
       <div ref={field} className="tumaet-ui-date-picker-field">
         <input
           ref={mergeRefs(input, inputRef)}
@@ -353,7 +357,7 @@ export function DatePicker({
           aria-controls={isOpen ? panelId : undefined}
           aria-invalid={showError}
           aria-required={ariaRequired}
-          aria-label={ariaLabelledBy ? undefined : ariaLabel}
+          aria-label={ownLabel}
           aria-labelledby={ariaLabelledBy}
           aria-describedby={describedBy}
           onChange={(event) => onInput(event.target.value)}
@@ -366,7 +370,7 @@ export function DatePicker({
             }
           }}
         />
-        {inputText && !disabled && (
+        {inputText !== '' && !disabled ? (
           <button
             type="button"
             className="tumaet-ui-date-picker-clear"
@@ -376,7 +380,7 @@ export function DatePicker({
           >
             <XIcon />
           </button>
-        )}
+        ) : null}
         <button
           type="button"
           tabIndex={-1}
@@ -391,11 +395,11 @@ export function DatePicker({
           {timeOnly && !dateOnly ? <ClockIcon /> : <CalendarIcon />}
         </button>
       </div>
-      {showMessage && (
+      {showMessage ? (
         <span id={errorId} role="alert" className="tumaet-ui-date-picker-error">
           {translate(invalidKey)}
         </span>
-      )}
+      ) : null}
       <Floating
         anchor={field}
         open={isOpen}

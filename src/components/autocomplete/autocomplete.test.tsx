@@ -7,6 +7,11 @@ import { Autocomplete, type AutocompleteProps } from './autocomplete';
 const all = ['Apple', 'Apricot', 'Banana', 'Blueberry', 'Cherry'];
 const input = () => screen.getByRole('combobox');
 
+const labelOf = (d: unknown): string => {
+  if (typeof d === 'object') return (d as { name: string }).name;
+  return typeof d === 'string' ? d : '';
+};
+
 /** Filters `all` on search, like a consumer would after a request. */
 function Harness({ data = all, onSearch, ...props }: Partial<AutocompleteProps> & { data?: readonly unknown[] }) {
   const [suggestions, setSuggestions] = useState<readonly unknown[]>([]);
@@ -18,13 +23,7 @@ function Harness({ data = all, onSearch, ...props }: Partial<AutocompleteProps> 
       suggestions={suggestions}
       onSearch={(event) => {
         onSearch?.(event);
-        setSuggestions(
-          data.filter((d) =>
-            String(typeof d === 'object' ? (d as { name: string }).name : d)
-              .toLowerCase()
-              .startsWith(event.query.toLowerCase()),
-          ),
-        );
+        setSuggestions(data.filter((d) => labelOf(d).toLowerCase().startsWith(event.query.toLowerCase())));
       }}
     />
   );
@@ -118,7 +117,7 @@ describe('Autocomplete', () => {
       render(
         <>
           <Harness onChange={onChange} multiple />
-          <button>next</button>
+          <button type="button">next</button>
         </>,
       );
       await userEvent.type(input(), 'a');

@@ -39,43 +39,45 @@ export function Panel({
   const headerId = `${id}-header`;
   const contentId = `${id}-content`;
   const [isCollapsedState, setCollapsed] = useControllable(collapsed, defaultCollapsed, onCollapsedChange);
-  const isCollapsed = !!toggleable && isCollapsedState;
+  const isCollapsed = toggleable === true && isCollapsedState;
   const hasHeader =
     header !== undefined && header !== null && header !== false && !(typeof header === 'string' && !header.trim());
   const customLabel = toggleLabel?.trim();
+  const hasCustomLabel = customLabel !== undefined && customLabel !== '';
+  const isToggleable = toggleable === true;
+  const defaultLabel = hasHeader
+    ? undefined
+    : t(isCollapsedState ? 'tumAetUi.panel.expand' : 'tumAetUi.panel.collapse');
   const ToggleIcon = isCollapsedState ? ChevronDownIcon : ChevronUpIcon;
   return (
     <div
       {...rest}
-      data-collapsed={toggleable ? isCollapsedState : undefined}
+      data-collapsed={isToggleable ? isCollapsedState : undefined}
       className={cx('tumaet-ui-panel', className)}
     >
-      <div className={cx('tumaet-ui-panel-header', toggleable && 'tumaet-ui-panel-header-toggleable')}>
+      <div className={cx('tumaet-ui-panel-header', isToggleable && 'tumaet-ui-panel-header-toggleable')}>
         <span id={headerId} className="tumaet-ui-panel-title">
           {header}
         </span>
-        {toggleable && (
+        {isToggleable ? (
           <button
             type="button"
             className="tumaet-ui-panel-toggler"
             aria-expanded={!isCollapsedState}
             aria-controls={contentId}
-            aria-label={
-              customLabel ||
-              (hasHeader ? undefined : t(isCollapsedState ? 'tumAetUi.panel.expand' : 'tumAetUi.panel.collapse'))
-            }
-            aria-labelledby={!customLabel && hasHeader ? headerId : undefined}
+            aria-label={hasCustomLabel ? customLabel : defaultLabel}
+            aria-labelledby={!hasCustomLabel && hasHeader ? headerId : undefined}
             onClick={() => setCollapsed(!isCollapsedState)}
           >
             <ToggleIcon />
           </button>
-        )}
+        ) : null}
       </div>
       <div
         id={contentId}
         className="tumaet-ui-panel-content-container"
-        role={toggleable && hasHeader ? 'region' : undefined}
-        aria-labelledby={toggleable && hasHeader ? headerId : undefined}
+        role={isToggleable && hasHeader ? 'region' : undefined}
+        aria-labelledby={isToggleable && hasHeader ? headerId : undefined}
         aria-hidden={isCollapsed || undefined}
         inert={isCollapsed}
       >

@@ -90,6 +90,22 @@ export interface AutocompleteProps extends Omit<
 
 const NO_VALUES: readonly unknown[] = [];
 
+function toValues(current: unknown): readonly unknown[] {
+  if (Array.isArray(current)) return current;
+  if (current === null || current === undefined) return NO_VALUES;
+  return [current];
+}
+
+/** Keys that stay unique for repeated labels without depending on the position in the list. */
+function labelKeys(labels: readonly string[]): string[] {
+  const seen = new Map<string, number>();
+  return labels.map((text) => {
+    const count = seen.get(text) ?? 0;
+    seen.set(text, count + 1);
+    return `${text}\u0000${count}`;
+  });
+}
+
 /** Text input with consumer-supplied suggestions, single- or multi-valued (chips). */
 export function Autocomplete({
   suggestions = NO_VALUES,
@@ -133,7 +149,7 @@ export function Autocomplete({
   const input = useRef<HTMLInputElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // A stable ref: Floating measures the anchor in a layout effect that runs before an inline callback ref is re-attached.
-  useImperativeHandle(ref, () => root.current as HTMLDivElement, []);
+  useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(ref, () => root.current, []);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const [current, setCurrent] = useControllable<unknown>(
@@ -146,26 +162,22 @@ export function Autocomplete({
   const [searched, setSearched] = useState(false);
   const [active, setActive] = useState(-1);
 
-  const selected: readonly unknown[] = multiple
-    ? Array.isArray(current)
-      ? current
-      : current == null
-        ? NO_VALUES
-        : [current]
-    : NO_VALUES;
+  const selected: readonly unknown[] = multiple ? toValues(current) : NO_VALUES;
   const label = (v: unknown) => optionLabelOf(v, optionLabel);
   const isDisabledOption = (option: unknown) =>
-    !!(
-      optionDisabled &&
+    Boolean(
+      optionDisabled !== undefined &&
+      optionDisabled !== '' &&
       option !== null &&
       typeof option === 'object' &&
-      (option as Record<string, unknown>)[optionDisabled]
+      (option as Record<string, unknown>)[optionDisabled],
     );
   const isSelected = (option: unknown) => selected.some((v) => valuesMatch(v, option));
 
   const visible = focused && searched && !disabled && (query.length >= minLength || completeOnFocus);
   const activeIndex = Math.min(active, suggestions.length - 1);
-  const inputText = multiple ? query : current == null ? '' : label(current);
+  const singleText = current === null || current === undefined ? '' : label(current);
+  const inputText = multiple ? query : singleText;
 
   const hide = () => {
     clearTimeout(timer.current);
@@ -221,7 +233,8 @@ export function Autocomplete({
   };
 
   const move = (direction: 1 | -1) => {
-    let index = activeIndex < 0 ? (direction === 1 ? 0 : suggestions.length - 1) : activeIndex + direction;
+    const start = direction === 1 ? 0 : suggestions.length - 1;
+    let index = activeIndex < 0 ? start : activeIndex + direction;
     while (index >= 0 && index < suggestions.length) {
       if (!isDisabledOption(suggestions[index])) {
         setActive(index);
@@ -263,11 +276,13 @@ export function Autocomplete({
       <span className="tumaet-ui-listbox-option-label">{label(option)}</span>
     ),
   }));
+  const chipKeys = labelKeys(selected.map(label));
   const invalid = ariaInvalid === true || ariaInvalid === 'true';
 
   return (
     <div {...rest} ref={root} className={cx('tumaet-ui-autocomplete', className)}>
       {/* The click only forwards focus to the input, which is the keyboard-accessible control. */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- click only forwards focus to the input, which is the keyboard-accessible control */}
       <div
         ref={container}
         className="tumaet-ui-autocomplete-container"
@@ -279,7 +294,7 @@ export function Autocomplete({
         onClick={focusInput}
       >
         {selected.map((v, index) => (
-          <span key={index} className="tumaet-ui-autocomplete-chip" data-removable={!disabled || undefined}>
+          <span key={chipKeys[index]} className="tumaet-ui-autocomplete-chip" data-removable={!disabled || undefined}>
             <span className="tumaet-ui-autocomplete-chip-label">{label(v)}</span>
             {!disabled && (
               <button
@@ -341,7 +356,7 @@ export function Autocomplete({
           emptyText={emptyMessage ?? t('tumAetUi.autocomplete.empty')}
           multiselectable={multiple}
           aria-label={ariaLabel}
-          aria-labelledby={ariaLabel ? undefined : ariaLabelledBy}
+          aria-labelledby={ariaLabel !== undefined && ariaLabel !== '' ? undefined : ariaLabelledBy}
         />
       </Floating>
     </div>

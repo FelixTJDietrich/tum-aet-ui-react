@@ -5,11 +5,15 @@ import { FormField } from '../form-field/form-field';
 import { InputGroup, InputGroupAddon } from '../input-group/input-group';
 import { InputNumber } from './input-number';
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
 
 const meta = {
   title: 'Forms/Input Number',
@@ -131,7 +135,7 @@ export const Controlled: Story = {
     return (
       <>
         <InputNumber {...args} value={value} onChange={setValue} />
-        <output aria-live="polite">Value: {value === null ? 'empty' : value}</output>
+        <output aria-live="polite">Value: {value ?? 'empty'}</output>
       </>
     );
   },

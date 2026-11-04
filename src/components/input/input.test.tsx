@@ -26,7 +26,7 @@ describe('Input', () => {
   it('is reachable and typeable by keyboard', async () => {
     render(
       <>
-        <button>before</button>
+        <button type="button">before</button>
         <Textarea aria-label="Notes" />
       </>,
     );
@@ -40,10 +40,8 @@ describe('Input', () => {
   it('has no axe violations', async () => {
     const { container } = render(
       <>
-        <label>
-          Name
-          <Input />
-        </label>
+        <label htmlFor="name-input">Name</label>
+        <Input id="name-input" />
         <Textarea aria-label="Notes" />
       </>,
     );

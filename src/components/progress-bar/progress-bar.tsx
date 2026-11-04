@@ -42,19 +42,19 @@ export function ProgressBar({
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={indeterminate ? undefined : normalized}
+      aria-valuenow={indeterminate === true ? undefined : normalized}
       data-size={size}
-      data-indeterminate={indeterminate || undefined}
+      data-indeterminate={indeterminate === true ? true : undefined}
       className={cx('tumaet-ui-progress-bar', className)}
       style={style}
     >
       <div
         className="tumaet-ui-progress-bar-value"
         data-severity={severity}
-        style={indeterminate ? undefined : ({ width: `${normalized}%` } satisfies CSSProperties)}
+        style={indeterminate === true ? undefined : ({ width: `${normalized}%` } satisfies CSSProperties)}
       >
         <span className="tumaet-ui-progress-bar-label">
-          {children ?? (!indeterminate && showValue && normalized !== 0 ? `${normalized}${unit}` : null)}
+          {children ?? (indeterminate !== true && showValue && normalized !== 0 ? `${normalized}${unit}` : null)}
         </span>
       </div>
     </div>

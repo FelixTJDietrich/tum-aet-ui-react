@@ -138,13 +138,15 @@ export function TabList({ className, children, onKeyDown, onFocus, ref, ...rest 
         return;
     }
     event.preventDefault();
-    const next = tabs[(target + tabs.length) % tabs.length]!;
+    const next = tabs[(target + tabs.length) % tabs.length];
+    if (next === undefined) return;
     next.element.focus();
     // A disabled tab can be reached with the arrow keys but is never selected.
     if (activation === 'automatic' && !next.disabled) select(next.value);
   };
 
   return (
+    // eslint-disable-next-line jsx-a11y/interactive-supports-focus -- roving tabindex: the tabs inside take focus, not the tablist
     <div
       aria-orientation="horizontal"
       {...rest}
@@ -155,9 +157,7 @@ export function TabList({ className, children, onKeyDown, onFocus, ref, ...rest 
       onFocus={(event) => {
         onFocus?.(event);
         // Keep the tab the keyboard reached fully visible in a narrow, scrolling list.
-        (event.target as HTMLElement)
-          .closest?.('[role="tab"]')
-          ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+        (event.target as HTMLElement).closest('[role="tab"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }}
     >
       {children}
@@ -253,6 +253,7 @@ export function TabPanel({
       aria-labelledby={hasTab ? `${baseId}-tab-${idPart(value)}` : undefined}
       hidden={!active}
       inert={!active}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- WAI-ARIA tabs pattern: the active tabpanel is focusable
       tabIndex={active ? 0 : undefined}
       data-state={active ? 'active' : 'inactive'}
       data-fill={fill || undefined}

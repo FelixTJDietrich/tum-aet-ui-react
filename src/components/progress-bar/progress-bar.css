@@ -1,15 +1,21 @@
 .tumaet-ui-progress-bar {
-  display: block;
   position: relative;
+
   overflow: hidden;
+  display: block;
+
   height: calc(var(--tumaet-ui-spacing) * 5);
   border-radius: var(--tumaet-ui-radius-md);
-  background: var(--tumaet-ui-border-color);
+
   font-family: var(--tumaet-ui-font-family);
+
+  background: var(--tumaet-ui-border-color);
 }
+
 .tumaet-ui-progress-bar[data-size='small'] {
   height: calc(var(--tumaet-ui-spacing) * 1.5);
 }
+
 .tumaet-ui-progress-bar[data-size='small'] .tumaet-ui-progress-bar-label {
   display: none;
 }
@@ -17,49 +23,61 @@
 .tumaet-ui-progress-bar-value {
   --_bg: var(--tumaet-ui-primary-color);
   --_fg: var(--tumaet-ui-primary-contrast-color);
-  height: 100%;
-  width: 0;
+
   position: absolute;
+
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+
+  width: 0;
+  height: 100%;
+
   background: var(--_bg);
+
   transition: width 1s ease-in-out;
 }
+
 .tumaet-ui-progress-bar-value[data-severity='success'] {
   --_bg: var(--tumaet-ui-state-success);
   --_fg: var(--tumaet-ui-state-success-contrast);
 }
+
 .tumaet-ui-progress-bar-value[data-severity='warn'] {
   --_bg: var(--tumaet-ui-state-warning);
   --_fg: var(--tumaet-ui-state-warning-contrast);
 }
+
 .tumaet-ui-progress-bar-value[data-severity='danger'] {
   --_bg: var(--tumaet-ui-state-danger);
   --_fg: var(--tumaet-ui-state-danger-contrast);
 }
+
 .tumaet-ui-progress-bar-value[data-severity='info'] {
   --_bg: var(--tumaet-ui-state-info);
   --_fg: var(--tumaet-ui-state-info-contrast);
 }
+
 .tumaet-ui-progress-bar-label {
   font-size: var(--tumaet-ui-font-size-xs);
-  line-height: var(--tumaet-ui-line-height-xs);
   font-weight: 600;
+  line-height: var(--tumaet-ui-line-height-xs);
   color: var(--_fg);
 }
 
 .tumaet-ui-progress-bar[data-indeterminate] .tumaet-ui-progress-bar-value {
-  width: 40%;
   inset-inline-start: 0;
+  width: 40%;
   transition: none;
   animation: tumaet-ui-progress-bar-indeterminate 1.5s ease-in-out infinite;
 }
+
 @keyframes tumaet-ui-progress-bar-indeterminate {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(250%);
   }
@@ -69,19 +87,23 @@
   .tumaet-ui-progress-bar-value {
     transition: none;
   }
+
   .tumaet-ui-progress-bar[data-indeterminate] .tumaet-ui-progress-bar-value {
-    animation: none;
     width: 100%;
     opacity: 0.5;
+    animation: none;
   }
 }
+
 @media (forced-colors: active) {
   .tumaet-ui-progress-bar {
     border: 1px solid CanvasText;
   }
+
   .tumaet-ui-progress-bar-value {
     background: Highlight;
   }
+
   .tumaet-ui-progress-bar-label {
     color: HighlightText;
   }

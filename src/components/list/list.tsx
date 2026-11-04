@@ -9,6 +9,7 @@ export interface ListProps extends HTMLAttributes<HTMLUListElement> {
 /** Bordered, vertically stacked list of `ListItem`s. Renders a native `<ul>`. */
 export function List({ className, ...rest }: ListProps) {
   // role="list" keeps the list semantics in Safari/VoiceOver, which drops them for list-style: none.
+  // eslint-disable-next-line jsx-a11y/no-redundant-roles -- explicit role keeps the list semantics in Safari/VoiceOver
   return <ul role="list" {...rest} className={cx('tumaet-ui-list', className)} />;
 }
 
@@ -48,9 +49,14 @@ export function ListItemAction(props: ListItemActionProps) {
     className: cx('tumaet-ui-list-item-action', className),
   };
   if (props.href !== undefined) {
-    const { href, ...anchor } = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
-    return <a {...anchor} href={href} {...common} />;
+    const { href, children, ...anchor } = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
+    return (
+      <a {...anchor} href={href} {...common}>
+        {children}
+      </a>
+    );
   }
   const { type = 'button', ...button } = rest as ButtonHTMLAttributes<HTMLButtonElement>;
+  // eslint-disable-next-line react/button-has-type -- type is the typed consumer prop, defaulting to "button"
   return <button {...button} type={type} {...common} />;
 }

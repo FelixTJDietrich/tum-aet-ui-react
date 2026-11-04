@@ -26,11 +26,11 @@ export function Chip({ label, removable, size, removeLabel, onRemove, className,
     <span
       {...rest}
       data-size={size}
-      data-removable={removable || undefined}
+      data-removable={removable === true ? true : undefined}
       className={cx('tumaet-ui-chip', className)}
     >
-      <span className="tumaet-ui-chip-label">{label || children}</span>
-      {removable && (
+      <span className="tumaet-ui-chip-label">{label !== undefined && label !== '' ? label : children}</span>
+      {removable === true ? (
         <button
           type="button"
           className="tumaet-ui-chip-remove"
@@ -45,7 +45,7 @@ export function Chip({ label, removable, size, removeLabel, onRemove, className,
         >
           <XIcon />
         </button>
-      )}
+      ) : null}
     </span>
   );
 }

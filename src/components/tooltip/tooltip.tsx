@@ -1,8 +1,8 @@
 import {
   cloneElement,
+  useCallback,
   useEffect,
   useId,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -16,7 +16,7 @@ import {
 import { Floating, type Placement } from '../../internal/floating';
 import { mergeRefs } from '../../internal/merge-refs';
 
-type HostProps = {
+interface HostProps {
   ref?: Ref<HTMLElement>;
   'aria-describedby'?: string;
   onPointerEnter?: (event: PointerEvent<HTMLElement>) => void;
@@ -25,7 +25,7 @@ type HostProps = {
   onFocus?: (event: FocusEvent<HTMLElement>) => void;
   onBlur?: (event: FocusEvent<HTMLElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
-};
+}
 
 export interface TooltipProps {
   /** A plain hint, several items (rendered as a bulleted list) or any non-interactive node. Nothing is shown when empty. */
@@ -49,7 +49,21 @@ const ARROW_EDGE_INSET_PX = 12;
 
 const isList = (content: TooltipProps['content']): content is readonly string[] => Array.isArray(content);
 const isEmpty = (content: TooltipProps['content']) =>
-  content == null || content === false || content === '' || (isList(content) && content.length === 0);
+  content === null ||
+  content === undefined ||
+  content === false ||
+  content === '' ||
+  (isList(content) && content.length === 0);
+
+/** Keys that stay unique for repeated items without being the bare position in the list. */
+function uniqueKeys(items: readonly string[]): string[] {
+  const seen = new Map<string, number>();
+  return items.map((item) => {
+    const count = seen.get(item) ?? 0;
+    seen.set(item, count + 1);
+    return `${item}\u0000${count}`;
+  });
+}
 
 /** Points the arrow at the host rather than at the middle of the bubble, which the viewport clamping may have shifted. */
 function Arrow({ anchor }: { anchor: React.RefObject<HTMLElement | null> }) {
@@ -104,33 +118,39 @@ export function Tooltip({
   const state = useRef({ hovered: false, tooltipHovered: false, focused: false, pointerFocus: false });
   const showTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const hostRef = children.props.ref;
-  const mergedRef = useMemo(() => mergeRefs<HTMLElement>(hostRef, anchor), [hostRef]);
+  const userHostRef = children.props.ref;
+  const mergedRef = useCallback(
+    (node: HTMLElement | null) => {
+      anchor.current = node;
+      return mergeRefs<HTMLElement>(userHostRef)(node);
+    },
+    [userHostRef],
+  );
   const empty = isEmpty(content);
   const visible = open && !empty;
 
-  const clearTimers = () => {
+  const clearTimers = useCallback(() => {
     clearTimeout(showTimer.current);
     clearTimeout(hideTimer.current);
-  };
-  const hideNow = () => {
+  }, []);
+  const hideNow = useCallback(() => {
     clearTimers();
     state.current.tooltipHovered = false;
     setOpen(false);
-  };
+  }, [clearTimers]);
   const scheduleShow = () => {
     clearTimers();
     if (visible || empty) return;
     showTimer.current = setTimeout(() => setOpen(true), showDelay);
   };
-  const scheduleHideIfInactive = () => {
+  const scheduleHideIfInactive = useCallback(() => {
     const s = state.current;
     if (s.hovered || s.tooltipHovered || s.focused) return;
     clearTimers();
     hideTimer.current = setTimeout(hideNow, hideDelay);
-  };
+  }, [clearTimers, hideNow, hideDelay]);
 
-  useEffect(() => clearTimers, []);
+  useEffect(() => clearTimers, [clearTimers]);
 
   useEffect(() => {
     if (!visible) return;
@@ -167,12 +187,12 @@ export function Tooltip({
       document.documentElement.removeEventListener('pointerleave', onPageLeave);
       window.removeEventListener('blur', onWindowBlur);
     };
-    // The handlers only touch refs and state setters.
-  }, [visible]);
+  }, [visible, hideNow, scheduleHideIfInactive]);
 
   const props = children.props;
   const describedBy =
     [props['aria-describedby'], visible && describesHost ? id : undefined].filter(Boolean).join(' ') || undefined;
+  // eslint-disable-next-line react-hooks/refs -- the handlers and the merged ref callback only touch refs when React attaches the element or an event fires, never during render
   const host = cloneElement(children, {
     ref: mergedRef,
     'aria-describedby': describedBy,
@@ -213,6 +233,8 @@ export function Tooltip({
     },
   });
 
+  const itemKeys = isList(content) ? uniqueKeys(content) : [];
+
   return (
     <>
       {host}
@@ -231,7 +253,7 @@ export function Tooltip({
         {isList(content) ? (
           <ul>
             {content.map((item, index) => (
-              <li key={index}>{item}</li>
+              <li key={itemKeys[index]}>{item}</li>
             ))}
           </ul>
         ) : (

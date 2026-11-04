@@ -1,79 +1,101 @@
 .tumaet-ui-select-button {
-  display: inline-flex;
-  vertical-align: bottom;
   user-select: none;
+
+  display: inline-flex;
+
   border-radius: var(--tumaet-ui-radius-md);
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-base);
   line-height: var(--tumaet-ui-line-height-base);
+  vertical-align: bottom;
 }
+
 .tumaet-ui-select-button[data-size='small'] {
   font-size: var(--tumaet-ui-font-size-sm);
   line-height: var(--tumaet-ui-line-height-sm);
 }
+
 .tumaet-ui-select-button[data-size='large'] {
   font-size: var(--tumaet-ui-font-size-lg);
   line-height: var(--tumaet-ui-line-height-lg);
 }
+
 .tumaet-ui-select-button[aria-disabled='true'] {
   opacity: 0.6;
 }
 
 .tumaet-ui-select-button-option {
+  cursor: pointer;
+
   position: relative;
-  appearance: none;
+
   display: inline-flex;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
   align-items: center;
   justify-content: center;
-  gap: calc(var(--tumaet-ui-spacing) * 2);
+
   margin: 0;
   padding: calc(var(--tumaet-ui-spacing) * 2) calc(var(--tumaet-ui-spacing) * 4);
-  font: inherit;
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--tumaet-ui-text-color);
-  background-color: var(--tumaet-ui-hover-background);
-  cursor: pointer;
   border: 0 solid var(--tumaet-ui-border-color);
   border-block-width: 1px;
   border-inline-end-width: 1px;
   border-radius: 0;
+
+  font: inherit;
+  font-weight: 500;
+  color: var(--tumaet-ui-text-color);
+  white-space: nowrap;
+
+  appearance: none;
+  background-color: var(--tumaet-ui-hover-background);
+
   transition:
     background-color 0.2s,
     color 0.2s,
     border-color 0.2s,
     box-shadow 0.2s;
 }
+
 .tumaet-ui-select-button-option[aria-pressed='true'] {
+  border-color: var(--tumaet-ui-primary-color);
   color: var(--tumaet-ui-primary-contrast-color);
   background-color: var(--tumaet-ui-primary-color);
-  border-color: var(--tumaet-ui-primary-color);
 }
+
 .tumaet-ui-select-button-option:first-child {
   border-inline-start-width: 1px;
   border-start-start-radius: var(--tumaet-ui-radius-md);
   border-end-start-radius: var(--tumaet-ui-radius-md);
 }
+
 .tumaet-ui-select-button-option:last-child {
   border-start-end-radius: var(--tumaet-ui-radius-md);
   border-end-end-radius: var(--tumaet-ui-radius-md);
 }
+
 .tumaet-ui-select-button-option:disabled {
   cursor: default;
 }
+
 .tumaet-ui-select-button-option:focus-visible {
   z-index: 1;
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
 }
+
 .tumaet-ui-select-button-option::after {
+  pointer-events: none;
   content: '';
+
   position: absolute;
   inset: 0;
+
   background-color: transparent;
-  pointer-events: none;
+
   transition: background-color 0.15s ease;
 }
+
 .tumaet-ui-select-button-option:not(:disabled):hover::after {
   background-color: color-mix(in srgb, var(--tumaet-ui-text-color) 5%, transparent);
 }
@@ -84,10 +106,11 @@
     transition: none;
   }
 }
+
 @media (forced-colors: active) {
   .tumaet-ui-select-button-option[aria-pressed='true'] {
+    border-color: Highlight;
     color: HighlightText;
     background: Highlight;
-    border-color: Highlight;
   }
 }

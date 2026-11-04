@@ -49,7 +49,17 @@ export type SelectButtonProps = SelectButtonSingleProps | SelectButtonMultiplePr
 interface NormalizedOption {
   raw: unknown;
   value: unknown;
-  label: ReactNode;
+  label: string;
+}
+
+/** Keys that stay unique for repeated labels without being the bare position in the list. */
+function uniqueKeys(labels: readonly string[]): string[] {
+  const seen = new Map<string, number>();
+  return labels.map((text) => {
+    const count = seen.get(text) ?? 0;
+    seen.set(text, count + 1);
+    return `${text}\u0000${count}`;
+  });
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
@@ -73,36 +83,31 @@ export function SelectButton(props: SelectButtonProps) {
     ref,
     ...rest
   } = props;
-  const {
-    multiple,
-    value: _v,
-    defaultValue: _d,
-    onChange: _o,
-    ...domProps
-  } = rest as typeof rest & { multiple?: boolean; value?: unknown; defaultValue?: unknown; onChange?: unknown };
+  const { multiple, value, defaultValue, onChange, ...domProps } = rest;
+  const isMultiple = multiple === true;
   const [current, setCurrent] = useControllable<unknown>(
-    props.value,
-    props.defaultValue ?? (props.multiple ? [] : null),
-    props.onChange as ((v: unknown) => void) | undefined,
+    value,
+    defaultValue ?? (isMultiple ? [] : null),
+    onChange as ((v: unknown) => void) | undefined,
   );
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
 
   const normalized: NormalizedOption[] = options.flatMap((raw) => {
     const record = isRecord(raw) ? raw : undefined;
     if ((optionLabel !== undefined || optionValue !== undefined) && !record) return [];
-    const value = optionValue !== undefined ? record![optionValue] : raw;
-    const label = displayLabel(optionLabel !== undefined ? record![optionLabel] : raw);
+    const optionKey = optionValue !== undefined ? record?.[optionValue] : raw;
+    const label = displayLabel(optionLabel !== undefined ? record?.[optionLabel] : raw);
     if (label === undefined && !itemTemplate) return [];
-    return [{ raw, value, label: label ?? '' }];
+    return [{ raw, value: optionKey, label: label ?? '' }];
   });
 
   const isSelected = (option: NormalizedOption) =>
-    multiple ? (current as unknown[]).includes(option.value) : current === option.value;
+    isMultiple ? (current as unknown[]).includes(option.value) : current === option.value;
 
   const toggle = (option: NormalizedOption) => {
     if (disabled) return;
     const selected = isSelected(option);
-    if (multiple) {
+    if (isMultiple) {
       const list = current as unknown[];
       setCurrent(selected ? list.filter((v) => v !== option.value) : [...list, option.value]);
     } else if (selected) {
@@ -132,7 +137,10 @@ export function SelectButton(props: SelectButtonProps) {
     buttons[next]?.focus();
   };
 
+  const optionKeys = uniqueKeys(normalized.map((option) => option.label));
+
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- roving-tabindex group: the key handler only moves focus between its buttons
     <div
       role="group"
       aria-disabled={disabled || undefined}
@@ -144,7 +152,7 @@ export function SelectButton(props: SelectButtonProps) {
     >
       {normalized.map((option, index) => (
         <button
-          key={index}
+          key={optionKeys[index]}
           type="button"
           className="tumaet-ui-select-button-option"
           aria-pressed={isSelected(option)}

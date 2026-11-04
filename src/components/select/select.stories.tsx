@@ -85,7 +85,7 @@ export const SelectsOption: Story = {
 
     await expect(trigger).toHaveTextContent('Spanish');
     await expect(args.onChange).toHaveBeenCalledWith('es');
-    await waitFor(() => expect(listbox).not.toBeInTheDocument());
+    await waitFor(async () => expect(listbox).not.toBeInTheDocument());
     await expect(trigger).toHaveFocus();
 
     await userEvent.tab();

@@ -1,54 +1,67 @@
 .tumaet-ui-paginator {
   display: flex;
   flex-wrap: wrap;
+  gap: var(--tumaet-ui-spacing);
   align-items: center;
   justify-content: center;
-  gap: var(--tumaet-ui-spacing);
+
   padding-top: calc(var(--tumaet-ui-spacing) * 2);
   border-top: 1px solid var(--tumaet-ui-border-color);
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-sm);
   line-height: var(--tumaet-ui-line-height-sm);
   color: var(--tumaet-ui-muted-color);
 }
+
 .tumaet-ui-paginator-report {
   padding: 0 calc(var(--tumaet-ui-spacing) * 2);
 }
 
 .tumaet-ui-paginator-button {
+  cursor: pointer;
+
   display: inline-flex;
   flex-shrink: 0;
-  appearance: none;
   align-items: center;
   justify-content: center;
+
   width: calc(var(--tumaet-ui-spacing) * 9);
   height: calc(var(--tumaet-ui-spacing) * 9);
   padding: 0;
   border: 0;
   border-radius: 9999px;
-  background: transparent;
-  color: var(--tumaet-ui-muted-color);
+
   font: inherit;
-  cursor: pointer;
+  color: var(--tumaet-ui-muted-color);
+
+  appearance: none;
+  background: transparent;
+
   transition: background-color 0.15s ease;
 }
+
 .tumaet-ui-paginator-button:hover:not(:disabled) {
   background: var(--tumaet-ui-hover-background);
 }
+
 .tumaet-ui-paginator-button:disabled {
   pointer-events: none;
   opacity: 0.5;
 }
+
 .tumaet-ui-paginator-button[data-selected] {
-  background: color-mix(in srgb, var(--tumaet-ui-primary-color) 15%, transparent);
-  color: var(--tumaet-ui-accent-color);
   font-weight: 600;
+  color: var(--tumaet-ui-accent-color);
+  background: color-mix(in srgb, var(--tumaet-ui-primary-color) 15%, transparent);
 }
+
 .tumaet-ui-paginator-button:focus-visible,
 .tumaet-ui-paginator-select:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
 }
+
 /* Mirror the direction icons in right-to-left layouts. */
 .tumaet-ui-paginator-button:dir(rtl) .tumaet-ui-icon {
   transform: scaleX(-1);
@@ -56,26 +69,34 @@
 
 .tumaet-ui-paginator-rows {
   display: flex;
-  align-items: center;
   gap: calc(var(--tumaet-ui-spacing) * 2);
+  align-items: center;
+
   margin-inline-start: calc(var(--tumaet-ui-spacing) * 2);
+
   white-space: nowrap;
 }
+
 .tumaet-ui-paginator-select {
+  cursor: pointer;
+
   box-sizing: border-box;
   height: calc(var(--tumaet-ui-spacing) * 9);
   padding: 0 calc(var(--tumaet-ui-spacing) * 2.5);
   border: 1px solid var(--tumaet-ui-control-border-color);
   border-radius: var(--tumaet-ui-radius-md);
-  background: var(--tumaet-ui-control-background);
-  color: var(--tumaet-ui-text-color);
+
   font: inherit;
-  cursor: pointer;
+  color: var(--tumaet-ui-text-color);
+
+  background: var(--tumaet-ui-control-background);
 }
+
 .tumaet-ui-paginator-select:disabled {
   cursor: default;
   opacity: 0.5;
 }
+
 @media (prefers-reduced-motion: reduce) {
   .tumaet-ui-paginator-button {
     transition: none;

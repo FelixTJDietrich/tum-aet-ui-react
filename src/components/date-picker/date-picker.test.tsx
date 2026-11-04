@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
 import { TumAetUiI18nProvider } from '../../internal/i18n';
@@ -280,7 +280,7 @@ describe('DatePicker dialog', () => {
   it('does not let the Escape that closes the calendar reach an outer handler', async () => {
     const outer = vi.fn();
     render(
-      <div onKeyDown={outer}>
+      <div role="presentation" onKeyDown={outer}>
         <DatePicker aria-label="Deadline" defaultValue={JUNE_13} />
       </div>,
     );
@@ -391,14 +391,16 @@ describe('DatePicker dialog', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
     expect(screen.getByRole('grid', { name: 'March 2031' })).toBeInTheDocument();
     unmount();
-    const second = render(<DatePicker aria-label="Deadline" startAt={new Date(2031, 2, 5)} defaultValue={JUNE_13} />);
+    const { unmount: unmountSecond } = render(
+      <DatePicker aria-label="Deadline" startAt={new Date(2031, 2, 5)} defaultValue={JUNE_13} />,
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
     expect(screen.getByRole('grid', { name: 'June 2026' })).toBeInTheDocument();
-    second.unmount();
-    const third = render(<DatePicker aria-label="Deadline" min={new Date(2099, 6, 1)} />);
+    unmountSecond();
+    const { unmount: unmountThird } = render(<DatePicker aria-label="Deadline" min={new Date(2099, 6, 1)} />);
     await userEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
     expect(screen.getByRole('grid', { name: 'July 2099' })).toBeInTheDocument();
-    third.unmount();
+    unmountThird();
     render(<DatePicker aria-label="Deadline" max={new Date(2001, 3, 1)} />);
     await userEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
     expect(screen.getByRole('grid', { name: 'April 2001' })).toBeInTheDocument();
@@ -640,7 +642,7 @@ describe('DatePicker time', () => {
   });
 
   describe('timeOnly', () => {
-    it('shows only the time, keeps the date of the value and opens a dialog without a calendar', async () => {
+    it('shows only the time, keeps the date of the value and opens a dialog without a calendar', () => {
       const onChange = vi.fn();
       render(<DatePicker aria-label="Start" timeOnly defaultValue={JUNE_13} onChange={onChange} />);
       expect(field()).toHaveValue('08:30');
@@ -669,8 +671,9 @@ describe('DatePicker time', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Open clock' }));
       expect(screen.getByRole('dialog', { name: 'Choose time' })).toBeInTheDocument();
       expect(screen.queryByRole('grid')).toBeNull();
-      await act(async () => {});
-      expect(hour()).toHaveFocus();
+      await waitFor(() => {
+        expect(hour()).toHaveFocus();
+      });
       await userEvent.click(screen.getByRole('button', { name: 'Increment hour' }));
       expect(field()).toHaveValue('09:30');
     });
@@ -700,7 +703,7 @@ describe('DatePicker time', () => {
       expect(screen.getByRole('grid', { name: 'June 2026' })).toBeInTheDocument();
     });
 
-    it('starts with empty steppers and follows a value that is set from outside', async () => {
+    it('starts with empty steppers and follows a value that is set from outside', () => {
       const { rerender } = render(<DatePicker aria-label="Start" timeOnly inline value={null} />);
       expect(hour()).toHaveValue('');
       rerender(<DatePicker aria-label="Start" timeOnly inline value={JUNE_13} />);

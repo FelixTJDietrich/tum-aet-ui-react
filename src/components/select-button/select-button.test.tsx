@@ -50,7 +50,7 @@ describe('SelectButton', () => {
     render(
       <>
         <SelectButton aria-label="View" options={options} defaultValue="Grid" />
-        <button>after</button>
+        <button type="button">after</button>
       </>,
     );
     const [list, grid, table] = ['List', 'Grid', 'Table'].map((n) => screen.getByRole('button', { name: n }));

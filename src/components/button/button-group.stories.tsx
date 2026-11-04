@@ -41,16 +41,17 @@ type Story = StoryObj<typeof meta>;
 
 const checkJoined: Story['play'] = async ({ canvas }) => {
   const [first, middle, last] = canvas.getAllByRole('button').map((button) => getComputedStyle(button));
-  await expect(first!.borderStartStartRadius).not.toBe('0px');
-  await expect(first!.borderStartEndRadius).toBe('0px');
-  await expect(first!.borderEndEndRadius).toBe('0px');
-  await expect(first!.borderInlineEndWidth).toBe('0px');
-  await expect(middle!.borderRadius).toBe('0px');
-  await expect(middle!.borderInlineEndWidth).toBe('0px');
-  await expect(last!.borderStartStartRadius).toBe('0px');
-  await expect(last!.borderEndStartRadius).toBe('0px');
-  await expect(last!.borderStartEndRadius).not.toBe('0px');
-  await expect(last!.borderInlineEndWidth).not.toBe('0px');
+  if (first === undefined || middle === undefined || last === undefined) throw new Error('Expected three buttons');
+  await expect(first.borderStartStartRadius).not.toBe('0px');
+  await expect(first.borderStartEndRadius).toBe('0px');
+  await expect(first.borderEndEndRadius).toBe('0px');
+  await expect(first.borderInlineEndWidth).toBe('0px');
+  await expect(middle.borderRadius).toBe('0px');
+  await expect(middle.borderInlineEndWidth).toBe('0px');
+  await expect(last.borderStartStartRadius).toBe('0px');
+  await expect(last.borderEndStartRadius).toBe('0px');
+  await expect(last.borderStartEndRadius).not.toBe('0px');
+  await expect(last.borderInlineEndWidth).not.toBe('0px');
 };
 
 export const Default: Story = { play: checkJoined };

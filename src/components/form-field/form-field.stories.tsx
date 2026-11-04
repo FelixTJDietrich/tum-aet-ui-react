@@ -4,11 +4,13 @@ import { Input } from '../input/input';
 import { Select } from '../select/select';
 import { FormField } from './form-field';
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ width: 'min(24rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div style={{ width: 'min(24rem, calc(100vw - 2rem))' }}>
+      <Story />
+    </div>
+  );
+}
 
 const meta = {
   title: 'Forms/Form Field',

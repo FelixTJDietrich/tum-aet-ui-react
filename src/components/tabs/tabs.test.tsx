@@ -116,7 +116,9 @@ describe('Tabs', () => {
       const [value, setValue] = useState<string | number>('a');
       return (
         <>
-          <button onClick={() => setValue('c')}>external</button>
+          <button type="button" onClick={() => setValue('c')}>
+            external
+          </button>
           <Example value={value} onChange={setValue} />
         </>
       );
@@ -159,7 +161,7 @@ describe('Tabs', () => {
     expect(tab('Num').getAttribute('aria-controls')).not.toBe(tab('Str').getAttribute('aria-controls'));
   });
 
-  it('preserves inactive content when asked', async () => {
+  it('preserves inactive content when asked', () => {
     render(
       <Tabs defaultValue="a">
         <TabList aria-label="p">
@@ -211,7 +213,7 @@ describe('Tabs fallback selection and structure', () => {
         <Tabs value={value} onChange={setValue}>
           <TabList aria-label="Dyn">
             <Tab value="a">Alpha</Tab>
-            {withC && <Tab value="c">Gamma</Tab>}
+            {withC ? <Tab value="c">Gamma</Tab> : null}
           </TabList>
         </Tabs>
       );

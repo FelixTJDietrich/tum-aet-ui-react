@@ -20,11 +20,11 @@ export default function MessageDemo() {
       </Message>
       <Message severity="secondary">Secondary</Message>
       <Message severity="contrast">Contrast</Message>
-      {visible && (
+      {visible ? (
         <Message severity="info" dismissible onDismiss={() => setVisible(false)}>
           Dismissible
         </Message>
-      )}
+      ) : null}
     </div>
   );
 }

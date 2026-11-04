@@ -6,7 +6,7 @@ import '../src/styles/base.css';
 import.meta.glob('../src/components/**/*.css', { eager: true });
 
 const withTheme: Decorator = (Story, context) => {
-  const theme = context.globals['theme'] === 'dark' ? 'dark' : 'light';
+  const theme = context.globals.theme === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = theme;
   document.body.style.background = 'var(--tumaet-ui-content-background)';
   document.body.style.color = 'var(--tumaet-ui-text-color)';

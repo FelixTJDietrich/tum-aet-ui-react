@@ -6,11 +6,18 @@ import { Button } from '../button';
 import { Popover } from '../popover';
 import { Dialog, type DialogProps } from './dialog';
 
+/** Silences a spied method without doing anything. */
+const noop = () => {
+  // intentionally empty
+};
+
 function Host(props: Partial<DialogProps>) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(true)}>Open</button>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open
+      </button>
       <Dialog open={open} onOpenChange={setOpen} header="My title" footer={<Button>OK</Button>} {...props}>
         <p>Body text</p>
       </Dialog>
@@ -105,7 +112,7 @@ describe('Dialog', () => {
       </Dialog>,
     );
     expect(document.documentElement.style.overflow).toBe('hidden');
-    rerender(<></>);
+    rerender(null);
     expect(document.documentElement.style.overflow).toBe('');
   });
 
@@ -125,7 +132,7 @@ describe('Dialog', () => {
       </Dialog>,
     );
     expect(screen.getByRole('dialog', { name: 'Plain' })).toBeInTheDocument();
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(noop);
     expect(() =>
       render(
         <Dialog open showHeader={false}>
@@ -154,12 +161,13 @@ describe('Dialog', () => {
 
   it('does not close itself when a queued close event of its own close() arrives after a StrictMode re-open', async () => {
     // Browsers fire `close` in a later task; the jsdom stand-in fires it at once, which hides the problem.
-    const original = HTMLDialogElement.prototype.close;
-    HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+    const closeSpy = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (
+      this: HTMLDialogElement,
+    ) {
       if (!this.hasAttribute('open')) return;
       this.removeAttribute('open');
       setTimeout(() => this.dispatchEvent(new Event('close')));
-    };
+    });
     try {
       const onOpenChange = vi.fn();
       render(
@@ -173,11 +181,11 @@ describe('Dialog', () => {
       expect(onOpenChange).not.toHaveBeenCalled();
       expect(document.querySelector('dialog')).toHaveAttribute('open');
     } finally {
-      HTMLDialogElement.prototype.close = original;
+      closeSpy.mockRestore();
     }
   });
 
-  it('still reports a native close (for example from a method=dialog form)', async () => {
+  it('still reports a native close (for example from a method=dialog form)', () => {
     const onOpenChange = vi.fn();
     render(
       <Dialog open header="T" onOpenChange={onOpenChange}>
@@ -191,8 +199,8 @@ describe('Dialog', () => {
   it('lets an open popup take Escape first, then closes on Escape, and never closes on Escape when closeOnEscape is off', async () => {
     const { unmount } = render(
       <Dialog defaultOpen header="T">
-        <Popover defaultOpen aria-label="Inner" trigger={<button>Inner trigger</button>}>
-          <button>In popover</button>
+        <Popover defaultOpen aria-label="Inner" trigger={<button type="button">Inner trigger</button>}>
+          <button type="button">In popover</button>
         </Popover>
       </Dialog>,
     );
@@ -231,28 +239,28 @@ describe('Dialog', () => {
     expect(document.querySelector('dialog')).toBeNull();
     expect(document.documentElement.style.overflow).toBe('');
 
-    const second = render(
+    const { unmount: unmountSecond } = render(
       <Dialog open header="T">
         x
       </Dialog>,
     );
     expect(document.documentElement.style.overflow).toBe('hidden');
-    second.unmount();
+    unmountSecond();
     expect(document.documentElement.style.overflow).toBe('');
     unmount();
   });
 
   it('omits the footer without footer content, and the header with showHeader false', () => {
-    const first = render(
+    const { unmount: unmountFirst } = render(
       <Dialog open header="T" aria-label="Named">
         x
       </Dialog>,
     );
     expect(document.querySelector('.tumaet-ui-dialog-footer')).toBeNull();
     expect(document.querySelector('.tumaet-ui-dialog')).not.toHaveAttribute('data-size');
-    first.unmount();
+    unmountFirst();
     render(
-      <Dialog open showHeader={false} aria-label="Plain" footer={<button>OK</button>}>
+      <Dialog open showHeader={false} aria-label="Plain" footer={<button type="button">OK</button>}>
         x
       </Dialog>,
     );
@@ -275,7 +283,7 @@ describe('Dialog', () => {
     expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
   });
 
-  it('does not count a drag that started inside the panel and ended on the backdrop as a mask click', async () => {
+  it('does not count a drag that started inside the panel and ended on the backdrop as a mask click', () => {
     render(
       <Dialog defaultOpen header="T" dismissableMask>
         <p>Body text</p>

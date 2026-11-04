@@ -33,10 +33,8 @@ describe('ProgressBar', () => {
   it('has no accessibility violations', async () => {
     render(
       <main>
-        <>
-          <ProgressBar aria-label="A" value={10} />
-          <ProgressBar aria-label="B" indeterminate />
-        </>
+        <ProgressBar aria-label="A" value={10} />
+        <ProgressBar aria-label="B" indeterminate />
       </main>,
     );
     await expectNoA11yViolations();
@@ -44,8 +42,8 @@ describe('ProgressBar', () => {
 
   it('clamps the fill width and the label, and shows no label at 0', () => {
     const { container, rerender } = render(<ProgressBar aria-label="x" value={130} />);
-    const fill = container.querySelector('.tumaet-ui-progress-bar-value') as HTMLElement;
-    const label = container.querySelector('.tumaet-ui-progress-bar-label') as HTMLElement;
+    const fill = container.querySelector<HTMLElement>('.tumaet-ui-progress-bar-value')!;
+    const label = container.querySelector('.tumaet-ui-progress-bar-label')!;
     expect(fill.style.width).toBe('100%');
     expect(label).toHaveTextContent('100%');
     rerender(<ProgressBar aria-label="x" value={-10} />);

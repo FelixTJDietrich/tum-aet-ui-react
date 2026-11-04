@@ -66,7 +66,7 @@ describe('Button', () => {
       <Button
         type="submit"
         aria-label="Download"
-        aria-expanded={true}
+        aria-expanded
         aria-pressed={false}
         aria-controls="menu-1"
         aria-describedby="desc-1"

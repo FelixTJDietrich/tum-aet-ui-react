@@ -15,11 +15,15 @@ const OPTIONS: readonly IntervalOption[] = [
   { label: 'Month', value: 'month', abbreviation: 'M' },
 ];
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
 
 const labelStyle = { fontWeight: 600 } as const;
 
@@ -187,7 +191,7 @@ export const CustomItemTemplate: Story = {
 export const RightToLeft: Story = {
   render: (args) => (
     <div dir="rtl">
-      <SelectButton {...(args as SelectButtonSingleProps)} aria-label="Reporting interval" />
+      <SelectButton {...args} aria-label="Reporting interval" />
     </div>
   ),
 };

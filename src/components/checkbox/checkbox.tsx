@@ -59,13 +59,17 @@ export function Checkbox({
     if (inputRef.current) inputRef.current.indeterminate = indeterminate;
   }, [indeterminate, isChecked]);
 
+  let icon = null;
+  if (indeterminate) icon = <MinusIcon className="tumaet-ui-icon tumaet-ui-checkbox-icon" />;
+  else if (isChecked) icon = <CheckIcon className="tumaet-ui-icon tumaet-ui-checkbox-icon" />;
+
   return (
     <span
       className={cx('tumaet-ui-checkbox', className)}
       style={style}
       data-checked={isChecked || undefined}
       data-indeterminate={indeterminate || undefined}
-      data-disabled={disabled || undefined}
+      data-disabled={disabled === true || undefined}
       data-invalid={control.invalid || undefined}
     >
       <input
@@ -86,11 +90,7 @@ export function Checkbox({
         }}
       />
       <span className="tumaet-ui-checkbox-box" aria-hidden="true">
-        {indeterminate ? (
-          <MinusIcon className="tumaet-ui-icon tumaet-ui-checkbox-icon" />
-        ) : isChecked ? (
-          <CheckIcon className="tumaet-ui-icon tumaet-ui-checkbox-icon" />
-        ) : null}
+        {icon}
       </span>
     </span>
   );

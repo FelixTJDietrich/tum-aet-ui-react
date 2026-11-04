@@ -3,87 +3,116 @@
   flex-direction: column;
   gap: calc(var(--tumaet-ui-spacing) * 2);
 }
+
 .tumaet-ui-radio-button {
+  user-select: none;
+
   position: relative;
+
   display: inline-flex;
   flex: 0 0 auto;
+
   width: calc(var(--tumaet-ui-spacing, 0.25rem) * 5);
   height: calc(var(--tumaet-ui-spacing, 0.25rem) * 5);
+
   vertical-align: bottom;
-  user-select: none;
 }
+
 .tumaet-ui-radio-button-input {
+  cursor: pointer;
+
   position: absolute;
-  inset: 0;
   z-index: 1;
+  inset: 0;
+
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  opacity: 0;
-  cursor: pointer;
-  appearance: none;
   border-radius: 50%;
+
+  appearance: none;
+  opacity: 0;
 }
+
 .tumaet-ui-radio-button-input:disabled {
   cursor: default;
 }
+
 .tumaet-ui-radio-button-box {
-  box-sizing: border-box;
   position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
-  background-color: var(--tumaet-ui-control-background);
   border: 1px solid var(--tumaet-ui-control-border-color);
   border-radius: 50%;
+
+  background-color: var(--tumaet-ui-control-background);
   box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--tumaet-ui-text-color) 5%, transparent);
+
   transition:
     background-color 0.2s,
     border-color 0.2s,
     box-shadow 0.2s,
     outline-color 0.2s;
 }
+
 .tumaet-ui-radio-button-box::after {
+  pointer-events: none;
   content: '';
+
   position: absolute;
   inset: 0;
+
   border-radius: inherit;
+
   background-color: transparent;
-  pointer-events: none;
+
   transition: background-color 0.15s ease;
 }
+
 .tumaet-ui-radio-button-icon {
   width: calc(var(--tumaet-ui-spacing, 0.25rem) * 3);
   height: calc(var(--tumaet-ui-spacing, 0.25rem) * 3);
   border-radius: 50%;
-  background-color: var(--tumaet-ui-primary-contrast-color);
+
   visibility: hidden;
+  background-color: var(--tumaet-ui-primary-contrast-color);
 }
+
 /* :checked rather than state, so uncontrolled radios that the browser keeps exclusive are styled too. :where keeps the
    specificity low enough for the invalid and disabled rules below. */
 .tumaet-ui-radio-button:where(:has(> .tumaet-ui-radio-button-input:checked)) .tumaet-ui-radio-button-box {
-  background-color: var(--tumaet-ui-primary-color);
   border-color: var(--tumaet-ui-primary-color);
+  background-color: var(--tumaet-ui-primary-color);
 }
+
 .tumaet-ui-radio-button:where(:has(> .tumaet-ui-radio-button-input:checked)) .tumaet-ui-radio-button-icon {
   visibility: visible;
 }
+
 .tumaet-ui-radio-button[data-invalid] .tumaet-ui-radio-button-box {
   border-color: var(--tumaet-ui-state-danger);
 }
+
 .tumaet-ui-radio-button[data-disabled] .tumaet-ui-radio-button-box {
-  background-color: var(--tumaet-ui-disabled-background);
   border-color: var(--tumaet-ui-control-border-color);
+  background-color: var(--tumaet-ui-disabled-background);
 }
+
 .tumaet-ui-radio-button[data-disabled] .tumaet-ui-radio-button-icon {
   background-color: var(--tumaet-ui-disabled-color);
 }
+
 .tumaet-ui-radio-button-input:hover:not(:disabled) + .tumaet-ui-radio-button-box::after {
   background-color: color-mix(in srgb, var(--tumaet-ui-text-color) 5%, transparent);
 }
+
 .tumaet-ui-radio-button-input:focus-visible + .tumaet-ui-radio-button-box {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
@@ -95,11 +124,13 @@
     transition: none;
   }
 }
+
 @media (forced-colors: active) {
   .tumaet-ui-radio-button-input {
     appearance: auto;
     opacity: 1;
   }
+
   .tumaet-ui-radio-button-box {
     display: none;
   }

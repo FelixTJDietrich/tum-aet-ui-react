@@ -88,7 +88,7 @@ export const KeyboardNavigation: Story = {
     await userEvent.keyboard('{ArrowDown}');
 
     const menu = within(document.body).getByRole('menu');
-    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: 'Add students' })).toHaveFocus());
+    await waitFor(async () => expect(within(menu).getByRole('menuitem', { name: 'Add students' })).toHaveFocus());
     await userEvent.keyboard('{ArrowDown}{ArrowDown}');
     const disabled = within(menu).getByRole('menuitem', { name: 'Add editors' });
     await expect(disabled).toHaveFocus();
@@ -98,7 +98,7 @@ export const KeyboardNavigation: Story = {
     await expect(within(menu).getByRole('menuitem', { name: 'Open documentation' })).toHaveFocus();
 
     await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(within(document.body).queryByRole('menu')).not.toBeInTheDocument());
+    await waitFor(async () => expect(within(document.body).queryByRole('menu')).not.toBeInTheDocument());
     await expect(trigger).toHaveFocus();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   },

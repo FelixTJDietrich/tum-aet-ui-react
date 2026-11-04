@@ -1,4 +1,13 @@
-import { useId, useImperativeHandle, useRef, useState, type HTMLAttributes, type KeyboardEvent, type Ref } from 'react';
+import {
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type KeyboardEvent,
+  type Ref,
+} from 'react';
 import { cx } from '../../internal/cx';
 import { Floating } from '../../internal/floating';
 import { useTranslate } from '../../internal/i18n';
@@ -99,6 +108,8 @@ export function Select({
   ...rest
 }: SelectProps) {
   const t = useTranslate();
+  // Moves focus to the search field when the popup opens and mounts it.
+  const focusOnMount = useCallback((node: HTMLInputElement | null) => node?.focus(), []);
   const generatedId = useId();
   const field = useFormFieldControl({ id: ownId, 'aria-describedby': ownDescribedBy, 'aria-invalid': ownInvalid });
   const ariaDescribedBy = field['aria-describedby'];
@@ -109,16 +120,19 @@ export function Select({
   const trigger = useRef<HTMLButtonElement | null>(null);
   const typeahead = useTypeahead();
   // A stable ref: Floating measures the anchor in a layout effect that runs before an inline callback ref is re-attached.
-  useImperativeHandle(ref, () => root.current as HTMLDivElement, []);
+  useImperativeHandle(ref, () => {
+    if (root.current === null) throw new Error('Select root element is not mounted');
+    return root.current;
+  }, []);
 
   const [current, setCurrent] = useControllable<unknown>(value, defaultValue, onChange);
-  const [openState, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
   const open = openState && !disabled;
   if (disabled && openState) {
     // Disabling while open closes the list for good, so it does not reappear when the select is enabled again.
-    setOpen(false);
+    setOpenState(false);
     setQuery('');
   }
 
@@ -133,7 +147,7 @@ export function Select({
     .map((k) => k.trim())
     .filter(Boolean);
   const fields = (option: unknown): string[] =>
-    !keys?.length || option === null || typeof option !== 'object'
+    keys === undefined || keys.length === 0 || option === null || typeof option !== 'object'
       ? [optionLabelOf(option, optionLabel)]
       : keys.map((k) => toText((option as Record<string, unknown>)[k]));
   const needle = query.trim().toLocaleLowerCase();
@@ -146,13 +160,16 @@ export function Select({
   const openPanel = (initial?: { index?: number; query?: string }) => {
     if (open || disabled) return;
     const selectedIndex = visible.findIndex(isSelected);
-    setActive(initial?.index ?? (selectedIndex >= 0 ? selectedIndex : visible.length > 0 ? 0 : -1));
+    let fallbackIndex = -1;
+    if (selectedIndex >= 0) fallbackIndex = selectedIndex;
+    else if (visible.length > 0) fallbackIndex = 0;
+    setActive(initial?.index ?? fallbackIndex);
     setQuery(initial?.query ?? '');
-    setOpen(true);
+    setOpenState(true);
   };
   const close = (restoreFocus = true) => {
     typeahead.reset();
-    setOpen(false);
+    setOpenState(false);
     setQuery('');
     if (restoreFocus) trigger.current?.focus();
   };
@@ -259,11 +276,13 @@ export function Select({
           {hasSelection ? optionLabelOf(selectedOption, optionLabel) : placeholder}
         </span>
       </button>
-      {name && <input type="hidden" name={name} value={hasSelection ? toText(current) : ''} disabled={disabled} />}
+      {name !== undefined && name !== '' ? (
+        <input type="hidden" name={name} value={hasSelection ? toText(current) : ''} disabled={disabled} />
+      ) : null}
       <span className="tumaet-ui-select-chevron" aria-hidden="true">
         <ChevronDownIcon />
       </span>
-      {showClearButton && (
+      {showClearButton ? (
         <button
           type="button"
           className="tumaet-ui-select-clear"
@@ -272,13 +291,13 @@ export function Select({
         >
           <XIcon />
         </button>
-      )}
+      ) : null}
       <Floating anchor={root} open={open} matchWidth onDismiss={() => close()} className="tumaet-ui-select-panel">
-        {filter && (
+        {filter ? (
           <div className="tumaet-ui-select-filter-wrapper">
             <input
               type="text"
-              autoFocus
+              ref={focusOnMount}
               autoComplete="off"
               className="tumaet-ui-select-filter"
               value={query}
@@ -294,7 +313,7 @@ export function Select({
               onKeyDown={(event) => onKeyDown(event, true)}
             />
           </div>
-        )}
+        ) : null}
         <Listbox
           id={listboxId}
           items={items}
@@ -303,7 +322,7 @@ export function Select({
           onSelect={selectAt}
           emptyText={filtering ? t('tumAetUi.select.noResults') : (emptyMessage ?? t('tumAetUi.select.empty'))}
           aria-label={ariaLabel}
-          aria-labelledby={ariaLabel ? undefined : ariaLabelledBy}
+          aria-labelledby={ariaLabel !== undefined && ariaLabel !== '' ? undefined : ariaLabelledBy}
         />
       </Floating>
     </div>

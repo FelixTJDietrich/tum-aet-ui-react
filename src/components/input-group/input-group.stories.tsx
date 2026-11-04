@@ -3,11 +3,15 @@ import { Input } from '../input/input';
 import { InputNumber } from '../input-number/input-number';
 import { InputGroup, InputGroupAddon } from './input-group';
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
 
 const labelStyle = { fontWeight: 600 } as const;
 

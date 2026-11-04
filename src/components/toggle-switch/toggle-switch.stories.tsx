@@ -4,11 +4,13 @@ import { expect, fn } from 'storybook/test';
 import { FormField } from '../form-field/form-field';
 import { ToggleSwitch } from './toggle-switch';
 
-const InlineControl: Decorator = (Story) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
-    <Story />
-  </div>
-);
+function InlineControl(Story: Parameters<Decorator>[0]) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--tumaet-ui-spacing) * 2)' }}>
+      <Story />
+    </div>
+  );
+}
 
 const meta = {
   title: 'Forms/Toggle Switch',

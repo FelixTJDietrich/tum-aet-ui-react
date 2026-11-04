@@ -12,6 +12,11 @@ export interface TimeControlsProps {
   hourRef?: Ref<HTMLInputElement>;
 }
 
+function arrowDelta(key: string): number {
+  if (key === 'ArrowUp') return 1;
+  return key === 'ArrowDown' ? -1 : 0;
+}
+
 function parsePart(raw: string, max: number): number | undefined {
   const trimmed = raw.trim();
   if (!/^\d{1,2}$/.test(trimmed)) return undefined;
@@ -49,7 +54,7 @@ export function TimeControls({ value, disabled, required, onCommit, hourRef }: T
       finishEdit(field);
       return;
     }
-    const delta = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
+    const delta = arrowDelta(event.key);
     if (delta === 0) return;
     event.preventDefault();
     const size = field === 'hour' ? 24 : 60;
@@ -83,7 +88,7 @@ export function TimeControls({ value, disabled, required, onCommit, hourRef }: T
         value={drafts[name] ?? shown[name]}
         disabled={disabled}
         aria-label={translate(name === 'hour' ? 'tumAetUi.datePicker.hour' : 'tumAetUi.datePicker.minute')}
-        aria-required={required ? 'true' : undefined}
+        aria-required={required === true ? 'true' : undefined}
         onChange={(event) => setDrafts((d) => ({ ...d, [name]: event.target.value }))}
         onBlur={() => finishEdit(name)}
         onKeyDown={(event) => onKeyDown(event, name)}

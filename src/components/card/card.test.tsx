@@ -35,7 +35,7 @@ describe('Card', () => {
     );
     const root = container.firstElementChild as HTMLElement;
     expect(root.firstElementChild).toBe(screen.getByTestId('media'));
-    const body = root.querySelector('.tumaet-ui-card-body') as HTMLElement;
+    const body = root.querySelector('.tumaet-ui-card-body')!;
     expect(body.lastElementChild).toBe(screen.getByTestId('footer'));
     expect(screen.getByTestId('content').closest('.tumaet-ui-card-content')).not.toBeNull();
     expect(body.querySelector('.tumaet-ui-card-title')).toHaveTextContent('T');

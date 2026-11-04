@@ -1,32 +1,42 @@
 .tumaet-ui-tabs {
   display: flex;
   flex-direction: column;
+
   width: 100%;
   min-width: 0;
   max-width: 100%;
+
   font-family: var(--tumaet-ui-font-family);
   font-size: var(--tumaet-ui-font-size-base);
   line-height: var(--tumaet-ui-line-height-base);
 }
 
 .tumaet-ui-tab-list {
+  scrollbar-width: thin;
+
   position: relative;
+
+  overflow-x: auto;
   display: flex;
+
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
   border-bottom: 1px solid var(--tumaet-ui-border-color);
-  scrollbar-width: thin;
 }
+
 .tumaet-ui-tab-indicator {
+  pointer-events: none;
+
   position: absolute;
   inset-block-end: 0;
   left: 0;
+
   height: 2px;
+
   background: var(--tumaet-ui-primary-color);
-  pointer-events: none;
 }
+
 .tumaet-ui-tab-indicator[data-animate] {
   transition:
     width 250ms cubic-bezier(0.35, 0, 0.25, 1),
@@ -34,39 +44,49 @@
 }
 
 .tumaet-ui-tab {
-  position: relative;
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: calc(var(--tumaet-ui-spacing) * 2);
-  padding: calc(var(--tumaet-ui-spacing) * 4) calc(var(--tumaet-ui-spacing) * 4.5);
-  border: 0;
-  background: transparent;
-  color: var(--tumaet-ui-muted-color);
-  font: inherit;
-  font-weight: 600;
-  white-space: nowrap;
   cursor: pointer;
   user-select: none;
+
+  position: relative;
+
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: calc(var(--tumaet-ui-spacing) * 2);
+  align-items: center;
+
+  padding: calc(var(--tumaet-ui-spacing) * 4) calc(var(--tumaet-ui-spacing) * 4.5);
+  border: 0;
+
+  font: inherit;
+  font-weight: 600;
+  color: var(--tumaet-ui-muted-color);
+  white-space: nowrap;
+
+  background: transparent;
+
   transition:
     color 0.2s,
     background 0.2s;
 }
+
 .tumaet-ui-tab:hover {
   color: var(--tumaet-ui-text-color);
 }
+
 .tumaet-ui-tab[data-state='active'] {
   color: var(--tumaet-ui-accent-color);
 }
+
 /* Inset, so the focus ring is not clipped by the scrolling list. */
 .tumaet-ui-tab:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: -2px;
 }
+
 .tumaet-ui-tab[data-disabled] {
-  opacity: 0.6;
-  cursor: default;
   pointer-events: none;
+  cursor: default;
+  opacity: 0.6;
 }
 
 .tumaet-ui-tab-panels {
@@ -74,15 +94,19 @@
   padding: calc(var(--tumaet-ui-spacing) * 3.5) calc(var(--tumaet-ui-spacing) * 4.5)
     calc(var(--tumaet-ui-spacing) * 4.5);
 }
+
 .tumaet-ui-tab-panel {
   display: block;
 }
+
 .tumaet-ui-tab-panel[hidden] {
   display: none;
 }
+
 .tumaet-ui-tab-panel:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
 }
+
 .tumaet-ui-tab-panel[data-fill] {
   height: 100%;
   min-height: 0;

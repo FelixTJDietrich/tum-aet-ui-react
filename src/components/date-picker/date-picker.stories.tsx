@@ -10,11 +10,11 @@ function Field({ value: initial, onChange, ...props }: DatePickerProps) {
   const label = props['aria-label'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {label && !props.inline && (
+      {label !== undefined && label !== '' && props.inline !== true ? (
         <label htmlFor={id} style={{ fontWeight: 600 }}>
           {label}
         </label>
-      )}
+      ) : null}
       <DatePicker
         {...props}
         id={id}
@@ -70,7 +70,7 @@ export const CalendarInteraction: Story = {
     await expect(within(dialog).getByRole('grid')).toBeVisible();
     const selectedDay = within(dialog).getByRole('gridcell', { selected: true }).querySelector('button');
     // The popup is positioned first, then the focus moves to the selected day.
-    await waitFor(() => expect(selectedDay).toHaveFocus());
+    await waitFor(async () => expect(selectedDay).toHaveFocus());
 
     const dialogRemoved = waitForElementToBeRemoved(dialog);
     await userEvent.keyboard('{Escape}');

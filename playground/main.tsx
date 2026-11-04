@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import '../src/styles/themes.css';
 import '../src/styles/base.css';
 
@@ -7,12 +7,14 @@ import '../src/styles/base.css';
 import.meta.glob('../src/components/**/*.css', { eager: true });
 const demos = import.meta.glob<{ default: ComponentType }>('../src/components/**/*.demo.tsx', { eager: true });
 const entries = Object.entries(demos)
-  .map(([path, mod]) => ({ name: path.split('/').pop()!.replace('.demo.tsx', ''), Demo: mod.default }))
+  .map(([path, mod]) => ({ name: (path.split('/').pop() ?? path).replace('.demo.tsx', ''), Demo: mod.default }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 function App() {
   const [dark, setDark] = useState(false);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  }, [dark]);
   return (
     <div
       className="tumaet-ui-root"
@@ -40,4 +42,6 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById('root')!).render(<App />);
+const rootElement = document.getElementById('root');
+if (rootElement === null) throw new Error('Missing #root element');
+createRoot(rootElement).render(<App />);

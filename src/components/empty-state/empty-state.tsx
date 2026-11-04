@@ -21,6 +21,11 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
   ref?: Ref<HTMLDivElement>;
 }
 
+/** Whether a slot holds content, matching React truthiness (so `0`, `''` and `false` leave the slot out). */
+function isPresent(node: ReactNode): boolean {
+  return node !== undefined && node !== null && node !== false && node !== '' && node !== 0 && node !== 0n;
+}
+
 export function EmptyState({
   title,
   headingLevel = 2,
@@ -36,16 +41,16 @@ export function EmptyState({
   const Heading = `h${headingLevel}` as const;
   return (
     <div {...rest} data-variant={variant} className={cx('tumaet-ui-empty-state', className)}>
-      {icon && (
+      {isPresent(icon) ? (
         <div className="tumaet-ui-empty-state-icon" aria-hidden="true">
           {icon}
         </div>
-      )}
+      ) : null}
       <Heading className="tumaet-ui-empty-state-title">{title}</Heading>
-      {description && <p className="tumaet-ui-empty-state-description">{description}</p>}
+      {isPresent(description) ? <p className="tumaet-ui-empty-state-description">{description}</p> : null}
       {children}
-      {actions && <div className="tumaet-ui-empty-state-actions">{actions}</div>}
-      {documentation && <div className="tumaet-ui-empty-state-documentation">{documentation}</div>}
+      {isPresent(actions) ? <div className="tumaet-ui-empty-state-actions">{actions}</div> : null}
+      {isPresent(documentation) ? <div className="tumaet-ui-empty-state-documentation">{documentation}</div> : null}
     </div>
   );
 }

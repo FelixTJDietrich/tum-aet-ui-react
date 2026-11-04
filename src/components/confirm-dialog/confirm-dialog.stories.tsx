@@ -36,7 +36,7 @@ function Launcher({ onResult, withIcon, confirmKey, ...request }: ConfirmStoryAr
         void confirm({
           ...request,
           key: confirmKey,
-          icon: withIcon ? <WarningGlyph /> : undefined,
+          icon: withIcon === true ? <WarningGlyph /> : undefined,
         } satisfies ConfirmationRequest).then((accepted) => onResult?.(accepted))
       }
     >
@@ -109,7 +109,7 @@ export const AcceptsDecision: Story = {
     const removed = waitForElementToBeRemoved(dialog);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await removed;
-    await waitFor(() => expect(args.onResult).toHaveBeenCalledWith(true));
+    await waitFor(async () => expect(args.onResult).toHaveBeenCalledWith(true));
     await expect(args.accept).toHaveBeenCalledOnce();
   },
 };
@@ -122,7 +122,7 @@ export const RejectsDecision: Story = {
     const removed = waitForElementToBeRemoved(dialog);
     await userEvent.keyboard('{Escape}');
     await removed;
-    await waitFor(() => expect(args.onResult).toHaveBeenCalledWith(false));
+    await waitFor(async () => expect(args.onResult).toHaveBeenCalledWith(false));
     await expect(args.reject).toHaveBeenCalledOnce();
     await expect(args.accept).not.toHaveBeenCalled();
   },

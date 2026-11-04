@@ -2,11 +2,15 @@ import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 import { Input, Textarea } from './input';
 
-const FormLayout: Decorator = (Story) => (
-  <div style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}>
-    <Story />
-  </div>
-);
+function FormLayout(Story: Parameters<Decorator>[0]) {
+  return (
+    <div
+      style={{ display: 'grid', gap: 'calc(var(--tumaet-ui-spacing) * 2)', width: 'min(20rem, calc(100vw - 2rem))' }}
+    >
+      <Story />
+    </div>
+  );
+}
 
 const labelStyle = { fontWeight: 600 } as const;
 const errorStyle = { color: 'var(--tumaet-ui-state-danger-foreground)', fontSize: '0.875rem' } as const;
@@ -39,12 +43,12 @@ const meta = {
       <label htmlFor="course-title" style={labelStyle}>
         Course title
       </label>
-      <Input id="course-title" aria-describedby={args.invalid ? 'course-title-error' : undefined} {...args} />
-      {args.invalid && (
+      <Input id="course-title" aria-describedby={args.invalid === true ? 'course-title-error' : undefined} {...args} />
+      {args.invalid === true ? (
         <div id="course-title-error" role="alert" style={errorStyle}>
           Enter a course title.
         </div>
-      )}
+      ) : null}
     </>
   ),
 } satisfies Meta<typeof Input>;
@@ -96,13 +100,13 @@ export const Multiline: Story = {
         size={size}
         invalid={invalid}
         disabled={disabled}
-        aria-describedby={invalid ? 'course-description-error' : undefined}
+        aria-describedby={invalid === true ? 'course-description-error' : undefined}
       />
-      {invalid && (
+      {invalid === true ? (
         <div id="course-description-error" role="alert" style={errorStyle}>
           Enter a course description.
         </div>
-      )}
+      ) : null}
     </>
   ),
 };
