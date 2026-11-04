@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
-  root: process.env.VITEST ? undefined : 'playground',
+  root: (process.env.VITEST ?? '') !== '' ? undefined : 'playground',
   build: {
     outDir: resolve(import.meta.dirname, 'dist'),
     emptyOutDir: false,

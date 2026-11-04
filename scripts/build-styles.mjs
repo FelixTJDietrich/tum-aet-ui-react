@@ -18,4 +18,4 @@ for (const name of components) {
 }
 await mkdir(join(root, 'dist'), { recursive: true });
 await writeFile(join(root, 'dist/styles.css'), parts.join('\n'));
-console.log('Built dist/styles.css');
+process.stdout.write('Built dist/styles.css\n');

@@ -14,6 +14,11 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm lint:css
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - run: pnpm pack:check
+      - run: pnpm test:consumer latest

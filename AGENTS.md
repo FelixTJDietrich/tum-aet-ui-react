@@ -5,7 +5,7 @@ Goal: the same look, tokens, class names, behaviour and accessibility, with **no
 
 ## Rules
 
-- **No new dependencies.** Not even dev dependencies, unless the lead agrees. Use native platform features: `<dialog>`, `<details>`, `Intl`, `Date`, CSS custom properties, `color-mix`, logical properties.
+- **No new dependencies.** Not even dev dependencies, unless the maintainers agree. Use native platform features: `<dialog>`, `<details>`, `Intl`, `Date`, CSS custom properties, `color-mix`, logical properties.
 - **Styling is plain CSS** in a `.css` file next to the component. Use the `--tumaet-ui-*` tokens from `src/styles/themes.css`, never hard-coded colours, and `calc(var(--tumaet-ui-spacing) * n)` for spacing (Tailwind's `p-3` is `n=3`). Keep the Angular class names (`tumaet-ui-btn`, `tumaet-ui-input`, ...). Variants go in `data-*` attributes (`data-severity`, `data-size`, `data-variant`), not in class permutations.
 - The Angular library styles live in Tailwind utilities inside `*.component.html/ts/scss` and `*.variants.ts`. Translate them to CSS by hand; read the Angular source for exact values.
 - Every component root sets `font-family`, `font-size`, `line-height` from the tokens (or inherits from a parent that does); form controls use `font: inherit`.
@@ -31,8 +31,15 @@ Do **not** edit `src/index.ts`, `playground/`, anything in `src/internal/`, `pac
 
 ## Commands
 
-`pnpm typecheck`, `pnpm test`, `pnpm test -- src/components/<name>`, `pnpm dev` (playground), `pnpm build`. Prettier config in `.prettierrc`; run `pnpm exec prettier --write src/components/<name>` before reporting.
-The Angular source to port is in the scratchpad snapshot (path given in your task), under `src/lib/<name>/`, together with its `.stories.ts` and `.spec.ts` files, which list the intended behaviour.
+`pnpm typecheck`, `pnpm test`, `pnpm test -- src/components/<name>`, `pnpm dev` (playground), `pnpm build`, `pnpm lint` (ESLint), `pnpm lint:css` (stylelint), `pnpm format:check`. CI runs all of them and fails on any warning. Prettier config is in `.prettierrc`; run `pnpm exec prettier --write src/components/<name>` before reporting.
+
+### Lint rules
+
+- ESLint uses typescript-eslint `strictTypeChecked` and `stylisticTypeChecked`, React and React Compiler hook rules, `jsx-a11y` strict, and import cycle checks (`eslint.config.js`). Fix the code instead of silencing a rule. A disable comment needs a reason (`// eslint-disable-next-line rule -- why`), and unused disables are errors.
+- Conditions are explicit (`x !== undefined`, `s !== ''`); `!!x` is fine for a plain truthiness check, `Boolean(x)` is not (it loses type narrowing).
+- stylelint (`stylelint.config.mjs`) allows only `tumaet-ui-*` class names and `--tumaet-ui-*` custom properties, no hex or named colours outside `src/styles/themes.css`, no `!important`.
+- TypeScript is pinned to 6.0 because typescript-eslint does not support TypeScript 7 yet. The library also typechecks with TypeScript 7 as a consumer.
+  The Angular source to port is in the scratchpad snapshot (path given in your task), under `src/lib/<name>/`, together with its `.stories.ts` and `.spec.ts` files, which list the intended behaviour.
 
 ## Reference component
 
