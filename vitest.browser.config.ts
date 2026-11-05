@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     include: ['tests/browser/**/*.browser.test.tsx'],
     setupFiles: ['tests/browser/setup.ts'],
-    // Vitest 5.1 stages trace chunks and failure screenshots by test name.
+    // Trace staging uses shared test-name paths across browser instances.
     // Keep browser instances sequential so those files cannot overwrite each other.
     maxWorkers: 1,
     reporters: [
@@ -17,7 +17,6 @@ export default defineConfig({
       ['junit', { suiteNameTemplate: '{displayName}: {filename}', classnameTemplate: '{displayName}.{filename}' }],
     ],
     outputFile: { junit: 'build/browser-results/junit.xml' },
-    attachmentsDir: 'build/browser-results/attachments',
     browser: {
       enabled: true,
       headless: true,
@@ -29,7 +28,6 @@ export default defineConfig({
       })),
       viewport: { width: 1000, height: 800 },
       screenshotFailures: true,
-      screenshotDirectory: 'build/browser-results/screenshots',
       trace: { mode: 'retain-on-failure', tracesDir: 'build/browser-results/traces' },
     },
   },
