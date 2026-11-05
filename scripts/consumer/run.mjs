@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
+import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -55,7 +56,8 @@ await writeFile(
   join(dir, 'src/button.tsx'),
   "import '@tumaet/ui-react/styles.css';\nexport { Button } from '@tumaet/ui-react';\n",
 );
-const { build } = await import(pathToFileURL(join(dir, 'node_modules/vite/dist/node/index.js')).href);
+const requireFromConsumer = createRequire(join(dir, 'package.json'));
+const { build } = await import(pathToFileURL(requireFromConsumer.resolve('vite')).href);
 const results = await build({
   root: dir,
   configFile: false,
