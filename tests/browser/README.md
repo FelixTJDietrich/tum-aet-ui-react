@@ -35,7 +35,7 @@ Vitest runs tests in an iframe. Establish initial keyboard focus inside it, then
 CI uploads `build/browser-results/`. Each engine has its own screenshot/attachment directory; failure trace filenames also include the engine. Open a trace with:
 
 ```sh
-pnpm exec playwright show-trace build/browser-results/traces/<browser>-<test>.trace.zip
+pnpm exec playwright show-trace <downloaded-file.trace.zip>
 ```
 
 Local artifacts accumulate. Remove `build/browser-results/` before a run when a fresh result set is needed. These tests cover representative interaction contracts; they do not certify visual or screen-reader behaviour.
