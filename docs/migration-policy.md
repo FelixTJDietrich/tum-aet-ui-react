@@ -2,7 +2,7 @@
 
 The library owns the AET appearance, composition, translations and domain logic. Base UI owns generic state, keyboard, focus, dismissal and positioning behaviour. React and React DOM are peers; Base UI is a normal runtime dependency.
 
-## API contracts
+## New and migrated components
 
 - Export compound parts as flat names, such as `Select`, `SelectTrigger` and `SelectPopup`. Simple presentation components and common composed patterns can remain props-driven.
 - Use `value/defaultValue/onValueChange`, `checked/defaultChecked/onCheckedChange` and `open/defaultOpen/onOpenChange`. Callbacks receive the new state followed by the supported Base UI event details; preserve cancellation. Native `Input` and `Textarea` keep DOM events.
@@ -11,11 +11,11 @@ The library owns the AET appearance, composition, translations and domain logic.
 - Controls must support native submission, disabled/read-only semantics and reset. Verify `FormData`, reset followed by rerender, and canceled reset for stateful controls.
 - Preserve `tumAetUi.*` translations, accessible names and focus return. Portal inheritance follows the destination DOM: expose the upstream container option and demonstrate a host within the intended theme/direction boundary, outside clipping containers. See [theming](theming.mdx).
 
-## Compatibility
+## API changes
 
-Legacy components retain their documented props until migrated. Change each component and its dependent patterns, examples and tests together; remove its owned behaviour rather than maintain a second engine. Shared helpers remain until their last consumer migrates.
+Backward compatibility with the original port is not required. Replace old props and aliases rather than add deprecation layers, dual callbacks or compatibility adapters. Update affected patterns, examples and tests in the same change. Remove superseded behaviour and shared helpers after their consumers migrate.
 
-Breaking changes during 0.x require a minor version, a changelog entry and concrete before/after examples. Keep compatibility adapters only where they are small and unambiguous; do not maintain dual callbacks or duplicate option APIs indefinitely. A prerelease provides application validation before a new minor release.
+Breaking changes during 0.x require a minor version, a changelog entry and concrete usage examples. Use prereleases for application validation before a new minor release.
 
 ## Distribution
 
