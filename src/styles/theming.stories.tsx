@@ -23,6 +23,14 @@ function ThemeSample({ label, className, children, ...rest }: HTMLAttributes<HTM
   );
 }
 
+async function expectTheme(region: HTMLElement, theme: 'light' | 'dark') {
+  await expect(getComputedStyle(region).colorScheme).toBe(theme);
+  const primary = getComputedStyle(region).getPropertyValue('--tumaet-ui-primary-color').trim();
+  const surface = getComputedStyle(region).backgroundColor;
+  await expect(primary).toBe(theme === 'light' ? '#3779b4' : '#65a1d6');
+  await expect(surface).toBe(theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(22, 25, 29)');
+}
+
 const meta = {
   title: 'Foundation/Theming',
   component: ThemeSample,
@@ -59,10 +67,10 @@ export const NestedThemes: Story = {
   ),
   play: async ({ canvas }) => {
     for (const name of ['Light outer', 'Light middle', 'Light inner']) {
-      await expect(getComputedStyle(canvas.getByRole('region', { name })).colorScheme).toBe('light');
+      await expectTheme(canvas.getByRole('region', { name }), 'light');
     }
     for (const name of ['Dark outer', 'Dark middle', 'Dark inner']) {
-      await expect(getComputedStyle(canvas.getByRole('region', { name })).colorScheme).toBe('dark');
+      await expectTheme(canvas.getByRole('region', { name }), 'dark');
     }
   },
 };
@@ -77,18 +85,10 @@ export const MarkerPrecedence: Story = {
     </div>
   ),
   play: async ({ canvas }) => {
-    await expect(
-      getComputedStyle(canvas.getByRole('region', { name: 'Dark attribute beats light class' })).colorScheme,
-    ).toBe('dark');
-    await expect(
-      getComputedStyle(canvas.getByRole('region', { name: 'Light attribute beats dark class' })).colorScheme,
-    ).toBe('light');
-    await expect(getComputedStyle(canvas.getByRole('region', { name: 'Both classes choose light' })).colorScheme).toBe(
-      'light',
-    );
-    await expect(
-      getComputedStyle(canvas.getByRole('region', { name: 'Invalid attribute leaves dark alias active' })).colorScheme,
-    ).toBe('dark');
+    await expectTheme(canvas.getByRole('region', { name: 'Dark attribute beats light class' }), 'dark');
+    await expectTheme(canvas.getByRole('region', { name: 'Light attribute beats dark class' }), 'light');
+    await expectTheme(canvas.getByRole('region', { name: 'Both classes choose light' }), 'light');
+    await expectTheme(canvas.getByRole('region', { name: 'Invalid attribute leaves dark alias active' }), 'dark');
   },
 };
 

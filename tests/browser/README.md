@@ -36,8 +36,8 @@ automation rather than Testing Library's simulated user events. No extra React b
 
 - `vitest.browser.config.ts` is independent of the playground/library Vite config and the jsdom setup. It loads real CSS,
   keeps native dialog/focus/layout/scroll APIs, and runs Chromium, Firefox and WebKit headlessly at a fixed viewport.
-- `setup.ts` loads the tokens, base styles and the component CSS used by these fixtures. Add the relevant stylesheet when
-  adding another component. Cleanup unmounts React after every test, including failures, so dialog scroll locks unwind.
+- `setup.ts` loads the canonical layered `src/styles/index.css` entry shared with Storybook and the published stylesheet. Add
+  new component styles there so tests exercise the same cascade as applications. Cleanup unmounts React after every test, including failures, so dialog scroll locks unwind.
 - The browser tsconfig keeps jsdom's global jest-dom matcher types out of the browser suite. `pnpm typecheck` checks both
   configurations; ESLint applies Vitest rules to the browser tests without Testing Library's incompatible query rules.
 - Tests establish starting focus inside Vitest's iframe before native keyboard activation. Subsequent entry, navigation,
