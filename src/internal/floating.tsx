@@ -11,8 +11,16 @@ import {
 import { createPortal } from 'react-dom';
 import { cx } from './cx';
 
-// All panels listen on document; only the most recently opened panel owns Escape.
-const openPanels: HTMLDivElement[] = [];
+// A child portal may be a DOM sibling of its parent panel. Its anchor still
+// identifies the nesting, independently of React effect order or positioning.
+const openPanels: Array<{ panel: HTMLDivElement; anchor: RefObject<HTMLElement | null> }> = [];
+const handledEscapes = new WeakSet<KeyboardEvent>();
+
+function escapeOwner() {
+  return openPanels.findLast(
+    (entry) => !openPanels.some((other) => other !== entry && entry.panel.contains(other.anchor.current)),
+  )?.panel;
+}
 
 export type Side = 'top' | 'bottom' | 'left' | 'right';
 export type Placement = Side | `${Side}-start` | `${Side}-end`;
@@ -154,10 +162,20 @@ export function Floating({
   }, [open, anchor, matchWidth, placement, offset, children]);
 
   useEffect(() => {
+    const currentPanel = panel.current;
+    if (!open || currentPanel === null) return;
+    const entry = { panel: currentPanel, anchor };
+    openPanels.push(entry);
+    return () => {
+      const index = openPanels.indexOf(entry);
+      if (index >= 0) openPanels.splice(index, 1);
+    };
+  }, [open, anchor]);
+
+  useEffect(() => {
     if (!open) return;
     const currentPanel = panel.current;
     if (currentPanel === null) return;
-    openPanels.push(currentPanel);
     const onScroll = () => {
       const m = measure(anchor.current, panel.current, matchWidth === true, placement, offset);
       if (m === null) return;
@@ -172,7 +190,10 @@ export function Floating({
       dismiss.current?.();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && openPanels.at(-1) === currentPanel) {
+      if (event.key === 'Escape' && !handledEscapes.has(event) && escapeOwner() === currentPanel) {
+        // A native dialog already prevents Escape's default. Track our own
+        // consumption so effect cleanup cannot give the same event to a parent.
+        handledEscapes.add(event);
         event.preventDefault();
         event.stopPropagation();
         dismiss.current?.();
@@ -181,8 +202,6 @@ export function Floating({
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown);
     return () => {
-      const index = openPanels.indexOf(currentPanel);
-      if (index >= 0) openPanels.splice(index, 1);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('scroll', onScroll, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
