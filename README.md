@@ -43,7 +43,8 @@ pnpm install
 pnpm dev          # playground with a demo of every component
 pnpm storybook    # Storybook: stories, props tables and guides, light and dark
 pnpm build-storybook
-pnpm test         # Vitest
+pnpm test         # Vitest with jsdom
+pnpm test:browser # build, then native Chromium, Firefox and WebKit interactions
 pnpm typecheck
 pnpm build        # modular dist/index.js + components/internal, dist/types, dist/styles.css
 pnpm pack:check   # build, pack the tarball and verify its contents, exports and types

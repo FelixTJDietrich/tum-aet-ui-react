@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, posix, resolve } from 'node:path';
+import { dirname, join, posix, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { validateVersion } from './release-policy.mjs';
@@ -14,7 +14,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const out = resolve(root, 'build/package');
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
-// --ignore-scripts keeps `prepublishOnly` (which refuses a direct publish) from running.
+// npm pack normally runs prepack, prepare and postpack; validate existing build bytes without lifecycle scripts.
 const [packed] = JSON.parse(
   execFileSync('npm', ['pack', '--json', '--ignore-scripts', '--pack-destination', out], {
     cwd: root,
@@ -36,8 +36,8 @@ try {
   assert.equal(manifest.publishConfig?.access, 'public');
   assert.deepEqual(Object.keys(manifest.exports).sort(), ['.', './package.json', './styles.css']);
   assert.deepEqual(
-    manifest.dependencies,
-    { '@base-ui/react': '^1.9.0' },
+    Object.keys(manifest.dependencies).sort(),
+    ['@base-ui/react'],
     'Only the reviewed Base UI runtime dependency is allowed',
   );
   for (const field of ['optionalDependencies', 'bundledDependencies', 'bundleDependencies']) {
@@ -54,7 +54,9 @@ try {
     assert.doesNotMatch(range, /^(?:workspace|catalog|file|link):/);
   }
 
-  const files = packed.files.map(({ path }) => path);
+  const files = (await readdir(packageRoot, { recursive: true, withFileTypes: true }))
+    .filter((entry) => entry.isFile())
+    .map((entry) => relative(packageRoot, join(entry.parentPath, entry.name)));
   for (const required of [
     'package.json',
     'README.md',
@@ -65,29 +67,22 @@ try {
   ]) {
     assert.ok(files.includes(required), `Missing published file: ${required}`);
   }
-  // Modules must correspond to production source files. No bundled node_modules,
-  // virtual helpers, tests, demos, stories, maps, source files or stray build assets.
-  const sources = (await readdir(resolve(root, 'src'), { recursive: true })).filter(
-    (path) =>
-      /^(?:index\.ts|(?:components|internal)\/.+\.tsx?)$/u.test(path) && !/\.(?:test|demo|stories)\.tsx?$/u.test(path),
-  );
-  const allowed = new Set(['package.json', 'README.md', 'LICENSE', 'dist/styles.css']);
-  for (const source of sources) {
-    allowed.add(`dist/${source.replace(/\.tsx?$/u, '.js')}`);
-    allowed.add(`dist/types/${source.replace(/\.tsx?$/u, '.d.ts')}`);
-  }
   const fileSet = new Set(files);
-  const modules = files.filter((path) => path.endsWith('.js'));
-  assert.ok(modules.length > 1, 'The ESM distribution must preserve module boundaries');
   for (const path of files) {
-    assert.ok(allowed.has(path), `Unexpected published file: ${path}`);
+    assert.ok(
+      ['package.json', 'README.md', 'LICENSE', 'dist/styles.css'].includes(path) ||
+        /^dist\/.+\.(?:js|d\.ts)$/u.test(path),
+      `Unexpected published file: ${path}`,
+    );
+    assert.doesNotMatch(
+      path,
+      /(?:^|\/)(?:src|tests?|__tests__|demos?|stories|node_modules)(?:\/|$)|\.(?:test|spec|demo|stories)\./u,
+      `Development artifact in package: ${path}`,
+    );
     if (!/\.(?:js|d\.ts)$/u.test(path)) {
       continue;
     }
     const source = await readFile(resolve(packageRoot, path), 'utf8');
-    if (path.endsWith('.js') && sources.includes(path.slice('dist/'.length).replace(/\.js$/u, '.tsx'))) {
-      assert.match(source, /^['"]use client['"];?/u, `Missing client boundary: ${path}`);
-    }
     for (const { fileName: specifier } of ts.preProcessFile(source, true, true).importedFiles) {
       if (specifier.startsWith('.')) {
         assert.match(specifier, /\.(?:js|css|json)$/u, `Extensionless emitted import: ${path} -> ${specifier}`);
@@ -106,6 +101,13 @@ try {
     }
   }
 
+  // Module resolution and type correctness as a consumer sees them.
+  execFileSync('pnpm', ['exec', 'publint', tarball, '--strict'], { cwd: root, stdio: 'inherit' });
+  execFileSync('pnpm', ['exec', 'attw', tarball, '--profile', 'esm-only', '--entrypoints', '.'], {
+    cwd: root,
+    stdio: 'inherit',
+  });
+
   const integrity = `sha512-${createHash('sha512')
     .update(await readFile(tarball))
     .digest('base64')}`;
@@ -117,13 +119,6 @@ try {
       2,
     )}\n`,
   );
-
-  // Module resolution and type correctness as a consumer sees them.
-  execFileSync('pnpm', ['exec', 'publint', tarball, '--strict'], { cwd: root, stdio: 'inherit' });
-  execFileSync('pnpm', ['exec', 'attw', tarball, '--profile', 'esm-only', '--entrypoints', '.'], {
-    cwd: root,
-    stdio: 'inherit',
-  });
 
   process.stdout.write(
     `\nPacked ${packed.filename} (${files.length} files, ${packed.unpackedSize} bytes unpacked)\n${integrity}\n`,

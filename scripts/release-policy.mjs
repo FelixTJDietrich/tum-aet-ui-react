@@ -1,22 +1,14 @@
 import assert from 'node:assert/strict';
-
-// SemVer core + prerelease grammar. Build metadata is deliberately unsupported:
-// npm normalizes it away, so it cannot identify an immutable package version.
-const numeric = '(?:0|[1-9][0-9]*)';
-const identifier = `(?:${numeric}|[0-9]*[A-Za-z-][0-9A-Za-z-]*)`;
-const versionPattern = new RegExp(
-  `^${numeric}\\.${numeric}\\.${numeric}(?:-${identifier}(?:\\.${identifier})*)?$`,
-  'u',
-);
+import { parse } from 'semver';
 
 export function validateVersion(version) {
   assert.equal(typeof version, 'string');
-  assert.equal(version.trim(), version, 'Versions must not contain surrounding whitespace');
-  assert.match(version, versionPattern, 'Use MAJOR.MINOR.PATCH[-prerelease], without leading zeroes or build metadata');
-  for (const part of version.split('-')[0].split('.')) {
-    assert.ok(Number.isSafeInteger(Number(part)), 'Version core numbers must be safe integers');
-  }
-  return { prerelease: version.includes('-') };
+  const parsed = parse(version);
+  assert.ok(parsed, 'Use a valid SemVer version');
+  assert.equal(parsed.version, version, 'Versions must use their canonical SemVer identity');
+  // npm drops build metadata, so it cannot identify an immutable package version.
+  assert.equal(parsed.build.length, 0, 'Build metadata is not supported');
+  return { prerelease: parsed.prerelease.length > 0 };
 }
 
 export function validateRelease({ name, version, refType, ref, distTag }) {

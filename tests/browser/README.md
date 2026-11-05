@@ -1,6 +1,6 @@
 # Browser interaction tests
 
-Run the jsdom suite with `pnpm test`. Native browser interactions use a separate Vitest configuration:
+Run the jsdom suite with `pnpm test`. Native browser interactions use a separate Vitest configuration. `test:browser` builds the package first, and browser setup loads the emitted `dist/styles.css`:
 
 ```sh
 pnpm install --frozen-lockfile

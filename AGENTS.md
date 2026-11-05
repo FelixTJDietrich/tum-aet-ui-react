@@ -5,7 +5,7 @@ React implementation of the AET design system, sharing tokens and class names wi
 ## Component conventions
 
 - Keep styles in plain CSS beside the component. Use `--tumaet-ui-*` tokens from `src/styles/themes.css`, spacing as `calc(var(--tumaet-ui-spacing) * n)`, existing Angular class names and `data-severity` / `data-size` / `data-variant` attributes.
-- Register new component styles in `src/styles/index.css` in alphabetical order. This layered entry is shared by the distribution, playground, Storybook and browser tests; the build checks completeness.
+- Register new component styles in `src/styles/index.css` in alphabetical order. Vite builds this layered entry for the distribution; the playground and Storybook use the same entry, and browser tests exercise the built stylesheet.
 - Typography comes from the tokens; form controls use `font: inherit`. Support both themes, reduced motion and visible `:focus-visible` outlines (`2px solid var(--tumaet-ui-focus-color)`, offset 2px).
 - Generated UI text comes from `useTranslate()` and the existing `tumAetUi.*` keys in `src/internal/i18n.tsx`. If a required key is absent, expose an English fallback through a prop and report the missing key.
 - Use React 19 refs and merge classes with `cx`. Follow [the API and migration policy](docs/migration-policy.md) for state callbacks, typed values, compound parts and compatibility.

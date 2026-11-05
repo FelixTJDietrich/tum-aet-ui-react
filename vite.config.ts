@@ -8,7 +8,14 @@ export default defineConfig({
   build: {
     outDir: resolve(import.meta.dirname, 'dist'),
     emptyOutDir: false,
-    lib: { entry: resolve(import.meta.dirname, 'src/index.ts'), formats: ['es'] },
+    lib: {
+      entry: {
+        index: resolve(import.meta.dirname, 'src/index.ts'),
+        styles: resolve(import.meta.dirname, 'src/styles/index.css'),
+      },
+      formats: ['es'],
+      cssFileName: 'styles',
+    },
     rolldownOptions: {
       // Include every subpath (jsx-runtime, client, server, Base UI parts, ...).
       external: /^(?:react|react-dom|@base-ui\/react)(?:\/|$)/,
@@ -21,7 +28,7 @@ export default defineConfig({
         banner: (chunk) => (chunk.facadeModuleId?.endsWith('.tsx') === true ? "'use client';" : ''),
       },
     },
-    cssCodeSplit: false,
+    cssCodeSplit: true,
   },
   test: {
     root: import.meta.dirname,

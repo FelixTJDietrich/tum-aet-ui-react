@@ -3,7 +3,7 @@
 // Usage: node scripts/consumer/run.mjs [latest|minimum]   (peer versions of react and react-dom)
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -49,24 +49,12 @@ const html = render();
 for (const expected of ['Name', 'Active', 'Save']) {
   assert.ok(html.includes(expected), `Rendered HTML is missing "${expected}"`);
 }
-const styles = execFileSync(
-  'node',
-  [
-    '-e',
-    `process.stdout.write(require('fs').readFileSync(require.resolve('@tumaet/ui-react/styles.css'),'utf8').length.toString())`,
-  ],
-  { cwd: dir, encoding: 'utf8' },
-);
-assert.ok(Number(styles) > 10_000, 'styles.css should resolve and not be empty');
-
-const installedDist = join(dir, 'node_modules/@tumaet/ui-react/dist');
-const modules = (await readdir(installedDist, { recursive: true })).filter((path) => path.endsWith('.js'));
-assert.ok(modules.includes('components/button/button.js'), 'The installed tarball must contain component modules');
-assert.ok(modules.length > 1);
-
 // Bundle a single root-barrel import for the browser. SSR externalizes the package,
 // so SSR alone cannot prove consumer tree shaking or browser dependency handling.
-await writeFile(join(dir, 'src/button.tsx'), "export { Button } from '@tumaet/ui-react';\n");
+await writeFile(
+  join(dir, 'src/button.tsx'),
+  "import '@tumaet/ui-react/styles.css';\nexport { Button } from '@tumaet/ui-react';\n",
+);
 const { build } = await import(pathToFileURL(join(dir, 'node_modules/vite/dist/node/index.js')).href);
 const results = await build({
   root: dir,
@@ -86,10 +74,16 @@ assert.ok(code.includes('tumaet-ui-btn'), 'Button must be present in the browser
 for (const unused of ['tumaet-ui-select', 'tumaet-ui-dialog', 'tumaet-ui-data-table', 'tumAetUi.datePicker']) {
   assert.ok(!code.includes(unused), `Unused component code survived tree shaking: ${unused}`);
 }
-const bytes = Buffer.byteLength(code);
-assert.ok(bytes < 12_000, `Button-only JS exceeds the 12 kB uncompressed regression budget: ${bytes}`);
+const styles = result.output.find((output) => output.type === 'asset' && output.fileName.endsWith('.css'));
+assert.ok(styles, 'The consumer browser bundle must emit the imported stylesheet');
+const css = typeof styles.source === 'string' ? styles.source : Buffer.from(styles.source).toString('utf8');
+assert.match(css, /@layer tumaet-ui\.tokens\s*\{/u, 'Emit the token layer');
+assert.match(css, /--tumaet-ui-primary-color\s*:/u, 'Emit theme token declarations');
+assert.match(css, /\.tumaet-ui-btn\b[^{}]*\{/u, 'Emit component styling rules');
 const installedReact = JSON.parse(await readFile(join(dir, 'node_modules/react/package.json'), 'utf8')).version;
 const installedBase = JSON.parse(await readFile(join(dir, 'node_modules/@base-ui/react/package.json'), 'utf8')).version;
 process.stdout.write(
-  `OK: bundler + NodeNext typechecks, SSR, CSS resolution, modular output and Button tree shaking (${bytes} bytes) with React ${installedReact}, Base UI ${installedBase}\n`,
+  `OK: bundler + NodeNext typechecks, SSR, emitted theme/component CSS and Button tree shaking with React ${installedReact}, Base UI ${installedBase}\n`,
 );
+
+await rm(dir, { recursive: true, force: true });

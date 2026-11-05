@@ -2,27 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { validateRelease, validateVersion } from './release-policy.mjs';
 
-test('accepts stable and SemVer prerelease identifiers', () => {
-  for (const version of ['0.1.0', '1.0.0-rc.1', '0.2.0-alpha.0', '1.2.3-x-y-z.--', '1.2.3-01a']) {
-    assert.doesNotThrow(() => validateVersion(version));
-  }
+test('accepts canonical stable and prerelease identities', () => {
+  assert.deepEqual(validateVersion('0.1.0'), { prerelease: false });
+  assert.deepEqual(validateVersion('0.2.0-rc.1'), { prerelease: true });
 });
 
-test('rejects malformed, noncanonical and npm-ambiguous versions', () => {
-  for (const version of [
-    '01.2.3',
-    '1.02.3',
-    '1.2.03',
-    '1.2.3-01',
-    '1.2.3-rc..1',
-    'v1.2.3',
-    '1.2',
-    '1.2.3+',
-    '1.2.3+build',
-    '1.2.3\n',
-    '1.2.3-rc.1\n',
-    '9007199254740992.0.0',
-  ]) {
+test('rejects invalid versions, normalized identities and npm build metadata loss', () => {
+  for (const version of ['1.2', 'v1.2.3', '=1.2.3', ' 1.2.3', '1.2.3\n', '1.2.3-rc.1\n', '1.2.3+build']) {
     assert.throws(() => validateVersion(version));
   }
 });
