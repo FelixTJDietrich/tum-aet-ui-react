@@ -11,6 +11,9 @@ import {
 import { createPortal } from 'react-dom';
 import { cx } from './cx';
 
+// All panels listen on document; only the most recently opened panel owns Escape.
+const openPanels: HTMLDivElement[] = [];
+
 export type Side = 'top' | 'bottom' | 'left' | 'right';
 export type Placement = Side | `${Side}-start` | `${Side}-end`;
 
@@ -152,6 +155,9 @@ export function Floating({
 
   useEffect(() => {
     if (!open) return;
+    const currentPanel = panel.current;
+    if (currentPanel === null) return;
+    openPanels.push(currentPanel);
     const onScroll = () => {
       const m = measure(anchor.current, panel.current, matchWidth === true, placement, offset);
       if (m === null) return;
@@ -166,7 +172,8 @@ export function Floating({
       dismiss.current?.();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && openPanels.at(-1) === currentPanel) {
+        event.preventDefault();
         event.stopPropagation();
         dismiss.current?.();
       }
@@ -174,6 +181,8 @@ export function Floating({
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown);
     return () => {
+      const index = openPanels.indexOf(currentPanel);
+      if (index >= 0) openPanels.splice(index, 1);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('scroll', onScroll, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
