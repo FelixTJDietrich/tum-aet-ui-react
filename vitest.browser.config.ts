@@ -9,6 +9,8 @@ export default defineConfig({
   test: {
     include: ['tests/browser/**/*.browser.test.tsx'],
     setupFiles: ['tests/browser/setup.ts'],
+    // Concurrent WebKit files cause native focus and action timeouts.
+    fileParallelism: false,
     reporters: [
       'default',
       ['junit', { suiteNameTemplate: '{displayName}: {filename}', classnameTemplate: '{displayName}.{filename}' }],
