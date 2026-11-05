@@ -4,6 +4,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Conventions
 
+These describe the current component APIs. Upcoming Base UI migrations use flat compound parts, generic values and `onValueChange` / `onOpenChange` / `onCheckedChange` callbacks; native-like inputs keep natural DOM events. See the [migration policy](https://github.com/ls1intum/tum-aet-ui-react/blob/main/docs/migration-policy.md) for the target API and phased compatibility. The dependency and modular build do not rename existing props.
+
 - **Props are spread onto the root element.** Native attributes (`id`, `aria-*`, `data-*`, handlers) work as usual. For composite controls such as `Checkbox`, `ToggleSwitch` or `Select`, native props go to the focusable control and `className` and `style` go to the wrapper; the component's page says so.
 - **`ref` is a normal prop** (React 19).
 - **Controlled or uncontrolled.** Pass `value` (or `open`, `checked`, ...) and an `onChange`-style handler to control a component, or `defaultValue` to let it keep its own state. The change handler receives the new value as first argument; native-like inputs (`Input`, `Textarea`) receive the event. An empty value is `null`, not `undefined`, because `undefined` means "uncontrolled".
