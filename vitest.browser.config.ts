@@ -9,15 +9,13 @@ export default defineConfig({
   test: {
     include: ['tests/browser/**/*.browser.test.tsx'],
     setupFiles: ['tests/browser/setup.ts'],
-    // Vitest 5.1 stages trace chunks and failure screenshots by test name.
-    // Keep browser instances sequential so those files cannot overwrite each other.
-    maxWorkers: 1,
+    // Concurrent WebKit files cause native focus and action timeouts.
+    fileParallelism: false,
     reporters: [
       'default',
       ['junit', { suiteNameTemplate: '{displayName}: {filename}', classnameTemplate: '{displayName}.{filename}' }],
     ],
     outputFile: { junit: 'build/browser-results/junit.xml' },
-    attachmentsDir: 'build/browser-results/attachments',
     browser: {
       enabled: true,
       headless: true,
@@ -25,12 +23,10 @@ export default defineConfig({
       instances: (['chromium', 'firefox', 'webkit'] as const).map((browser) => ({
         browser,
         attachmentsDir: resolve(import.meta.dirname, `build/browser-results/${browser}/attachments`),
-        screenshotDirectory: resolve(import.meta.dirname, `build/browser-results/${browser}/screenshots`),
       })),
       viewport: { width: 1000, height: 800 },
       screenshotFailures: true,
-      screenshotDirectory: 'build/browser-results/screenshots',
-      trace: { mode: 'retain-on-failure', tracesDir: 'build/browser-results/traces' },
+      trace: 'retain-on-failure',
     },
   },
 });
