@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
@@ -21,7 +22,11 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright({ actionTimeout: 5_000 }),
-      instances: [{ browser: 'chromium' }, { browser: 'firefox' }, { browser: 'webkit' }],
+      instances: (['chromium', 'firefox', 'webkit'] as const).map((browser) => ({
+        browser,
+        attachmentsDir: resolve(import.meta.dirname, `build/browser-results/${browser}/attachments`),
+        screenshotDirectory: resolve(import.meta.dirname, `build/browser-results/${browser}/screenshots`),
+      })),
       viewport: { width: 1000, height: 800 },
       screenshotFailures: true,
       screenshotDirectory: 'build/browser-results/screenshots',

@@ -49,20 +49,20 @@ automation rather than Testing Library's simulated user events. No extra React b
 - Fixtures and tests live outside `src`, are not imported by the library or stories, and stay outside declarations and
   the published `dist` allowlist. These are behavioural tests, not screenshot baselines or screen-reader certification.
 
-The nine scenarios cover dialog focus entry/return (including focusing the dialog itself), native Tab navigation,
+The twelve scenarios cover dialog focus entry/return (including focusing the dialog itself), native Tab navigation,
 repeated Escape with dismissal disabled, keyboard filtering/selection, pointer selection inside a modal, popup focus
-and Escape order, a selector nested in a popup inside a modal, overflow/scroll tracking, and viewport-edge flipping.
+and Escape order, a selector nested in a popup inside a modal, overflow/scroll tracking, viewport-edge flipping, initially open nested popovers, placement changes while a child is open, and disabled-child cleanup.
 
 ## Failure artifacts and CI
 
 The independent `browser` CI job installs all three engines and their system dependencies, then runs this suite. It has
 no retries, allowed failures, expected failures or skipped regression tests. It uploads `build/browser-results/`,
-including the JUnit report on success and failure screenshots plus Playwright traces on failure, for seven days.
+including the JUnit report on success and failure screenshots plus Playwright traces on failure, for seven days. Each browser has its own absolute attachment/screenshot directory so engines cannot overwrite one another’s PNGs.
 
 Vitest 5.1 stages trace chunks and failure screenshots using test names. Browser instances run sequentially
 (`maxWorkers: 1`) because concurrent engines otherwise collide in those staging files; this was reproduced as
 `tracing.stopChunk: file data stream has unexpected number of bytes`. Failed traces have browser names in their zip
-filenames, and Vitest preserves attachment copies in `attachments/`. Open a downloaded trace with:
+filenames, and Vitest preserves attachment copies under each browser’s directory. Open a downloaded trace with:
 
 ```sh
 pnpm exec playwright show-trace build/browser-results/traces/<browser>-<test>.trace.zip
@@ -77,7 +77,6 @@ On the unmodified `c694252` Floating implementation, the nested selector Escape 
 WebKit: one Escape dismisses both the selector and its parent popover, losing the expected focus target. Each open
 Floating panel previously handled the same document keydown event, and `stopPropagation()` does not stop other listeners
 on that same document. This PR includes a narrow baseline fix in `src/internal/floating.tsx`: register open panels and
-let only the most recently opened panel dismiss on Escape, preventing its native default action as well. Cleanup removes
-the panel from the registry. The browser regression asserts correct layer-by-layer dismissal and focus return all the
+let only the innermost panel dismiss on Escape (with opening order breaking ties between independent panels), preventing its native default action as well. Registration stays stable across positioning changes; anchor ancestry handles nested panels that mount together. A weak event set prevents the same Escape being consumed again if synchronous cleanup changes the stack. Cleanup removes the panel from the registry. The browser regression asserts correct layer-by-layer dismissal and focus return all the
 way to the modal opener; it does not bless the old behaviour or mark it as an expected failure. Base UI's eventual overlay
 migration should replace this temporary behaviour implementation while preserving these interaction contracts.
