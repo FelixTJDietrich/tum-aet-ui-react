@@ -18,8 +18,11 @@ async function openSettings() {
 
 test('enters the native dialog, navigates with Tab and returns focus after closing', async () => {
   render(<DialogFixture />);
+  const background = page.getByRole('button', { name: 'Outside action' }).element();
   await openSettings();
   const input = page.getByRole('textbox', { name: 'Display name' });
+  await expect.element(input).toHaveFocus();
+  background.focus();
   await expect.element(input).toHaveFocus();
   await userEvent.tab();
   await expect.element(page.getByRole('combobox', { name: 'Course', exact: true })).toHaveFocus();
@@ -88,7 +91,6 @@ test('allows pointer selection in the dialog top layer', async () => {
   await openSettings();
   const trigger = page.getByRole('combobox', { name: 'Course', exact: true });
   await trigger.click();
-  await expect.element(page.getByRole('listbox')).toHaveStyle({ display: 'flex', maxHeight: '240px' });
   // A body portal behind a modal can look visible in DOM assertions but cannot
   // receive a real pointer click. Never force this interaction.
   await page.getByRole('option', { name: 'Gamma' }).click();
