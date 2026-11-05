@@ -8,14 +8,14 @@ React components and styles of the design system of the Applied Education Techno
 
 ## Install and use
 
-The package is not published to npm yet. Until then, install it from the repository or link it in a workspace.
+Install the package with `npm install @tumaet/ui-react`. React 19 and React DOM 19 are peer dependencies. The API may change during 0.x releases; see the migration policy before adopting APIs from an unreleased branch.
 
 ```tsx
 import '@tumaet/ui-react/styles.css';
 import { Button, Dialog } from '@tumaet/ui-react';
 ```
 
-Import the stylesheet once, after your own global styles. It contains the theme (in the `tumaet-ui-theme` cascade layer, so your own declarations win) and the styles of every component. React and React DOM 19 are peers; `@base-ui/react` is the approved runtime dependency for the phased behaviour migration. Existing components keep their current implementations and props until individually migrated.
+Import the stylesheet once. Tokens, base rules and all component styles live in the `tumaet-ui` cascade layer. Declare application layer order before imports so resets stay below the library and overrides stay above it; see the Theming guide for plain CSS and Tailwind examples. React and React DOM 19 are peers; `@base-ui/react` is the approved runtime dependency for the phased behaviour migration. Existing components keep their current implementations and props until individually migrated.
 
 ## Principles
 
