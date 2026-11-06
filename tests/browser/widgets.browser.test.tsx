@@ -398,35 +398,100 @@ test('SelectButton owns typed item selection through ToggleGroup with RTL focus 
   vertical.unmount();
 });
 
-test('native fieldset disability excludes widget buttons and number inputs from focus and submission', async () => {
-  const { container, unmount } = render(
-    <form>
-      <button type="button">Before widgets</button>
-      <fieldset disabled>
-        <Tabs defaultValue="a">
-          <TabList aria-label="Disabled tabs">
-            <Tab value="a">A</Tab>
-            <Tab value="b">B</Tab>
-          </TabList>
-        </Tabs>
-        <InputNumber aria-label="Disabled count" name="count" value={2} showButtons />
-        <Panel defaultOpen>
-          <PanelTrigger>Details</PanelTrigger>
-          <PanelContent>Content</PanelContent>
-        </Panel>
-        <SelectButton aria-label="Disabled tools" items={[{ value: 'a', label: 'Tool A' }]} />
-      </fieldset>
-      <button type="button">After widgets</button>
-    </form>,
-  );
+test('native fieldset disability excludes widgets from focus, pointer activation and submission', async () => {
+  const change = vi.fn();
+  const pointer = vi.fn();
+  function Example() {
+    const [value, setValue] = useState<number | null>(2);
+    const [disabled, setDisabled] = useState(true);
+    return (
+      <form>
+        <button type="button">Before widgets</button>
+        <fieldset disabled={disabled}>
+          <Tabs defaultValue="a">
+            <TabList aria-label="Disabled tabs">
+              <Tab value="a">A</Tab>
+              <Tab value="b">B</Tab>
+            </TabList>
+          </Tabs>
+          <InputNumber
+            aria-label="Disabled count"
+            name="count"
+            value={value}
+            showButtons
+            onValueChange={(next, details) => {
+              change(next, details.reason);
+              setValue(next);
+            }}
+            rootProps={{
+              onPointerDown: (event) => {
+                pointer(event.nativeEvent.isTrusted);
+              },
+            }}
+          />
+          <Panel defaultOpen>
+            <PanelTrigger>Details</PanelTrigger>
+            <PanelContent>Content</PanelContent>
+          </Panel>
+          <SelectButton aria-label="Disabled tools" items={[{ value: 'a', label: 'Tool A' }]} />
+        </fieldset>
+        <button type="button" onClick={() => setDisabled(false)}>
+          Enable widgets
+        </button>
+      </form>
+    );
+  }
+  const { container, unmount } = render(<Example />);
   await page.getByRole('button', { name: 'Before widgets' }).click();
   await userEvent.tab();
-  await expect.element(page.getByRole('button', { name: 'After widgets' })).toHaveFocus();
+  await expect.element(page.getByRole('button', { name: 'Enable widgets' })).toHaveFocus();
   for (const control of container.querySelectorAll<HTMLElement>('fieldset button, fieldset input')) {
     expect(control).toBeDisabled();
     control.focus();
     expect(control).not.toHaveFocus();
   }
+  // Force bypasses Playwright's actionability check; pointer events remain native and trusted.
+  await page.getByRole('button', { name: 'Increase value' }).click({ force: true });
+  await page.getByRole('button', { name: 'Decrease value' }).click({ force: true });
+  expect(pointer).toHaveBeenCalledWith(true);
+  expect(change).not.toHaveBeenCalled();
   expect([...new FormData(requireForm(container))]).toEqual([]);
+  await page.getByRole('button', { name: 'Enable widgets' }).click();
+  expect(Object.fromEntries(new FormData(requireForm(container)))).toEqual({ count: '2' });
+  await page.getByRole('button', { name: 'Increase value' }).click();
+  expect(change).toHaveBeenCalledOnce();
+  expect(Object.fromEntries(new FormData(requireForm(container)))).toEqual({ count: '3' });
   unmount();
+});
+
+test('Panel trigger native types preserve reset and submit with icons or text', async () => {
+  for (const children of [undefined, 'Toggle panel']) {
+    const reset = vi.fn();
+    const submit = vi.fn((event: SyntheticEvent<HTMLFormElement>) => event.preventDefault());
+    const { unmount } = render(
+      <form onReset={reset} onSubmit={submit}>
+        <input aria-label="Draft" defaultValue="saved" />
+        <Panel>
+          <PanelTrigger aria-label="Default trigger">{children}</PanelTrigger>
+          <PanelTrigger type="reset" aria-label="Reset panel">
+            {children}
+          </PanelTrigger>
+          <PanelTrigger type="submit" aria-label="Submit panel">
+            {children}
+          </PanelTrigger>
+        </Panel>
+      </form>,
+    );
+    const input = page.getByRole('textbox', { name: 'Draft' });
+    await input.fill('changed');
+    await page.getByRole('button', { name: 'Default trigger' }).click();
+    expect(submit).not.toHaveBeenCalled();
+    await expect.element(input).toHaveValue('changed');
+    await page.getByRole('button', { name: 'Reset panel' }).click();
+    expect(reset).toHaveBeenCalledOnce();
+    await expect.element(input).toHaveValue('saved');
+    await page.getByRole('button', { name: 'Submit panel' }).click();
+    expect(submit).toHaveBeenCalledOnce();
+    unmount();
+  }
 });

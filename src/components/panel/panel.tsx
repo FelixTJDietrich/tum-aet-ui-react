@@ -2,7 +2,7 @@ import type { ComponentPropsWithRef } from 'react';
 import { Collapsible } from '@base-ui/react/collapsible';
 import { cx } from '../../internal/cx';
 import { useTranslate } from '../../internal/i18n';
-import { ChevronDownIcon, ChevronUpIcon } from '../../internal/icons';
+import { ChevronDownIcon } from '../../internal/icons';
 
 export type PanelProps = ComponentPropsWithRef<typeof Collapsible.Root>;
 export function Panel({ className, ...props }: PanelProps) {
@@ -31,11 +31,11 @@ export function PanelTrigger({ className, children, render, ...props }: PanelTri
   const t = useTranslate();
   const defaultRender: Collapsible.Trigger.Props['render'] = (buttonProps, state) => (
     <button
-      {...buttonProps}
       type="button"
+      {...buttonProps}
       aria-label={buttonProps['aria-label'] ?? t(state.open ? 'tumAetUi.panel.collapse' : 'tumAetUi.panel.expand')}
     >
-      {state.open ? <ChevronUpIcon /> : <ChevronDownIcon />}
+      <ChevronDownIcon className="tumaet-ui-panel-toggle-icon" />
     </button>
   );
   return (

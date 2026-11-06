@@ -24,6 +24,12 @@ type NumberOptions =
   | 'onValueChange'
   | 'onValueCommitted';
 type RootProps = ComponentPropsWithRef<typeof NumberField.Root>;
+
+const preventDisabledPress: NumberField.Increment.Props['onPointerDown'] = (event) => {
+  // Native disabled fieldsets suppress clicks, but can still dispatch pointerdown.
+  if (event.currentTarget.matches(':disabled')) event.preventBaseUIHandler();
+};
+
 export interface InputNumberProps
   extends
     Omit<
@@ -145,12 +151,14 @@ export function InputNumber({
       {showButtons ? (
         <span className="tumaet-ui-input-number-button-group">
           <NumberField.Increment
+            onPointerDown={preventDisabledPress}
             aria-label={incrementLabel ?? translate('tumAetUi.inputNumber.increment')}
             className="tumaet-ui-input-number-button tumaet-ui-input-number-increment"
           >
             <ChevronUpIcon />
           </NumberField.Increment>
           <NumberField.Decrement
+            onPointerDown={preventDisabledPress}
             aria-label={decrementLabel ?? translate('tumAetUi.inputNumber.decrement')}
             className="tumaet-ui-input-number-button tumaet-ui-input-number-decrement"
           >

@@ -55,6 +55,10 @@
   background-color: color-mix(in srgb, currentcolor 8%, transparent);
 }
 
+.tumaet-ui-panel-toggler[data-panel-open] .tumaet-ui-panel-toggle-icon {
+  rotate: 180deg;
+}
+
 .tumaet-ui-panel-toggler:focus-visible {
   outline: 2px solid var(--tumaet-ui-focus-color);
   outline-offset: 2px;
