@@ -119,6 +119,36 @@ describe('ConfirmDialog', () => {
     expect(results).toEqual([false]);
   });
 
+  it('keeps a replacement queued by the dismissal callback pending until its own decision', async () => {
+    const firstResults: boolean[] = [];
+    const replacementResults: boolean[] = [];
+    const replacementReject = vi.fn();
+    let replaced = false;
+    render(
+      <ConfirmProvider>
+        <Grab />
+        <Host results={firstResults} />
+        <ConfirmDialog
+          onOpenChange={(open) => {
+            if (open || replaced) return;
+            replaced = true;
+            void grabbedConfirm()({ ...base, title: 'Next decision', reject: replacementReject }).then((result) =>
+              replacementResults.push(result),
+            );
+          }}
+        />
+      </ConfirmProvider>,
+    );
+    await ask();
+    await userEvent.keyboard('{Escape}');
+    expect(firstResults).toEqual([false]);
+    expect(await screen.findByRole('alertdialog', { name: 'Next decision' })).toBeInTheDocument();
+    expect(replacementResults).toEqual([]);
+    expect(replacementReject).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(replacementResults).toEqual([true]);
+  });
+
   it('routes requests by key and shows the icon decoratively with severities', async () => {
     mountHost({ ...base, key: 'a', icon: <svg data-testid="icon" />, acceptSeverity: 'danger' });
     await ask();
