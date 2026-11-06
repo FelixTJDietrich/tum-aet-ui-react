@@ -1,4 +1,13 @@
-import { useEffect, useId, useRef, useState, type FocusEventHandler, type HTMLAttributes, type Ref } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FocusEventHandler,
+  type HTMLAttributes,
+  type Ref,
+} from 'react';
 import { Popover } from '@base-ui/react/popover';
 import { cx } from '../../internal/cx';
 import { useTranslate } from '../../internal/i18n';
@@ -143,6 +152,7 @@ export function DatePicker({
   const isOpen = isOpenState && !disabled && !inline;
   const field = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement | null>(null);
+  const mergedInputRef = useMemo(() => mergeRefs(input, inputRef), [inputRef]);
   const hourInput = useRef<HTMLInputElement | null>(null);
   const calendarRoot = useRef<HTMLDivElement | null>(null);
 
@@ -308,7 +318,7 @@ export function DatePicker({
         ) : null}
         <div ref={field} className="tumaet-ui-date-picker-field">
           <input
-            ref={mergeRefs(input, inputRef)}
+            ref={mergedInputRef}
             id={id}
             type="text"
             role="combobox"

@@ -98,21 +98,28 @@ test('button opening is keyboard accessible and nonmodal Tab can leave in either
   await expect.element(popup()).not.toBeInTheDocument();
 });
 
-test('openOnClick and outside pointer dismissal preserve the outside action and its focus', async () => {
+test('openOnClick and outside pointer dismissal preserve destination focus and activation', async () => {
   let clicks = 0;
   render(
     <>
       <Field aria-label="Deadline" openOnClick />
-      <button type="button" style={{ marginLeft: 500 }} onClick={() => clicks++}>
-        Outside action
-      </button>
+      <div style={{ position: 'fixed', right: 8, top: 8 }}>
+        <input aria-label="Outside field" />
+        <button type="button" onClick={() => clicks++}>
+          Outside action
+        </button>
+      </div>
     </>,
   );
   await input().click();
   await expect.element(selectedDay()).toHaveFocus();
+  await page.getByRole('textbox', { name: 'Outside field' }).click();
+  await expect.element(popup()).not.toBeInTheDocument();
+  await expect.element(page.getByRole('textbox', { name: 'Outside field' })).toHaveFocus();
+  await input().click();
+  await expect.element(popup()).toBeVisible();
   await page.getByRole('button', { name: 'Outside action' }).click();
   await expect.element(popup()).not.toBeInTheDocument();
-  await expect.element(page.getByRole('button', { name: 'Outside action' })).toHaveFocus();
   expect(clicks).toBe(1);
 });
 

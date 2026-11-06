@@ -50,6 +50,7 @@ export function Calendar({
   const locale = useLocale();
   const today = useMemo(() => new Date(), []);
   const root = useRef<HTMLDivElement | null>(null);
+  const mergedRootRef = useMemo(() => mergeRefs(root, ref), [ref]);
   const pendingFocus = useRef(false);
 
   const selectedKey = selected ? toIsoDay(selected) : '';
@@ -163,7 +164,7 @@ export function Calendar({
   };
 
   return (
-    <div {...rest} ref={mergeRefs(root, ref)} className={cx('tumaet-ui-calendar', className)}>
+    <div {...rest} ref={mergedRootRef} className={cx('tumaet-ui-calendar', className)}>
       <div className="tumaet-ui-calendar-header">
         <button
           type="button"

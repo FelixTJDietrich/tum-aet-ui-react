@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { expectNoA11yViolations } from '../../test-utils';
 import { TumAetUiI18nProvider } from '../../internal/i18n';
 import { DatePicker } from './date-picker';
+import { Calendar } from './calendar';
 
 const JUNE_13 = new Date(2026, 5, 13, 8, 30);
 const day = (iso: string) => screen.getByRole('dialog').querySelector<HTMLButtonElement>(`button[data-date="${iso}"]`)!;
@@ -744,6 +745,30 @@ describe('DatePicker time', () => {
       expect(screen.getByRole('grid', { name: 'March 2027' })).toBeInTheDocument();
     });
   });
+});
+
+it('preserves native callback ref lifetimes while values and calendar months change', () => {
+  const inputCleanup = vi.fn();
+  const calendarCleanup = vi.fn();
+  const inputRef = vi.fn<(node: HTMLInputElement | null) => () => void>(() => inputCleanup);
+  const calendarRef = vi.fn<(node: HTMLDivElement | null) => () => void>(() => calendarCleanup);
+  const view = (value: Date) => (
+    <>
+      <DatePicker aria-label="Deadline" value={value} inputRef={inputRef} />
+      <Calendar activeMonth={value} selected={value} ref={calendarRef} />
+    </>
+  );
+  const { container, rerender, unmount } = render(view(JUNE_13));
+  const calendar = container.querySelector('.tumaet-ui-calendar');
+  rerender(view(new Date(2026, 6, 13)));
+  expect(field()).toHaveValue('13.07.2026 00:00');
+  expect(inputRef).toHaveBeenCalledExactlyOnceWith(field());
+  expect(calendarRef).toHaveBeenCalledExactlyOnceWith(calendar);
+  expect(inputCleanup).not.toHaveBeenCalled();
+  expect(calendarCleanup).not.toHaveBeenCalled();
+  unmount();
+  expect(inputCleanup).toHaveBeenCalledOnce();
+  expect(calendarCleanup).toHaveBeenCalledOnce();
 });
 
 describe('accessibility', () => {
