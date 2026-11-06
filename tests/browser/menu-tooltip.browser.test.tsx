@@ -269,7 +269,9 @@ test.each(['light', 'dark'] as const)(
     expect(getComputedStyle(item.element()).outlineStyle).toBe('solid');
     expect(getComputedStyle(item.element()).outlineWidth).toBe('2px');
     await userEvent.keyboard('{Escape}');
+    await expect.element(trigger).toHaveFocus();
     await userEvent.tab();
+    await expect.element(page.getByRole('button', { name: 'Themed help' })).toHaveFocus();
     await expect.element(page.getByRole('tooltip')).toBeVisible();
     expect(scope.contains(page.getByRole('tooltip').element())).toBe(true);
     expect(getComputedStyle(page.getByRole('tooltip').element()).backgroundColor).toBe(
